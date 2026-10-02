@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTEC | SYSTEM TD</title>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Segoe UI', Inter, Arial, sans-serif; height:100vh; background:#f5f3ff; overflow:hidden;}
+  #tela-login{height:100vh; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle at top, #ede9fe, #f8f7ff);}
+.card-login{background:#fff; width:400px; padding:36px; border-radius:20px; border:1px solid #e9e8f0; box-shadow: 0 20px 50px rgba(124,58,237,0.12); text-align:center;}
+.card-login.logo{background:#111; color:#fff; width:52px; height:52px; display:grid; place-items:center; border-radius:14px; margin:0 auto 16px auto; font-weight:bold; font-size:20px;}
+.card-login h2{margin:0 0 6px 0; font-size:22px; font-weight:700;}
+.card-login p{margin:0 0 24px 0; color:#6b7280; font-size:14px;}
+.card-login input{width:100%; padding:13px 16px; margin-bottom:12px; border:1px solid #e5e7eb; border-radius:10px; outline:none; font-size:14px; text-transform:uppercase; transition:0.2s; background:#f9fafb;}
+.card-login input:focus{border-color:#7c3aed; background:#fff; box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+.card-login input[readonly]{background:#f3f4f6;}
+.card-login button{width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; margin-top:8px; transition:0.2s;}
+.card-login button:hover{background:#000; transform:translateY(-1px);}
+  #erro-login{color:#ef4444; font-size:13px; margin-top:12px; display:none; background:#fef2f2; padding:8px; border-radius:8px; border:1px solid #fecaca;}
+  #sistema{display:none; flex-direction:row; height:100vh;}
+  #menu-lateral{width:270px; background:#ffffff; border-right:1px solid #e9e8f0; display:flex; flex-direction:column; padding:0; box-shadow: 4px 0 24px rgba(0,0,0,0.04); transition: transform 0.3s ease; z-index:1000;}
+.menu-topo{padding:24px 20px; border-bottom:1px solid #f3f4f6;}
+.logo-sistema{display:flex; align-items:center; gap:12px; font-weight:800; font-size:16px; letter-spacing:-0.5px;}
+.logo-icon{width:40px; height:40px; background:#111; color:#fff; display:grid; place-items:center; border-radius:10px; font-size:18px; cursor:pointer;}
+.user-info{margin-top:18px; padding:12px; background:#f9f8ff; border:1px solid #ede9fe; border-radius:10px;}
+.user-info small{color:#6b7280; font-size:11px; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;}
+.user-info b{color:#111; font-size:13px; display:block; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.menu-nav{flex:1; padding:16px 12px; display:flex; flex-direction:column; gap:6px;}
+.label{font-size:11px; color:#9ca3af; font-weight:700; letter-spacing:1px; padding:8px 12px 4px; text-transform:uppercase;}
+  button.menu-btn{width:100%; padding:12px 14px; cursor:pointer; border:1px solid transparent; background:transparent; border-radius:10px; font-size:14px; font-weight:500; color:#4b5563; transition: all 0.2s; display:flex; align-items:center; gap:10px; text-align:left;}
+  button.menu-btn:hover{background:#f9f8ff; color:#111; border-color:#ede9fe;}
+  button.menu-btn.ativo{background:#111; color:white; border-color:#111; box-shadow: 0 4px 12px rgba(0,0,0,0.15);}
+  button.menu-btn.icon{font-size:16px; width:20px; text-align:center;}
+  #btn-sair{margin-top:16px; width:100%; background:#fff; border:1px solid #fee2e2!important; color:#ef4444!important; justify-content:flex-start; font-weight:600; border-radius:10px;}
+  #btn-sair:hover{background:#fef2f2!important; border-color:#fecaca!important;}
+  #conteudo-direita{flex:1; background:#f8f7ff; padding:20px; overflow:hidden; display:flex; flex-direction:column;}
+.barra-topo-conteudo{height:48px; background:#fff; border:1px solid #e9e8f0; border-radius:12px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+.barra-topo-conteudo span{font-size:13px; color:#6b7280;}
+.barra-topo-conteudo b{color:#111;}
+  #conteudo-direita iframe{flex:1; width:100%; border:1px solid #e9e8f0; border-radius:14px; background:white; box-shadow: 0 8px 24px rgba(0,0,0,0.06);}
+.tela-frame{flex:1; display:none; flex-direction:column; overflow:hidden;}
+.tela-frame.ativa{display:flex;}
+  #btn-menu-mobile{display:none; background:#111; color:#fff; border:0; border-radius:8px; padding:8px 12px; font-size:18px;}
+  #overlay{ display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:999; }
+  @media (max-width: 768px){
+    #menu-lateral{ position:fixed; left:0; top:0; bottom:0; transform: translateX(-100%); }
+    #menu-lateral.aberto{ transform: translateX(0); }
+    #conteudo-direita{ width:100%; }
+    #btn-menu-mobile{display:block;}
+    #overlay.aberto{ display:block; }
+  }
+</style>
+</head>
+<body>
+
+<div id="tela-login">
+  <div class="card-login">
+    <div class="logo">≡</div>
+    <h2>Sistem TD</h2>
+    <p>Sistema de Teste do Discipulado</p>
+    <p>Um produto Htec@</p>
+    <h2>Bem-vindo</h2>
+    <p>Informe sua matrícula e senha</p>
+    <input type="text" id="matricula" placeholder="MATRÍCULA" onblur="buscarNome()" oninput="this.value=this.value.toUpperCase()">
+    <input type="text" id="nome" placeholder="NOME COMPLETO" readonly>
+    <input type="password" id="senha" placeholder="SENHA" style="text-transform:none">
+    <button onclick="logar()">Entrar no Sistema</button>
+    <div id="erro-login"></div>
+  </div>
+</div>
+
+<div id="sistema">
+  <div id="overlay" onclick="fecharMenuLateral()"></div>
+  <div id="menu-lateral">
+      <div class="menu-topo">
+        <div class="logo-sistema"><div class="logo-icon" onclick="toggleMenuLateral()">≡</div> SYSTEM TD</div>
+        <div class="user-info"><small>Usuário logado</small><b id="user-display">-</b></div>
+      </div>
+      <div class="menu-nav">
+<div class="label">Principal</div>
+<button class="menu-btn" onclick="abrir('CadastroAdm.html', this, 'Administradores')"><span class="icon">👑</span> ADMINISTRADOR</button>
+<button class="menu-btn ativo" onclick="abrir('Cadastro.html', this, 'Cadastro e Acesso Testes')"><span class="icon">📝</span> CADASTRO</button>
+<button class="menu-btn" onclick="abrir('Relatorio.html', this, 'Relatórios')"><span class="icon">📊</span> CERTIFICADOS</button>
+<button class="menu-btn" onclick="abrir('Liberacao.html', this, 'Liberação')"><span class="icon">🔓</span> LIBERAÇÃO</button>
+<button id="btn-sair" class="menu-btn" onclick="sair()"><span class="icon">🚪</span> Sair do sistema</button>
+      </div>
+  </div>
+  <div id="conteudo-direita">
+    <div class="barra-topo-conteudo">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button id="btn-menu-mobile" onclick="abrirMenuLateral()">☰</button>
+        <span>📍 <b id="pagina-atual">Cadastro e Acesso Testes</b></span>
+      </div>
+      <span id="hora-atual">-</span>
+    </div>
+    <div id="frame-Cadastro.html" class="tela-frame ativa"><iframe id="tela-Cadastro.html" src="Cadastro.html"></iframe></div>
+    <div id="frame-CadastroAdm.html" class="tela-frame"><iframe id="tela-CadastroAdm.html" src="CadastroAdm.html"></iframe></div>
+    <div id="frame-Relatorio.html" class="tela-frame"><iframe id="tela-Relatorio.html" src="Relatorio.html"></iframe></div>
+    <div id="frame-Liberacao.html" class="tela-frame"><iframe id="tela-Liberacao.html" src="Liberacao.html"></iframe></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxLXw-nu5oXXtjE8HKik_W_bbT9CGjTNJWw-dUm4wWYv-hjcz1dOhMHLxoUTRHGJA3D0A/exec';
+  async function apiGet(a,p={}){p.t=Date.now();const u=API_URL+'?action='+a+'&'+new URLSearchParams(p);const r=await fetch(u,{cache:'no-store'});const t=await r.text();try{return JSON.parse(t)}catch{return{result:'ok',data:[]}}}
+  let cacheDados = [];
+  let usuarioLogado = null;
+  let jaEnviou = false;
+
+  if(localStorage.getItem("logado") === "true"){ mostrarSistema(); }
+
+  async function buscarNome(){
+    let mat = (document.getElementById('matricula').value||'').trim().toUpperCase();
+    if(!mat) return;
+    if(cacheDados.length===0){
+      try{ document.getElementById('nome').value='BUSCANDO...'; let res = await apiGet('todos'); cacheDados = res.data||[]; }catch(e){ document.getElementById('nome').value=''; return; }
+    }
+    let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim(); return m===mat || m.replace('F','')===mat.replace('F','') || m+'F'===mat; });
+    if(achado){ let nome = achado.Nome||achado.NOME||achado.D||achado.d||achado.E||''; document.getElementById('nome').value = String(nome).toUpperCase(); localStorage.setItem('mat_logada', mat); localStorage.setItem('nome_logado', String(nome).toUpperCase()); }else{ document.getElementById('nome').value=''; mostrarErro('MATRÍCULA NÃO ENCONTRADA EM DADOS - COL B'); }
+  }
+
+  async function logar(){
+    const mat = (document.getElementById('matricula').value||'').trim().toUpperCase();
+    const sen = (document.getElementById('senha').value||'').trim().toUpperCase();
+    if(!mat){ mostrarErro('DIGITE A MATRICULA'); return; }
+    if(!sen){ mostrarErro('DIGITE A SENHA'); return; }
+    try{
+      if(cacheDados.length===0){ let res = await apiGet('todos'); cacheDados = res.data||[]; }
+      let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||'').toUpperCase().trim(); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return (m===mat || m.replace('F','')===mat.replace('F','') || m+'F'===mat) && s===sen; });
+      if(achado){ usuarioLogado = achado; localStorage.setItem("logado", "true"); localStorage.setItem('mat_logada', mat); localStorage.setItem('senha_logada', sen); let nome = achado.Nome||achado.NOME||achado.D||''; localStorage.setItem('nome_logado', String(nome).toUpperCase()); mostrarSistema(); } else { let existeMat = cacheDados.find(x=> { let m=String(x.Matricula||x.MATRICULA||'').toUpperCase().trim(); return m===mat || m.replace('F','')===mat.replace('F',''); }); if(existeMat) mostrarErro('SENHA NÃO CONFERE COM A MATRICULA - COL AL'); else mostrarErro('MATRICULA E SENHA NÃO ENCONTRADOS'); }
+    }catch(e){ mostrarErro('ERRO AO BUSCAR: '+e.message); }
+  }
+
+  function mostrarErro(msg){ let el=document.getElementById('erro-login'); el.innerText=msg; el.style.display='block'; }
+
+  function enviarParaForm(){
+    if(jaEnviou) return;
+    let mat = localStorage.getItem('mat_logada')||'';
+    let sen = localStorage.getItem('senha_logada')||'';
+    let iframe = document.getElementById('tela-Cadastro.html');
+    if(iframe && iframe.contentWindow && mat){
+      iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen}, '*');
+      jaEnviou = true;
+    }
+  }
+
+  function mostrarSistema(){
+    document.getElementById("tela-login").style.display = "none";
+    document.getElementById("sistema").style.display = "flex";
+    let matLogada = (localStorage.getItem('mat_logada')||'').trim();
+    let nomeLogado = (localStorage.getItem('nome_logado')||'').trim();
+    let matFmt = String(matLogada).padStart(5,'0');
+    document.getElementById("user-display").innerText = matFmt + ' - ' + nomeLogado;
+    document.getElementById("user-display").title = matFmt + ' - ' + nomeLogado;
+    let iframe = document.getElementById('tela-Cadastro.html');
+    iframe.onload = function(){ jaEnviou = false; setTimeout(enviarParaForm, 800); };
+    setTimeout(enviarParaForm, 800);
+    setInterval(()=>{ document.getElementById('hora-atual').innerText = new Date().toLocaleString('pt-BR'); },1000);
+    setTimeout(travarIframeAdm, 1000);
+  }
+
+  // ===== INICIO ALTERAÇÃO AUTORIZADA: LIMPA GERAL AO SAIR =====
+  function limparTodosFormularios(){
+    try{
+      document.querySelectorAll("iframe").forEach(ifr=>{
+        try{
+          const doc = ifr.contentWindow.document;
+          doc.querySelectorAll("form").forEach(f=>f.reset());
+          doc.querySelectorAll("input, select, textarea").forEach(el=>{
+            const ph = (el.placeholder||'').toUpperCase();
+            if(ph.includes("MATRICULA") && el.id==="matricula") return;
+            if(el.type==='button' || el.type==='submit') return;
+            if(el.type!=='checkbox' && el.type!=='radio') el.value="";
+          });
+        }catch(e){}
+      });
+    }catch(e){}
+    document.querySelectorAll("input, select, textarea").forEach(el=>{
+      if(el.id!=='matricula' && el.id!=='senha' && el.id!=='nome'){
+        if(el.type!=='button' && el.type!=='submit') el.value="";
+      }
+    });
+  }
+
+  function sair(){
+    limparTodosFormularios();
+    localStorage.removeItem("logado");
+    localStorage.removeItem('mat_logada');
+    localStorage.removeItem('senha_logada');
+    localStorage.removeItem('nome_logado');
+    localStorage.clear();
+    sessionStorage.clear();
+    location.reload();
+  }
+  window.addEventListener('pagehide', ()=>{ sessionStorage.clear(); });
+  // ===== FIM ALTERAÇÃO SAIR =====
+
+  // ===== INICIO ALTERAÇÃO AUTORIZADA: TRAVA CADASTRO ADM SOMENTE 00425 =====
+  const MATRICULA_MASTER = "00425";
+  function travarIframeAdm(){
+    const iframeAdm = document.getElementById('tela-CadastroAdm.html');
+    if(!iframeAdm) return;
+    const aplicarTrava = ()=>{
+      try{
+        let mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0');
+        if(mat===MATRICULA_MASTER) return; // 00425 HELIO pode alterar
+
+        const doc = iframeAdm.contentWindow.document;
+        if(!doc ||!doc.body) return;
+
+        doc.querySelectorAll("input, select, textarea").forEach(el=>{
+          const ph = (el.placeholder||'').toUpperCase();
+          if(ph.includes("BUSCAR")) return; // deixa buscar funcionar
+          el.disabled = true;
+          el.readOnly = true;
+          el.style.backgroundColor = "#f3f4f6";
+          el.style.pointerEvents = "none";
+          el.style.opacity = "0.7";
+        });
+
+        doc.querySelectorAll("button").forEach(btn=>{
+          const t = (btn.innerText||'').toUpperCase();
+          if(t.includes("CADASTRO DE ADMINISTRADOR") || t.includes("LIMPAR") || t.includes("EDITAR")){
+            btn.disabled = true;
+            btn.style.pointerEvents = "none";
+            btn.style.opacity = "0.35";
+            if(t.includes("EDITAR")) btn.style.display = "none";
+          }
+        });
+
+        if(!doc.getElementById("aviso-somente-helio")){
+          const aviso = doc.createElement("div");
+          aviso.id = "aviso-somente-helio";
+          aviso.innerHTML = "🔒 Somente visualização - Apenas 00425 - HELIO SOUZA SILVA pode alterar";
+          aviso.style = "background:#fff3cd;color:#856404;border:1px solid #ffeeba;padding:8px 12px;border-radius:8px;margin:0 0 10px 0;text-align:center;font-size:12px;font-weight:600";
+          (doc.querySelector(".container") || doc.body).prepend(aviso);
+        }
+      }catch(e){}
+    };
+    iframeAdm.addEventListener('load', ()=> setTimeout(aplicarTrava, 700));
+    setTimeout(aplicarTrava, 900);
+    setInterval(aplicarTrava, 2000);
+  }
+  // ===== FIM ALTERAÇÃO TRAVA ADM =====
+
+  let paginaAtual = 'Cadastro.html';
+  function abrir(pagina, botao, titulo){
+    if(pagina === paginaAtual) { if(window.innerWidth <= 768){ fecharMenuLateral(); } return; }
+    document.querySelectorAll('.menu-btn').forEach(b => { if(b.id!== 'btn-sair') b.classList.remove('ativo'); });
+    botao.classList.add('ativo');
+    document.getElementById('pagina-atual').innerText = titulo||pagina;
+    document.querySelectorAll('.tela-frame').forEach(f=>f.classList.remove('ativa'));
+    let alvo = document.getElementById('frame-'+pagina);
+    if(alvo){ alvo.classList.add('ativa'); }
+    paginaAtual = pagina;
+    if(pagina === 'Cadastro.html'){ setTimeout(enviarParaForm, 200); }
+    if(pagina === 'CadastroAdm.html'){ setTimeout(travarIframeAdm, 400); }
+    if(window.innerWidth <= 768){ fecharMenuLateral(); }
+  }
+
+  function abrirMenuLateral(){
+    document.getElementById('menu-lateral').classList.add('aberto');
+    document.getElementById('overlay').classList.add('aberto');
+  }
+  function fecharMenuLateral(){
+    document.getElementById('menu-lateral').classList.remove('aberto');
+    document.getElementById('overlay').classList.remove('aberto');
+  }
+  function toggleMenuLateral(){
+    var menu = document.getElementById('menu-lateral');
+    if(menu.classList.contains('aberto')){
+      fecharMenuLateral();
+    } else {
+      abrirMenuLateral();
+    }
+  }
+
+  document.addEventListener("keydown", e => { if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){ logar(); } });
+</script>
+</body>
+</html>

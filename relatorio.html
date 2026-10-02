@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d6efd">
+<script src="auth.js"></script>
+<title>RELATORIO DISCIPULADO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="relatorio.css">
+</head>
+<body>
+<div class="wrap">
+
+<!-- tirado daqui é slogam da igreja -->
+<div class="card">
+<!--  <img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" class="logo-img">  -->
+<div>
+<h1>RELATORIO DISCIPULADO</h1>
+<!-- <div class="sub">Htec Sistemas a serviço do Reino | WhatsApp 91 98603-2155</div> -->
+</div>
+</div>
+
+<div class="acesso-box" id="acessoBox">
+<div style="font-size:11px; font-weight:800; color:#0d6efd;">🔐 Acesso Geral</div>
+<div class="acesso-linha-4" id="acessoLinha4" style="grid-template-columns:0.8fr 0.7fr 1.2fr 1fr 0.8fr 0.8fr">
+<div style="display:flex; align-items:center; gap:4px; background:#fff; border:1.5px solid #000; border-radius:10px; padding:0 8px; height:44px">
+<span style="font-size:10px; font-weight:800; white-space:nowrap">Tipo:</span>
+<select id="tipoPesquisa" onchange="mudarTipo()" style="flex:1; height:100%; border:0; font-size:11px; font-weight:700; background:transparent; outline:none">
+<option value="RELATORIO" selected>Relatorio</option>
+<option value="CERTIFICACOES">Certificações</option>
+</select>
+</div>
+<div id="boxMatricula" style="display:none"><input id="inputMatricula" placeholder="Matricula" oninput="filtrar()" style="width:100%; height:44px; border:1.5px solid #000; border-radius:10px; padding:0 10px; font-size:11px; font-weight:700; background:#fff"></div>
+
+<div class="dropdown-wrapper">
+  <input id="acessoNome" placeholder="Nome Administrador" autocomplete="off" onfocus="mostrarAcessoNomes()" oninput="filtrarAcessoNome()" onkeydown="navegarAcessoNome(event)">
+  <div id="dropdownAcessoNome" class="dropdown-list"></div>
+</div>
+
+<input id="acessoSenha" type="password" placeholder="Senha">
+<button onclick="entrarAcessoGeral()" class="btn-acesso b-entrar">LIBERAR</button>
+</div>
+<div id="msgAcesso"></div>
+</div>
+
+<div class="filtros-busca">
+<input id="buscar" placeholder="Filtrar Cidade/Congregaçao" oninput="filtrar()">
+<input id="fCong" placeholder="Filtrar Status" oninput="filtrar()">
+<input id="fNome" placeholder="Filtrar Nome" oninput="filtrar()">
+<input id="fMatr" placeholder="Filtrar Matricula" oninput="filtrar()">
+</div>
+
+<div class="botoes">
+<button id="btnPesquisar" onclick="pesquisar()" class="b-pesq">PESQUISAR</button>
+<button id="btnLimpar" onclick="limpar()" class="b-limp">LIMPAR</button>
+<button onclick="exportarExcel()" class="b-excel">📊 EXCEL</button>
+</div>
+
+<div id="msg">Selecione o Tipo e clique em PESQUISAR</div>
+<div id="progressContainer" style="width:100%;background:#e0e0e0;height:26px;border-radius:13px;margin-top:8px;overflow:hidden;display:none;"><div id="progressBar" style="height:26px;width:0%;background:#000;border-radius:13px;transition:width 0.4s;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:13px;">0%</div></div>
+<div id="labelQtdAmbito" style="font-size:13px;font-weight:bold;margin-top:8px;display:none;"></div>
+<div class="tab" id="tabWrap"><table id="tab"><thead></thead><tbody></tbody></table></div>
+<div id="acoes-extra" class="botoes">
+<button id="btnBoletim" onclick="gerarBoletim()" class="b-bol">📄 BOLETIM</button>
+<button id="btnCertificado" onclick="gerarCertificado()" class="b-cert">🎓 CERTIFICADO</button>
+<button id="btnWordDrive" onclick="gerarWordDrive()" class="b-excel" style="background:#2b579a">📝 WORD DRIVE</button>
+</div>
+<div id="boletim"></div>
+</div>
+
+<div class="modal" id="modalCadastro">
+<div class="modal-box">
+<h3>📝 Cadastro Administrador</h3>
+<input id="cadNomeUsuario" placeholder="Nome Completo">
+<div class="linha-2"><input id="cadCPF" placeholder="CPF" oninput="mascaraCPF(this)"><select id="cadSexo"><option value="">Sexo</option><option value="FEMININO">FEMININO</option><option value="MASCULINO">MASCULINO</option></select></div>
+<div class="linha-2"><div class="dropdown-wrapper" style="flex:1"><input id="cadIgreja" placeholder="Igreja" onfocus="mostrarIgrejas()" oninput="filtrarIgrejas()" onkeydown="navegarIgrejas(event)"><div id="dropdownIgrejas" class="dropdown-list"></div></div><div id="boxStatusCadastro"><select id="cadStatus"><option value="EM ANALISE">EM ANALISE</option><option value="APROVADO">APROVADO</option></select></div></div>
+<div class="linha-3"><input id="cadMatricula" placeholder="Matricula"><input id="cadContato" placeholder="Contato"><input id="cadSenha" type="password" placeholder="Senha"></div>
+<div class="linha-3"><button onclick="fazerCadastroNovo()" id="btnSalvarCadastro" style="background:#198754">Cadastro xxx</button><button onclick="limparCadastro()" style="background:#6c757d">LIMPAR</button><button onclick="fecharCadastro()" style="background:#dc3545">FECHAR</button></div>
+<div id="msgCadastro" style="margin-top:8px; font-size:12px; font-weight:700"></div>
+<div id="areaEdicao" style="display:none; margin-top:12px; border-top:1px solid #eee; padding-top:10px">
+<input id="pesqEdicao" placeholder="BUSCAR NOME OU MAT..." oninput="filtrarEdicaoCadastro()" style="width:100%; height:36px; border:1.5px solid #000; border-radius:8px; padding:0 10px;">
+<div id="listaEdicaoCadastro" style="margin-top:8px; max-height:200px; overflow:auto; border:1px solid #ddd; border-radius:8px"></div>
+</div>
+</div>
+</div>
+
+<script src="relatorio.js"></script>
+</body>
+</html>

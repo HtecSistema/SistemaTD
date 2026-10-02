@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="auth.js"></script>
+<link rel="stylesheet" href="cadastroAdm.css">
+</head>
+<body>
+<div class="card">
+<h3>Cadastro Administrador</h3>
+<div id="msg"></div>
+<div class="row">
+  <div><input id="nMat" placeholder="Matricula" oninput="buscaDados()"></div>
+  <div><input id="nCont" placeholder="Contato"></div>
+  <div><input id="nSenha" type="password" placeholder="Senha"></div>
+</div>
+<div class="full"><input id="nNome" placeholder="Nome Completo"></div>
+<div class="row">
+  <div class="wide"><input id="nCPF" placeholder="CPF"></div>
+  <div class="narrow"><select id="nSexo"><option value="">Sexo</option><option>MASCULINO</option><option>FEMININO</option></select></div>
+</div>
+<div class="row">
+  <div class="wide"><input id="nIgreja" placeholder="Igreja"></div>
+
+<div class="narrow" id="boxStatus"><select id="nStatus"><option>EM ANALISE</option><option>APROVADO</option><option>LIBERADO</option><option>BLOQUEADO</option></select></div>
+
+</div>
+<div class="row" style="margin-top:16px">
+  <button class="btn btn-green" onclick="salvar()">Cadastro de administrador</button>
+  <button class="btn btn-gray" onclick="limpar()">LIMPAR</button>
+  <button class="btn btn-red" onclick="window.close()">FECHAR</button>
+</div>
+<input id="busca" placeholder="BUSCAR NOME OU MAT..." oninput="filtra()">
+<div class="listview"><table><thead><tr><th>MAT</th><th>NOME</th><th>STATUS</th><th></th></tr></thead><tbody id="lista"></tbody></table></div>
+</div>
+<script src="cadastroAdm.js"></script>
+</body>
+</html>

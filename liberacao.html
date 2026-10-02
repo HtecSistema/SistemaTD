@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="auth.js"></script>
+<title>LIBERACAO CORRIGIDO</title>
+<link rel="stylesheet" href="liberacao.css">
+</head>
+<body>
+<div class="cabecalho">📋 PAINEL DE LIBERAÇÃO - ALUNOS ABAIXO DE 70</div>
+<div class="top">
+  <select id="ciclo"><option value="TODOS">TODOS</option><option value="1">CICLO 1</option><option value="2">CICLO 2</option><option value="3">CICLO 3</option><option value="4">CICLO 4</option></select>
+  <button id="btn" onclick="gerar()">BUSCAR</button>
+  <button id="btnLimpar" onclick="limparTudo()">LIMPAR</button>
+</div>
+<div class="progress-wrap" id="pWrap"><div class="progress-bar" id="pBar">0%</div></div>
+<div class="filtros">
+  <input id="fMat" placeholder="MAT" autocomplete="off">
+  <input id="fNome" placeholder="NOME" autocomplete="off">
+  <input id="fCong" placeholder="CONG" autocomplete="off">
+</div>
+<button id="btnEnviar" onclick="enviarParaLiberacao()">ENVIAR PARA LIBERAÇÃO</button>
+<div id="msg"></div>
+<div class="list-wrap" id="lista" tabindex="0">
+<table id="tab">
+<thead><tr><th>CONGREGAÇÃO</th><th>MATRÍCULA</th><th>NOME</th><th>CICLO</th><th>TESTE</th><th>NOTA</th><th>CONTATO</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+// BLOQUEIO SÓ 00425 - HELIO SOUZA SILVA
+function temPermissao(){
+  let mat = '';
+  try{
+    mat = localStorage.getItem('mat_logada') || '';
+    if(!mat && window.parent) mat = window.parent.localStorage.getItem('mat_logada') || '';
+  }catch(e){}
+  return String(mat).replace(/\D/g,'').padStart(5,'0') === '00425';
+}
+
+const gerarOriginal = window.gerar;
+window.gerar = function(){
+  if(!temPermissao()){
+    let msgEl = document.getElementById('msg');
+    msgEl.style.display='block';
+    msgEl.style.whiteSpace='pre-line';
+    msgEl.style.textAlign='center';
+    msgEl.style.background='#fef2f2';
+    msgEl.style.border='1px solid #fecaca';
+    msgEl.style.color='#b91c1c';
+    msgEl.style.padding='16px';
+    msgEl.style.borderRadius='10px';
+    msgEl.style.fontWeight='700';
+    msgEl.innerText = "Perdão,\nMas vossa senhoria nao tem permissão\npara este procedimento\nProcure o Administrador Htec";
+    
+    // limpa lista e esconde botão azul
+    let tb=document.querySelector('#tab tbody');
+    if(tb) tb.innerHTML='';
+    document.getElementById('lista').style.display='none';
+    document.getElementById('btnEnviar').style.display='none';
+    return;
+  }
+  if(gerarOriginal) gerarOriginal();
+}
+</script>
+
+<script src="liberacao.js"></script>
+</body>
+</html>
