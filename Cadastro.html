@@ -90,5 +90,26 @@
 <div id="toast" class="toast"></div>
 <div id="overlayTeste" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999"></div>
 <script src="app.js"></script>
+
+<script>
+// SOMENTE 00425 HELIO VE O BOTAO BUSCAR
+(function(){
+  function verificaBuscar(){
+    try{
+      var mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0');
+      var btn = document.querySelector('.btn-search');
+      if(!btn) return;
+      if(mat === '00425'){
+        btn.style.display = '';
+      } else {
+        btn.style.display = 'none';
+      }
+    }catch(e){}
+  }
+  setTimeout(verificaBuscar, 300);
+  setInterval(verificaBuscar, 1500);
+})();
+</script>
+
 </body>
 </html>
