@@ -252,8 +252,8 @@ function gerarBoletim(){
 
   var html='<div id="boletimPrint" style="background:#fff; padding:0; font-family:Arial, sans-serif; font-size:11px; color:#000; border:1px solid '+BORDA+'">'
   +'<div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-bottom:1px solid '+BORDA+'">'
-  +'<img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:70px; height:50px; object-fit:contain">'
-  +'<div style="text-align:left; line-height:1.15"><b style="font-size:11px">IEADMI Igreja Evangélica Assembleia de Deus Missões</b><br><span style="font-size:14px; font-weight:900">Curso <i>Discipulado</i></span><br><span style="font-size:10px">Pr. Eliezer Miranda Barbosa – Presidente</span></div></div>'
+  +'<img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:auto; height:58px; object-fit:contain; display:block; object-fit:contain">'
+  +'<div style="text-align:left; line-height:1.15"><b style="font-size:11px">Igreja Evangélica Assembleia de Deus Missões</b><br><span style="font-size:14px; font-weight:900">Curso <i>Discipulado</i></span><br><span style="font-size:10px">Pr. Eliezer Miranda Barbosa – Presidente</span></div></div>'
   +'<div style="background:'+AZUL_CLARINHO+'; color:#000; font-weight:900; padding:6px; font-size:13px; text-align:center;">BOLETIM DO ALUNO</div>'
   +'<div style="padding:10px">'
   +'<div style="display:flex; justify-content:space-between; font-size:11px; margin-top:6px"><div><b>Congregação:</b> '+(a.congOrig||a.cong||'')+'</div><div><b>Ano Curso:</b> '+ano+'</div></div>'
@@ -279,7 +279,7 @@ function gerarBoletim(){
     var n1 = a.c1[i]; var n2 = a.c2[i]; var n3 = a.c3[i]; var n4 = a.c4[i];
     if(n1!==undefined) totalC1+=parseFloat(n1); if(n2!==undefined) totalC2+=parseFloat(n2); if(n3!==undefined) totalC3+=parseFloat(n3); if(n4!==undefined) totalC4+=parseFloat(n4);
     var f1 = formatNota(n1); var f2 = formatNota(n2); var f3 = formatNota(n3); var f4 = formatNota(n4);
-    html+='<tr>'
+    html+='<tr style="height:14px; line-height:1">'
     +'<td style="text-align:center; background:#fff; border:1px solid '+BORDA+'">'+(i<10?'0'+i:i)+'</td>'
     +'<td style="background:#fff; border:1px solid '+BORDA+'">Teste '+(i<10?'0'+i:i)+'</td><td style="text-align:center; background:#fff; border:1px solid '+BORDA+'">'+f1.nota+'</td><td style="text-align:center; background:#fff; border:1px solid '+BORDA+'">'+f1.obs+'</td>'
     +'<td style="background:#fff; border:1px solid '+BORDA+'">Teste '+(i<10?'0'+i:i)+'</td><td style="text-align:center; background:#fff; border:1px solid '+BORDA+'">'+f2.nota+'</td><td style="text-align:center; background:#fff; border:1px solid '+BORDA+'">'+f2.obs+'</td>'
