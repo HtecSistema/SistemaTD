@@ -115,6 +115,7 @@
 <button class="menu-btn ativo" onclick="abrir('Cadastro.html', this, 'Cadastro e Acesso Testes')"><span class="icon">📝</span> CADASTRO</button>
 <button class="menu-btn" onclick="abrir('Relatorio.html', this, 'Relatórios')"><span class="icon">📊</span> CERTIFICADOS</button>
 <button class="menu-btn" onclick="abrir('Liberacao.html', this, 'Liberação')"><span class="icon">🔓</span> LIBERAÇÃO</button>
+<button class="menu-btn" onclick="abrir('Download.html', this, 'Lições')"><span class="icon">📖</span> LIÇÕES</button>
 <button id="btn-sair" class="menu-btn" onclick="sair()"><span class="icon">🚪</span> SAIR DO SISTEMA</button>
       </div>
   </div>
@@ -130,6 +131,7 @@
     <div id="frame-CadastroAdm.html" class="tela-frame"><iframe id="tela-CadastroAdm.html" src="CadastroAdm.html"></iframe></div>
     <div id="frame-Relatorio.html" class="tela-frame"><iframe id="tela-Relatorio.html" src="Relatorio.html"></iframe></div>
     <div id="frame-Liberacao.html" class="tela-frame"><iframe id="tela-Liberacao.html" src="Liberacao.html"></iframe></div>
+    <div id="frame-Download.html" class="tela-frame"><iframe id="tela-Download.html" src="Download.html"></iframe></div>
   </div>
 </div>
 
@@ -242,7 +244,7 @@
     box.style.display="block";
     document.getElementById("link-primeiro").style.display="none";
     if(!mat || mat==="00000"){
-      info.style.display="block"; info.innerHTML="⚠️ Infome a sua matrícula lá em cima";
+      info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima";
       return;
     }
     info.style.display="block"; info.innerHTML=mat+" - "+nome;
@@ -283,7 +285,11 @@
         if(!doc ||!doc.body) return;
         doc.querySelectorAll("input, select, textarea").forEach(el=>{
           const ph = (el.placeholder||'').toUpperCase();
+          const id = (el.id||'').toUpperCase();
           if(ph.includes("BUSCAR")) return;
+          if(ph.includes("MATRICULA")) return;
+          if(id.includes("NMAT")) return;
+          if(id.includes("MAT")) return;
           el.disabled = true; el.readOnly = true; el.style.backgroundColor = "#f3f4f6"; el.style.pointerEvents = "none"; el.style.opacity = "0.7";
         });
         doc.querySelectorAll("button").forEach(btn=>{
