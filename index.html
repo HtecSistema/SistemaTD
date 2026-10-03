@@ -63,20 +63,31 @@
 </style>
 </head>
 <body>
+
 <div id="tela-login">
   <div class="card-login">
-<div class="logo" style="margin-bottom: 8px;"><img src="logo-branco.png" style="width: 100px; height:auto; display:block; margin:0 auto;"></div>
+<div class="logo" style="margin-bottom: 8px;">
+  <img src="logo-branco.png" style="width: 100px; height:auto; display:block; margin:0 auto;">
+</div>
+
 <p style="margin-top:10px;">Sistema de Teste do Discipulado</p>
 <h2 style="margin-top:22px;">Bem-vindo</h2>
+
     <p>Informe sua matrícula e senha</p>
     <input type="text" id="matricula" placeholder="MATRÍCULA" onblur="formatarMatricula(this); buscarNome()" oninput="formatarMatriculaAoDigitar(this)">
     <input type="text" id="nome" placeholder="NOME COMPLETO" readonly>
     <input type="password" id="senha" placeholder="SENHA" style="text-transform:none;">
+
+    <!-- AQUI OS DOIS BOTOES -->
+
+<!-- AQUI OS DOIS BOTOES DO MESMO TAMANHO -->
 <div style="display:flex; gap:8px; margin-top:8px;">
   <button onclick="logar()" style="flex:1; background:#111; padding:13px; border-radius:10px; font-weight:700; border:none; color:#fff; cursor:pointer;">Entrar no Sistema</button>
   <button onclick="limparCampos()" style="flex:1; background:#fff; color:#111; border:1px solid #e5e7eb; padding:13px; border-radius:10px; font-weight:700; cursor:pointer;">Limpar</button>
 </div>
+
     <div id="erro-login"></div>
+
     <div id="link-primeiro" onclick="abrirPrimeiroAcesso()">🔑 Primeiro acesso / Esqueci minha senha</div>
     <div id="box-primeiro-acesso">
       <h4 style="margin:0 0 8px 0;font-size:14px">Recuperar senha por e-mail</h4>
@@ -87,8 +98,10 @@
       <div id="resultado-email" style="margin-top:10px"></div>
       <div style="text-align:center;margin-top:10px"><span onclick="fecharPrimeiroAcesso()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div>
     </div>
+
   </div>
 </div>
+
 <div id="sistema">
   <div id="overlay" onclick="fecharMenuLateral()"></div>
   <div id="menu-lateral">
@@ -102,7 +115,7 @@
 <button class="menu-btn ativo" onclick="abrir('Cadastro.html', this, 'Cadastro e Acesso Testes')"><span class="icon">📝</span> CADASTRO</button>
 <button class="menu-btn" onclick="abrir('Relatorio.html', this, 'Relatórios')"><span class="icon">📊</span> CERTIFICADOS</button>
 <button class="menu-btn" onclick="abrir('Liberacao.html', this, 'Liberação')"><span class="icon">🔓</span> LIBERAÇÃO</button>
-<button class="menu-btn" onclick="abrir('Baixar.html', this, 'Lições')"><span class="icon">📚</span> LIÇÕES</button>
+<button class="menu-btn" onclick="abrir('Baixar.html', this, 'Lições')"><span class="icon">📖</span> LIÇÕES</button>
 <button id="btn-sair" class="menu-btn" onclick="sair()"><span class="icon">🚪</span> SAIR DO SISTEMA</button>
       </div>
   </div>
@@ -121,32 +134,200 @@
     <div id="frame-Baixar.html" class="tela-frame"><iframe id="tela-Baixar.html" src="Baixar.html"></iframe></div>
   </div>
 </div>
+
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbxLXw-nu5oXXtjE8HKik_W_bbT9CGjTNJWw-dUm4wWYv-hjcz1dOhMHLxoUTRHGJA3D0A/exec';
   async function apiGet(a,p={}){p.t=Date.now();const u=API_URL+'?action='+a+'&'+new URLSearchParams(p);const r=await fetch(u,{cache:'no-store'});const t=await r.text();try{return JSON.parse(t)}catch{return{result:'ok',data:[]}}}
-  let cacheDados = []; let usuarioLogado = null; let jaEnviou = false;
+  let cacheDados = [];
+  let usuarioLogado = null;
+  let jaEnviou = false;
+
   if(localStorage.getItem("logado") === "true"){ mostrarSistema(); }
-  function formatarMatricula(el){let v=(el.value||'').trim().replace(/\D/g,''); if(v) el.value=v.padStart(5,'0').toUpperCase();}
-  function formatarMatriculaAoDigitar(el){let v=(el.value||'').replace(/\D/g,''); if(v.length>5) v=v.slice(-5); el.value=v? v.padStart(5,'0'):'';}
-  async function buscarNome(){let mat=(document.getElementById('matricula').value||'').trim().toUpperCase(); if(!mat) return; if(cacheDados.length===0){try{document.getElementById('nome').value='BUSCANDO...'; let res=await apiGet('todos'); cacheDados=res.data||[];}catch(e){document.getElementById('nome').value=''; return;}} let achado=cacheDados.find(x=>{let m=String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); return m===mat.padStart(5,'0');}); if(achado){let nome=achado.Nome||achado.NOME||achado.D||''; document.getElementById('nome').value=String(nome).toUpperCase(); localStorage.setItem('mat_logada', mat.padStart(5,'0')); localStorage.setItem('nome_logado', String(nome).toUpperCase());}}
-  async function logar(){const mat=(document.getElementById('matricula').value||'').trim().toUpperCase().padStart(5,'0'); const sen=(document.getElementById('senha').value||'').trim().toUpperCase(); if(!mat){mostrarErro('DIGITE A MATRICULA'); return;} if(!sen){mostrarErro('DIGITE A SENHA'); return;} try{if(cacheDados.length===0){let res=await apiGet('todos'); cacheDados=res.data||[];} let achado=cacheDados.find(x=>{let m=String(x.Matricula||x.MATRICULA||x.G||'').toUpperCase().trim().padStart(5,'0'); let s=String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return m===mat && s===sen;}); if(achado){usuarioLogado=achado; localStorage.setItem("logado","true"); localStorage.setItem('mat_logada',mat); localStorage.setItem('senha_logada',sen); let nome=achado.Nome||achado.NOME||achado.D||''; localStorage.setItem('nome_logado',String(nome).toUpperCase()); mostrarSistema();} else {mostrarErro('SENHA NÃO CONFERE');}}catch(e){mostrarErro('ERRO AO BUSCAR: '+e.message);}}
-  function mostrarErro(msg){let el=document.getElementById('erro-login'); el.innerText=msg; el.style.display='block';}
-  function limparCampos(){document.getElementById('matricula').value=''; document.getElementById('nome').value=''; document.getElementById('senha').value=''; document.getElementById('erro-login').style.display='none'; document.getElementById('box-primeiro-acesso').style.display='none'; document.getElementById('link-primeiro').style.display='inline-block'; document.getElementById('matricula').focus();}
-  function enviarParaForm(){if(jaEnviou) return; let mat=localStorage.getItem('mat_logada')||''; let sen=localStorage.getItem('senha_logada')||''; let nome=localStorage.getItem('nome_logado')||''; let iframe=document.getElementById('tela-Cadastro.html'); if(iframe && iframe.contentWindow && mat){iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*');} let iframeRel=document.getElementById('tela-Relatorio.html'); if(iframeRel && iframeRel.contentWindow && mat){iframeRel.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*');} jaEnviou=true;}
-  function mostrarSistema(){document.getElementById("tela-login").style.display="none"; document.getElementById("sistema").style.display="flex"; let matLogada=(localStorage.getItem('mat_logada')||'').trim(); let nomeLogado=(localStorage.getItem('nome_logado')||'').trim(); let matFmt=String(matLogada).padStart(5,'0'); document.getElementById("user-display").innerText=matFmt+' - '+nomeLogado; let iframe=document.getElementById('tela-Cadastro.html'); iframe.onload=function(){jaEnviou=false; setTimeout(enviarParaForm,800);}; setTimeout(enviarParaForm,800); setInterval(()=>{document.getElementById('hora-atual').innerText=new Date().toLocaleString('pt-BR');},1000); setTimeout(travarIframeAdm,1000);}
-  function limparTodosFormularios(){try{document.querySelectorAll("iframe").forEach(ifr=>{try{const doc=ifr.contentWindow.document; doc.querySelectorAll("form").forEach(f=>f.reset());}catch(e){}});}catch(e){}}
-  function sair(){localStorage.clear(); sessionStorage.clear(); location.reload();}
-  function abrirPrimeiroAcesso(){let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); let nome=(document.getElementById('nome').value||'').trim(); let box=document.getElementById("box-primeiro-acesso"); let info=document.getElementById("primeiro-mat-info"); box.style.display="block"; document.getElementById("link-primeiro").style.display="none"; if(!mat || mat==="00000"){info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima"; return;} info.style.display="block"; info.innerHTML=mat+" - "+nome; let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); document.getElementById("emailPrimeiro").value=achado?.Email||""; document.getElementById("resultado-email").innerHTML="";}
-  function fecharPrimeiroAcesso(){document.getElementById("box-primeiro-acesso").style.display="none"; document.getElementById("link-primeiro").style.display="inline-block";}
-  async function enviarSenhaParaEmail(){let email=(document.getElementById("emailPrimeiro").value||'').trim(); let resDiv=document.getElementById("resultado-email"); let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); if(!email.includes("@")){resDiv.innerHTML="<div style='color:#ef4444;font-size:12px'>Digite um e-mail válido</div>";return;} if(cacheDados.length===0){let r=await apiGet('todos');cacheDados=r.data||[]} let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); if(!achado){resDiv.innerHTML="Matrícula não encontrada";return;} resDiv.innerHTML="⏳ Enviando sua senha para "+email+"..."; try{await apiGet('enviarSenhaEmail',{matricula:mat,email:email});}catch(e){} document.getElementById("senha").value=""; document.getElementById("senha").type="password"; document.getElementById("senha").placeholder="DIGITE A SENHA RECEBIDA NO E-MAIL"; document.getElementById("senha").focus(); resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Enviado!</b><br><br>Enviamos sua senha para:<br><b>${email}</b><br><br>Verifique seu e-mail e digite a senha no campo SENHA.<br><small style='color:#6b7280'>A senha ficará com *****</small></div>`;}
+
+  function formatarMatricula(el){
+    let v = (el.value||'').trim().replace(/\D/g,'');
+    if(v) el.value = v.padStart(5,'0').toUpperCase();
+  }
+  function formatarMatriculaAoDigitar(el){
+    let v = (el.value||'').replace(/\D/g,'');
+    if(v.length>5) v = v.slice(-5);
+    el.value = v? v.padStart(5,'0') : '';
+  }
+
+  async function buscarNome(){
+    let mat = (document.getElementById('matricula').value||'').trim().toUpperCase();
+    if(!mat) return;
+    if(cacheDados.length===0){
+      try{ document.getElementById('nome').value='BUSCANDO...'; let res = await apiGet('todos'); cacheDados = res.data||[]; }catch(e){ document.getElementById('nome').value=''; return; }
+    }
+    let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); return m===mat.padStart(5,'0'); });
+    if(achado){
+      let nome = achado.Nome||achado.NOME||achado.D||'';
+      document.getElementById('nome').value = String(nome).toUpperCase();
+      localStorage.setItem('mat_logada', mat.padStart(5,'0'));
+      localStorage.setItem('nome_logado', String(nome).toUpperCase());
+    }
+  }
+
+  async function logar(){
+    const mat = (document.getElementById('matricula').value||'').trim().toUpperCase().padStart(5,'0');
+    const sen = (document.getElementById('senha').value||'').trim().toUpperCase();
+    if(!mat){ mostrarErro('DIGITE A MATRICULA'); return; }
+    if(!sen){ mostrarErro('DIGITE A SENHA'); return; }
+    try{
+      if(cacheDados.length===0){ let res = await apiGet('todos'); cacheDados = res.data||[]; }
+      let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||'').toUpperCase().trim().padStart(5,'0'); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return m===mat && s===sen; });
+      if(achado){
+        usuarioLogado = achado;
+        localStorage.setItem("logado", "true");
+        localStorage.setItem('mat_logada', mat);
+        localStorage.setItem('senha_logada', sen);
+        let nome = achado.Nome||achado.NOME||achado.D||'';
+        localStorage.setItem('nome_logado', String(nome).toUpperCase());
+        mostrarSistema();
+      } else {
+        mostrarErro('SENHA NÃO CONFERE');
+      }
+    }catch(e){ mostrarErro('ERRO AO BUSCAR: '+e.message); }
+  }
+
+  function mostrarErro(msg){ let el=document.getElementById('erro-login'); el.innerText=msg; el.style.display='block'; }
+
+  function limparCampos(){
+    document.getElementById('matricula').value='';
+    document.getElementById('nome').value='';
+    document.getElementById('senha').value='';
+    document.getElementById('erro-login').style.display='none';
+    document.getElementById('box-primeiro-acesso').style.display='none';
+    document.getElementById('link-primeiro').style.display='inline-block';
+    document.getElementById('matricula').focus();
+  }
+
+  function enviarParaForm(){
+    if(jaEnviou) return;
+    let mat = localStorage.getItem('mat_logada')||'';
+    let sen = localStorage.getItem('senha_logada')||'';
+    let nome = localStorage.getItem('nome_logado')||'';
+    let iframe = document.getElementById('tela-Cadastro.html');
+    if(iframe && iframe.contentWindow && mat){
+      iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*');
+    }
+    let iframeRel = document.getElementById('tela-Relatorio.html');
+    if(iframeRel && iframeRel.contentWindow && mat){
+      iframeRel.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*');
+    }
+    jaEnviou = true;
+  }
+
+  function mostrarSistema(){
+    document.getElementById("tela-login").style.display = "none";
+    document.getElementById("sistema").style.display = "flex";
+    let matLogada = (localStorage.getItem('mat_logada')||'').trim();
+    let nomeLogado = (localStorage.getItem('nome_logado')||'').trim();
+    let matFmt = String(matLogada).padStart(5,'0');
+    document.getElementById("user-display").innerText = matFmt + ' - ' + nomeLogado;
+    let iframe = document.getElementById('tela-Cadastro.html');
+    iframe.onload = function(){ jaEnviou = false; setTimeout(enviarParaForm, 800); };
+    setTimeout(enviarParaForm, 800);
+    setInterval(()=>{ document.getElementById('hora-atual').innerText = new Date().toLocaleString('pt-BR'); },1000);
+    setTimeout(travarIframeAdm, 1000);
+  }
+
+  function limparTodosFormularios(){ try{ document.querySelectorAll("iframe").forEach(ifr=>{ try{ const doc = ifr.contentWindow.document; doc.querySelectorAll("form").forEach(f=>f.reset()); }catch(e){} }); }catch(e){} }
+  function sair(){ localStorage.clear(); sessionStorage.clear(); location.reload(); }
+
+  function abrirPrimeiroAcesso(){
+    let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
+    let nome=(document.getElementById('nome').value||'').trim();
+    let box=document.getElementById("box-primeiro-acesso");
+    let info=document.getElementById("primeiro-mat-info");
+    box.style.display="block";
+    document.getElementById("link-primeiro").style.display="none";
+    if(!mat || mat==="00000"){
+      info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima";
+      return;
+    }
+    info.style.display="block"; info.innerHTML=mat+" - "+nome;
+    let achado = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
+    document.getElementById("emailPrimeiro").value = achado?.Email||"";
+    document.getElementById("resultado-email").innerHTML="";
+  }
+  function fecharPrimeiroAcesso(){
+    document.getElementById("box-primeiro-acesso").style.display="none";
+    document.getElementById("link-primeiro").style.display="inline-block";
+  }
+  async function enviarSenhaParaEmail(){
+    let email=(document.getElementById("emailPrimeiro").value||'').trim();
+    let resDiv=document.getElementById("resultado-email");
+    let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
+    if(!email.includes("@")){resDiv.innerHTML="<div style='color:#ef4444;font-size:12px'>Digite um e-mail válido</div>";return;}
+    if(cacheDados.length===0){let r=await apiGet('todos');cacheDados=r.data||[]}
+    let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
+    if(!achado){resDiv.innerHTML="Matrícula não encontrada";return;}
+    resDiv.innerHTML="⏳ Enviando sua senha para "+email+"...";
+    try{await apiGet('enviarSenhaEmail',{matricula:mat,email:email});}catch(e){}
+    document.getElementById("senha").value="";
+    document.getElementById("senha").type="password";
+    document.getElementById("senha").placeholder="DIGITE A SENHA RECEBIDA NO E-MAIL";
+    document.getElementById("senha").focus();
+    resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Enviado!</b><br><br>Enviamos sua senha para:<br><b>${email}</b><br><br>Verifique seu e-mail e digite a senha no campo SENHA.<br><small style='color:#6b7280'>A senha ficará com *****</small></div>`;
+  }
+
   const MATRICULAS_MASTER = ["00425","00001"];
-  function travarIframeAdm(){const iframeAdm=document.getElementById('tela-CadastroAdm.html'); if(!iframeAdm) return; const aplicarTrava=()=>{try{let mat=(localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0'); if(MATRICULAS_MASTER.includes(mat)) return; const doc=iframeAdm.contentWindow.document; if(!doc ||!doc.body) return; doc.querySelectorAll("input, select, textarea").forEach(el=>{const ph=(el.placeholder||'').toUpperCase(); const id=(el.id||'').toUpperCase(); if(ph.includes("BUSCAR")) return; if(ph.includes("MATRICULA")) return; if(id.includes("NMAT")) return; if(id.includes("MAT")) return; el.disabled=true; el.readOnly=true; el.style.backgroundColor="#f3f4f6"; el.style.pointerEvents="none"; el.style.opacity="0.7";}); doc.querySelectorAll("button").forEach(btn=>{const t=(btn.innerText||'').toUpperCase(); if(t.includes("CADASTRO DE ADMINISTRADOR") || t.includes("LIMPAR") || t.includes("EDITAR")){btn.disabled=true; btn.style.pointerEvents="none"; btn.style.opacity="0.35"; if(t.includes("EDITAR")) btn.style.display="none";}});}catch(e){}}; iframeAdm.addEventListener('load',()=> setTimeout(aplicarTrava,700)); setTimeout(aplicarTrava,900); setInterval(aplicarTrava,2000);}
-  let paginaAtual='Cadastro.html';
-  function abrir(pagina, botao, titulo){if(pagina===paginaAtual){if(window.innerWidth<=768){fecharMenuLateral();} return;} document.querySelectorAll('.menu-btn').forEach(b=>{if(b.id!=='btn-sair') b.classList.remove('ativo');}); botao.classList.add('ativo'); document.getElementById('pagina-atual').innerText=titulo||pagina; document.querySelectorAll('.tela-frame').forEach(f=>f.classList.remove('ativa')); let alvo=document.getElementById('frame-'+pagina); if(alvo){alvo.classList.add('ativa');} paginaAtual=pagina; if(pagina==='Cadastro.html'){jaEnviou=false; setTimeout(enviarParaForm,200);} if(pagina==='Relatorio.html'){jaEnviou=false; setTimeout(enviarParaForm,200);} if(pagina==='CadastroAdm.html'){setTimeout(travarIframeAdm,400);} if(window.innerWidth<=768){fecharMenuLateral();}}
-  function abrirMenuLateral(){document.getElementById('menu-lateral').classList.add('aberto'); document.getElementById('overlay').classList.add('aberto');}
-  function fecharMenuLateral(){document.getElementById('menu-lateral').classList.remove('aberto'); document.getElementById('overlay').classList.remove('aberto');}
-  function toggleMenuLateral(){var menu=document.getElementById('menu-lateral'); if(menu.classList.contains('aberto')) fecharMenuLateral(); else abrirMenuLateral();}
-  document.addEventListener("keydown", e=>{if(e.key==="Enter" && document.getElementById("tela-login").style.display!=="none"){if(document.getElementById("box-primeiro-acesso").style.display==="block"){enviarSenhaParaEmail();} else {logar();}}});
+  function travarIframeAdm(){
+    const iframeAdm = document.getElementById('tela-CadastroAdm.html');
+    if(!iframeAdm) return;
+    const aplicarTrava = ()=>{
+      try{
+        let mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0');
+        if(MATRICULAS_MASTER.includes(mat)) return;
+        const doc = iframeAdm.contentWindow.document;
+        if(!doc ||!doc.body) return;
+        doc.querySelectorAll("input, select, textarea").forEach(el=>{
+          const ph = (el.placeholder||'').toUpperCase();
+          const id = (el.id||'').toUpperCase();
+          if(ph.includes("BUSCAR")) return;
+          if(ph.includes("MATRICULA")) return;
+          if(id.includes("NMAT")) return;
+          if(id.includes("MAT")) return;
+          el.disabled = true; el.readOnly = true; el.style.backgroundColor = "#f3f4f6"; el.style.pointerEvents = "none"; el.style.opacity = "0.7";
+        });
+        doc.querySelectorAll("button").forEach(btn=>{
+          const t = (btn.innerText||'').toUpperCase();
+          if(t.includes("CADASTRO DE ADMINISTRADOR") || t.includes("LIMPAR") || t.includes("EDITAR")){
+            btn.disabled = true; btn.style.pointerEvents = "none"; btn.style.opacity = "0.35"; if(t.includes("EDITAR")) btn.style.display = "none";
+          }
+        });
+      }catch(e){}
+    };
+    iframeAdm.addEventListener('load', ()=> setTimeout(aplicarTrava, 700));
+    setTimeout(aplicarTrava, 900);
+    setInterval(aplicarTrava, 2000);
+  }
+
+  let paginaAtual = 'Cadastro.html';
+  function abrir(pagina, botao, titulo){
+    if(pagina === paginaAtual) { if(window.innerWidth <= 768){ fecharMenuLateral(); } return; }
+    document.querySelectorAll('.menu-btn').forEach(b => { if(b.id!== 'btn-sair') b.classList.remove('ativo'); });
+    botao.classList.add('ativo');
+    document.getElementById('pagina-atual').innerText = titulo||pagina;
+    document.querySelectorAll('.tela-frame').forEach(f=>f.classList.remove('ativa'));
+    let alvo = document.getElementById('frame-'+pagina);
+    if(alvo){ alvo.classList.add('ativa'); }
+    paginaAtual = pagina;
+    if(pagina === 'Cadastro.html'){ jaEnviou=false; setTimeout(enviarParaForm, 200); }
+    if(pagina === 'Relatorio.html'){ jaEnviou=false; setTimeout(enviarParaForm, 200); }
+    if(pagina === 'CadastroAdm.html'){ setTimeout(travarIframeAdm, 400); }
+    if(window.innerWidth <= 768){ fecharMenuLateral(); }
+  }
+  function abrirMenuLateral(){ document.getElementById('menu-lateral').classList.add('aberto'); document.getElementById('overlay').classList.add('aberto'); }
+  function fecharMenuLateral(){ document.getElementById('menu-lateral').classList.remove('aberto'); document.getElementById('overlay').classList.remove('aberto'); }
+  function toggleMenuLateral(){ var menu = document.getElementById('menu-lateral'); if(menu.classList.contains('aberto')) fecharMenuLateral(); else abrirMenuLateral(); }
+  document.addEventListener("keydown", e => {
+    if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){
+      if(document.getElementById("box-primeiro-acesso").style.display==="block"){ enviarSenhaParaEmail(); } else { logar(); }
+    }
+  });
 </script>
 </body>
 </html>
