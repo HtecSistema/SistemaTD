@@ -52,21 +52,15 @@ function isMasterNome(nome){
 function travarPosMenu(matricula){
   var matFinal = String(matricula || localStorage.getItem('mat_logada') || localStorage.getItem('rel_mat') || "").replace(/\D/g,"").padStart(5,'0');
   var nomeFinal = USUARIO_NOME || localStorage.getItem('nome_logado') || "";
-
   var tipo = document.getElementById('tipoPesquisa'); if(tipo) tipo.value='CERTIFICACOES';
   var matH = document.getElementById('inputMatricula'); if(matH) matH.value=matFinal;
-
-  // CORREÇÃO VIDEO: trava filtrar nome e filtrar matricula vindo do LOGIN, nao do liberar
   var fNome = document.getElementById('fNome');
   var fMat = document.getElementById('fMatr');
-
-  // MASTER NAO TRAVA
   if(isMasterMat(matFinal) || isMasterNome(nomeFinal)){
     if(fNome){ fNome.disabled=false; fNome.readOnly=false; fNome.style.backgroundColor=''; fNome.style.opacity='1'; fNome.style.pointerEvents='auto'; }
     if(fMat){ fMat.disabled=false; fMat.readOnly=false; fMat.style.backgroundColor=''; fMat.style.opacity='1'; fMat.style.pointerEvents='auto'; }
     return;
   }
-
   if(fNome){
     if(nomeFinal) fNome.value = nomeFinal;
     fNome.readOnly = true; fNome.disabled = true;
@@ -86,9 +80,7 @@ function destravarAposLogin(matricula){
   var nomeFinal = USUARIO_NOME || localStorage.getItem('nome_logado') || "";
   var fNome = document.getElementById('fNome');
   var fMat = document.getElementById('fMatr');
-
   if(isMasterMat(matFinal) || isMasterNome(nomeFinal)){
-    // MASTER destrava e limpa
     if(fNome){ fNome.value=''; fNome.disabled=false; fNome.readOnly=false; fNome.style.backgroundColor=''; fNome.style.pointerEvents='auto'; fNome.style.opacity='1'; }
     if(fMat){ fMat.value=''; fMat.disabled=false; fMat.readOnly=false; fMat.style.backgroundColor=''; fMat.style.pointerEvents='auto'; fMat.style.opacity='1'; }
     ['buscar','fCong'].forEach(id=>{
@@ -115,58 +107,63 @@ function entrarAcessoGeral(){
     setTimeout(entrarAcessoGeral, 1000);
     return;
   }
-  var usuario = LISTA_ACESSO_CACHE.find(u => semAcentoJS(u.nome||'') === semAcentoJS(nome));
+  var usuario = LISTA_ACESSO_CACHE.find(u => semAcentoJS(u.nome||u.NomeUsuario||u.B||'') === semAcentoJS(nome));
   if(!usuario){ msg.style.color="#c00"; msg.innerText="❌ Nome não encontrado na coluna B"; return; }
   var senhaBanco = String(usuario.senha||'').toUpperCase().trim();
   if(senhaBanco!== senha){ msg.style.color="#c00"; msg.innerText="❌ Senha não compatível"; return; }
-
-  LIBERADO=true; USUARIO_NOME=usuario.nome;
-  localStorage.setItem('mat_logada', usuario.matricula);
-  localStorage.setItem('nome_logado', usuario.nome);
-  var inp=document.getElementById('inputMatricula'); if(inp) inp.value=usuario.matricula;
-
-  // CORREÇÃO: QUANDO LIBERA NAO JOGA PRO FILTRO, SO DESTRAVA SE FOR MASTER
-  if(isMasterMat(usuario.matricula) || isMasterNome(usuario.nome)){
-    msg.style.color="#198754"; msg.innerText="✅ Liberado "+usuario.nome+" - Master";
-    destravarAposLogin(usuario.matricula);
+  LIBERADO=true; USUARIO_NOME=usuario.nome||usuario.NomeUsuario||usuario.B||'';
+  localStorage.setItem('mat_logada', usuario.matricula||usuario.Matricula||'');
+  localStorage.setItem('nome_logado', USUARIO_NOME);
+  var inp=document.getElementById('inputMatricula'); if(inp) inp.value=usuario.matricula||usuario.Matricula||'';
+  if(isMasterMat(usuario.matricula||usuario.Matricula||'') || isMasterNome(USUARIO_NOME)){
+    msg.style.color="#198754"; msg.innerText="✅ Liberado "+USUARIO_NOME+" - Master";
+    destravarAposLogin(usuario.matricula||usuario.Matricula||'');
   } else {
-    msg.style.color="#7c3aed"; msg.innerText="🔒 Logado "+usuario.nome+" - continua travado";
-    travarPosMenu(usuario.matricula);
+    msg.style.color="#7c3aed"; msg.innerText="🔒 Logado "+USUARIO_NOME+" - continua travado";
+    travarPosMenu(usuario.matricula||usuario.Matricula||'');
   }
 }
 
+// ===== BUSCA COLUNA B - SO MOSTRA QUANDO DIGITA =====
 function carregarListaAcessoNomes(){
-  if(LISTA_ACESSO_CACHE.length>0){ renderDropdownAcessoNomes(LISTA_ACESSO_CACHE); }
+  if(LISTA_ACESSO_CACHE.length>0){ return; }
   google.script.run.withSuccessHandler(function(lista){
-    LISTA_ACESSO_CACHE=lista; salvarCacheB(lista); renderDropdownAcessoNomes(lista);
+    LISTA_ACESSO_CACHE=lista; salvarCacheB(lista);
   }).listarAcessosPendentes();
 }
+
 function renderDropdownAcessoNomes(lista){
   var drop=document.getElementById('dropdownAcessoNome'); if(!drop) return;
-  drop.innerHTML=''; if(!lista || lista.length==0){ drop.style.display='none'; return; }
+  drop.innerHTML='';
+  var termo = (document.getElementById('acessoNome').value||'').trim();
+  if(!termo){ drop.style.display='none'; return; }
+  if(!lista || lista.length==0){ drop.style.display='none'; return; }
   lista.slice(0,50).forEach(function(a){
-    var nome=(a.nome||"").toString().trim(); if(!nome) return;
-    var st=(a.status||"APROVADO").toUpperCase(); var cor=st=="APROVADO"?"#198754":"#dc3545";
+    var nome=(a.nome||a.NomeUsuario||a.B||"").toString().trim(); if(!nome) return;
+    var st=(a.status||a.Status||"APROVADO").toUpperCase(); var cor=st=="APROVADO"?"#198754":"#dc3545";
+    var mat=(a.matricula||a.Matricula||a.D||"").toString();
     var div=document.createElement('div'); div.className='dropdown-item';
-    div.innerHTML='<b>'+nome+'</b><small style="color:'+cor+'">Mat: '+(a.matricula||'')+' - '+st+'</small>';
+    div.innerHTML='<b>'+nome+'</b><small style="color:'+cor+'">Mat: '+mat+' - '+st+'</small>';
     div.onclick=function(){ selecionarAcessoNome(nome); };
     drop.appendChild(div);
   });
   drop.style.display='block'; idxAcessoSel=-1;
 }
+
 function mostrarAcessoNomes(){
+  var input = document.getElementById('acessoNome');
+  var termo = (input.value||'').trim();
+  if(!termo){ var drop=document.getElementById('dropdownAcessoNome'); if(drop){ drop.style.display='none'; drop.innerHTML=''; } return; }
   if(LISTA_ACESSO_CACHE.length==0){ if(!carregarCacheB()){ carregarListaAcessoNomes(); return; } }
-  var termo=semAcentoJS(document.getElementById('acessoNome').value);
-  var lista=LISTA_ACESSO_CACHE;
-  if(termo){ lista=lista.filter(function(a){ return semAcentoJS(a.nome||"").indexOf(termo)!=-1; }); }
+  var termoSem = semAcentoJS(termo);
+  var lista=LISTA_ACESSO_CACHE.filter(function(a){ var n=a.nome||a.NomeUsuario||a.B||""; return semAcentoJS(n).indexOf(termoSem)!=-1; });
   renderDropdownAcessoNomes(lista);
 }
+
 function filtrarAcessoNome(){
-  var termo=semAcentoJS(document.getElementById('acessoNome').value);
-  var lista=LISTA_ACESSO_CACHE;
-  if(termo){ lista=lista.filter(function(a){ return semAcentoJS(a.nome||"").indexOf(termo)!=-1; }); }
-  renderDropdownAcessoNomes(lista);
+  mostrarAcessoNomes();
 }
+
 function esconderAcessoNomes(){ var drop=document.getElementById('dropdownAcessoNome'); if(drop) drop.style.display='none'; }
 function selecionarAcessoNome(nome){ document.getElementById('acessoNome').value=nome; esconderAcessoNomes(); document.getElementById('acessoSenha').focus(); }
 function navegarAcessoNome(e){var drop=document.getElementById('dropdownAcessoNome'); var itens=drop?drop.querySelectorAll('.dropdown-item'):[]; if(!itens.length) return; if(e.key==='ArrowDown'){ e.preventDefault(); idxAcessoSel=Math.min(idxAcessoSel+1, itens.length-1); atualizarSelecaoAcesso(itens); } else if(e.key==='ArrowUp'){ e.preventDefault(); idxAcessoSel=Math.max(idxAcessoSel-1, 0); atualizarSelecaoAcesso(itens); } else if(e.key==='Enter'){ e.preventDefault(); if(idxAcessoSel>=0 && itens[idxAcessoSel]) itens[idxAcessoSel].click(); } else if(e.key==='Escape'){ esconderAcessoNomes(); }}
@@ -198,6 +195,13 @@ document.addEventListener('DOMContentLoaded', function(){
   }else{
     setTimeout(function(){ mudarTipo(); }, 500);
   }
+  // UNICO LISTENER - SO DIGITANDO ABRE, FOCUS NAO ABRE
+  var inp = document.getElementById('acessoNome');
+  if(inp){
+    inp.addEventListener('input', filtrarAcessoNome);
+    inp.addEventListener('keyup', navegarAcessoNome);
+    inp.addEventListener('blur', function(){ setTimeout(esconderAcessoNomes, 200); });
+  }
 });
 
 setTimeout(function(){
@@ -206,23 +210,18 @@ setTimeout(function(){
     var matSalva = localStorage.getItem('mat_logada') || "";
     var nomeSalvo = localStorage.getItem('nome_logado') || "";
     var ehMaster = isMasterMat(matSalva) || isMasterNome(nomeSalvo);
-
     document.getElementById('acessoNome').value='';
     document.getElementById('acessoSenha').value='';
     document.getElementById('buscar').value='';
     document.getElementById('fCong').value='';
-
     var fNome=document.getElementById('fNome');
     var fMat=document.getElementById('fMatr');
-
     if(ehMaster){
       if(fNome){ fNome.value=''; fNome.disabled=false; fNome.readOnly=false; fNome.style.backgroundColor=''; fNome.style.pointerEvents='auto'; fNome.style.opacity='1'; }
       if(fMat){ fMat.value=''; fMat.disabled=false; fMat.readOnly=false; fMat.style.backgroundColor=''; fMat.style.pointerEvents='auto'; fMat.style.opacity='1'; }
     } else {
-      // COMUM NAO LIMPA - mantem travado
       if(matSalva) travarPosMenu(matSalva);
     }
-
     document.querySelector('#tab thead').innerHTML='';
     document.querySelector('#tab tbody').innerHTML='';
     document.getElementById('tabWrap').style.display='none';
@@ -233,7 +232,6 @@ setTimeout(function(){
     if(drop){ drop.style.display='none'; drop.innerHTML=''; }
     TOTAL=[]; ATUAL=[]; window.TOTAL_ORIGINAL=[]; window.CACHE_DETALHES={};
     SELECIONADO=null; DETALHE=null; idxSelecionado=-1; CACHE_EDICAO=[];
-
     if(ehMaster){
       document.getElementById('msg').innerText='Tudo limpo - Master pode digitar';
       document.getElementById('msgAcesso').innerText='Master - filtros livres';
@@ -244,14 +242,6 @@ setTimeout(function(){
   };
 }, 1000);
 
-document.addEventListener('DOMContentLoaded', function(){
-  var inp = document.getElementById('acessoNome');
-  if(inp){
-    inp.addEventListener('focus', mostrarAcessoNomes);
-    inp.addEventListener('input', filtrarAcessoNome);
-    inp.addEventListener('keyup', navegarAcessoNome);
-  }
-});
 
 // parte 2
 document.getElementById('tabWrap').addEventListener('keydown', function(e){
@@ -1222,4 +1212,3 @@ function puxarDoCadastro(){
   if(m2) m2.value = mat;
 }
 window.addEventListener('load', function(){ setTimeout(puxarDoCadastro, 600); });
-
