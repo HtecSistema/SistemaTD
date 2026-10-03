@@ -25,10 +25,28 @@ var LISTA_IGREJAS_CACHE=[]; var LISTA_ACESSO_CACHE=[];
 var idxIgrejaSel=-1; var idxAcessoSel=-1;
 
 function semAcentoJS(s){return (s||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim().toUpperCase();}
-function ensureHtml2pdf(cb){ if(typeof html2pdf!== 'undefined'){ cb(); return; } var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'; s.onload=function(){ cb(); }; document.head.appendChild(s); }
-function mudarTipo(){ var t=document.getElementById('tipoPesquisa'); if(t) t.value='CERTIFICACOES'; }
-function mascaraCPF(el){ var v=el.value.replace(/\D/g,''); if(v.length<=11){ v=v.replace(/(\d{3})(\d)/,"$1.$2"); v=v.replace(/(\d{3})(\d)/,"$1.$2"); v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2"); el.value=v; } }
-function validarCPFjs(cpf){ cpf=(cpf||"").replace(/\D/g,""); if(cpf.length!=11) return false; if(/^(\d)\1{10}$/.test(cpf)) return false; var s=0; for(var i=0;i<9;i++) s+=parseInt(cpf.charAt(i))*(10-i); var r=(s*10)%11; if(r==10) r=0; if(r!=parseInt(cpf.charAt(9))) return false; s=0; for(var i=0;i<10;i++) s+=parseInt(cpf.charAt(i))*(11-i); r=(s*10)%11; if(r==10) r=0; if(r!=parseInt(cpf.charAt(10))) return false; return true; }
+
+
+function ensureHtml2pdf(cb){
+  if(typeof html2pdf!== 'undefined'){ cb(); return; }
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+  s.onload=function(){ setTimeout(cb, 500); };
+  s.onerror=function(){
+    var s2=document.createElement('script');
+    s2.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    s2.onload=function(){ setTimeout(cb, 500); };
+    s2.onerror=function(){
+      var s3=document.createElement('script');
+      s3.src='https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+      s3.onload=function(){ setTimeout(cb, 500); };
+      document.head.appendChild(s3);
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
 
 function salvarCacheB(lista){ try{ localStorage.setItem('cache_dusuario_b', JSON.stringify({t:Date.now(), lista})) }catch(e){} }
 function carregarCacheB(){
@@ -443,69 +461,8 @@ function listarPendentesNA(a){
   }
   return lista;
 }
-function enviarBoletimZap(){
-  if(!DETALHE){ alert('Gere o boletim primeiro'); return; }
-  var zapRaw = (DETALHE.zap || SELECIONADO?.zap || '').toString();
-  var zap = zapRaw.replace(/\D/g,'');
-  var nome = DETALHE.nome || '';
-  var cong = DETALHE.congOrig || DETALHE.cong || '';
-  var mat = DETALHE.mat || '';
-  var totalPontos = DETALHE.totalSoma || 0;
-  var feitos = (DETALHE.totalFeitos||0) + '/52';
-  var mediaGeral = (DETALHE.mediaGeral||0).toFixed(2);
-  var status = DETALHE.status || '';
-  var pend = listarPendentesNA(DETALHE);
-  var blocoPend = pend.length>0? '\n\nPENDÊNCIAS:\n'+pend.join('\n') : '\n\nNenhuma pendência - Tudo OK';
-  var relatorio = `BOLETIM DISCIPULADO - IEADMI\n\nAluno: ${nome}\nCongregação: ${cong}\nMatrícula: ${mat}\nTotal Pontos: ${totalPontos}\nFeitos: ${feitos}\nMédia Geral: ${mediaGeral}\nStatus: ${status}${blocoPend}\n\nRelatório 100% REAL`;
-  if(!zap || zap.length < 10){
-    window.open('https://wa.me/?text='+encodeURIComponent(relatorio), '_blank');
-    return;
-  }
-  if(zap.length==10 || zap.length==11) zap = '55'+zap;
-  window.open('https://wa.me/'+zap+'?text='+encodeURIComponent(relatorio), '_blank');
-}
-async function enviarPdfZap(){
-  if(!DETALHE){ alert('Gere o boletim primeiro'); return; }
-  ensureHtml2pdf(async function(){
-  var elemento = document.getElementById('boletimPrint');
-  if(!elemento){ alert('Boletim não encontrado'); return; }
-  var zap = (DETALHE.zap || SELECIONADO?.zap || '').toString().replace(/\D/g,'');
-  var nome = DETALHE.nome || '';
-  var cong = DETALHE.congOrig || DETALHE.cong || '';
-  var mat = DETALHE.mat || '';
-  var totalPontos = DETALHE.totalSoma || 0;
-  var feitos = (DETALHE.totalFeitos||0) + '/52';
-  var mediaGeral = (DETALHE.mediaGeral||0).toFixed(2);
-  var status = DETALHE.status || '';
-  var pend = listarPendentesNA(DETALHE);
-  var blocoPend = pend.length>0? '\n\nPENDÊNCIAS:\n'+pend.join('\n') : '\n\nNenhuma pendência - Tudo OK';
-  var relatorio = `BOLETIM DISCIPULADO - IEADMI\n\nAluno: ${nome}\nCongregação: ${cong}\nMatrícula: ${mat}\nTotal Pontos: ${totalPontos}\nFeitos: ${feitos}\nMédia Geral: ${mediaGeral}\nStatus: ${status}${blocoPend}\n\nRelatório 100% REAL`;
-  var nomeArquivo = 'BOLETIM_'+nome.replace(/\s+/g,'_')+'_'+mat+'.pdf';
-  var btn = event?.target;
-  if(btn){ btn.innerText='⏳ GERANDO...'; btn.disabled=true; }
-  try{
-    var opt = {
-      margin: 2,
-      filename: nomeArquivo,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, ignoreElements: function(el){ return el.classList && el.classList.contains('no-print'); } },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    var pdfBlob = await html2pdf().set(opt).from(elemento).outputPdf('blob');
-    var file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
-    if(zap && (zap.length==10 || zap.length==11)) zap = '55'+zap;
-    if(navigator.canShare && navigator.canShare({ files: [file] })){
-      await navigator.share({ files: [file], title: 'Boletim '+nome, text: relatorio });
-      if(zap) setTimeout(function(){ window.open('https://wa.me/'+zap+'?text='+encodeURIComponent(relatorio), '_blank'); }, 800);
-    }else{
-      html2pdf().set(opt).from(elemento).save();
-      if(zap) window.open('https://wa.me/'+zap+'?text='+encodeURIComponent(relatorio), '_blank');
-      else window.open('https://wa.me/?text='+encodeURIComponent(relatorio), '_blank');
-    }
-  }catch(e){ alert('Erro: '+e.message); }
-  finally{ if(btn){ btn.innerText='📄 PDF + ZAP'; btn.disabled=false; } }
-  });
-}
+
+
 function gerarCertificado(){
   if(!SELECIONADO &&!DETALHE){
     var mat = document.getElementById("inputMatricula").value.trim();
@@ -804,9 +761,12 @@ function filtrar(){
 
 // parte 3
 function pesquisar(){
+var fCong=document.getElementById('buscar')?.value||document.getElementById('fCong')?.value||'';
+var fNome=document.getElementById('fNome')?.value||'';
+var fMat=document.getElementById('fMatr')?.value||'';
   var fCong=document.getElementById('buscar')?.value||document.getElementById('fCong')?.value||'';
   var fNome=document.getElementById('fNome')?.value||'';
-  var fMat=document.getElementById('fMatr')?.value||document.getElementById('inputMatricula')?.value||'';
+  var fMat=document.getElementById('fMatr')?.value||'';
   try{ google.script.run.limparCache(); }catch(e){}
 
   document.getElementById('msg').innerText='Buscando dados no Ciclo 01 - 0%';
@@ -951,8 +911,9 @@ function selecionar(idx){
   document.getElementById('acoes-extra').style.display='none';
 }
 
-
 function exportarExcel(){ var dados=ATUAL; if(!dados||dados.length<2){alert('Pesquise primeiro'); return;} var csv=dados.map(function(r){return r.join(';');}).join('\n'); var blob=new Blob([csv],{type:'text/csv'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='RELATORIO.csv'; a.click(); }
+
+
 function gerarBoletim(){
   if(!SELECIONADO){ alert("Clique em um nome na lista primeiro"); return; }
   if(!DETALHE){ alert("Clique na lista primeiro - os dados reais da planilha vêm no clique da lista (cache). Clique em PESQUISAR antes."); return; }
@@ -1022,6 +983,8 @@ function gerarBoletim(){
   document.getElementById('boletim').style.display='block';
   document.getElementById('boletim').scrollIntoView({behavior:'smooth'});
 }
+
+
 function listarPendentesNA(a){
   var lista=[];
   for(var ciclo=1;ciclo<=4;ciclo++){
@@ -1105,6 +1068,7 @@ async function enviarPdfZap(){
   finally{ if(btn){ btn.innerText='📄 PDF + ZAP'; btn.disabled=false; } }
   });
 }
+
 function gerarCertificado(){
   if(!SELECIONADO &&!DETALHE){
     var mat = document.getElementById("inputMatricula").value.trim();
