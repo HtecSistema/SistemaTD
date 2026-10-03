@@ -138,11 +138,16 @@
     if(jaEnviou) return;
     let mat = localStorage.getItem('mat_logada')||'';
     let sen = localStorage.getItem('senha_logada')||'';
+    let nome = localStorage.getItem('nome_logado')||'';
     let iframe = document.getElementById('tela-Cadastro.html');
     if(iframe && iframe.contentWindow && mat){
-      iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen}, '*');
-      jaEnviou = true;
+      iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*');
     }
+    let iframeRel = document.getElementById('tela-Relatorio.html');
+    if(iframeRel && iframeRel.contentWindow && mat){
+      iframeRel.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*');
+    }
+    jaEnviou = true;
   }
 
   function mostrarSistema(){
@@ -160,7 +165,6 @@
     setTimeout(travarIframeAdm, 1000);
   }
 
-  // ===== INICIO ALTERAÇÃO AUTORIZADA: LIMPA GERAL AO SAIR =====
   function limparTodosFormularios(){
     try{
       document.querySelectorAll("iframe").forEach(ifr=>{
@@ -194,24 +198,22 @@
     location.reload();
   }
   window.addEventListener('pagehide', ()=>{ sessionStorage.clear(); });
-  // ===== FIM ALTERAÇÃO SAIR =====
 
-  // ===== INICIO ALTERAÇÃO AUTORIZADA: TRAVA CADASTRO ADM SOMENTE 00425 =====
-  const MATRICULA_MASTER = "00425";
+  const MATRICULAS_MASTER = ["00425","00001"];
   function travarIframeAdm(){
     const iframeAdm = document.getElementById('tela-CadastroAdm.html');
     if(!iframeAdm) return;
     const aplicarTrava = ()=>{
       try{
         let mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0');
-        if(mat===MATRICULA_MASTER) return; // 00425 HELIO pode alterar
+        if(MATRICULAS_MASTER.includes(mat)) return;
 
         const doc = iframeAdm.contentWindow.document;
         if(!doc ||!doc.body) return;
 
         doc.querySelectorAll("input, select, textarea").forEach(el=>{
           const ph = (el.placeholder||'').toUpperCase();
-          if(ph.includes("BUSCAR")) return; // deixa buscar funcionar
+          if(ph.includes("BUSCAR")) return;
           el.disabled = true;
           el.readOnly = true;
           el.style.backgroundColor = "#f3f4f6";
@@ -232,7 +234,7 @@
         if(!doc.getElementById("aviso-somente-helio")){
           const aviso = doc.createElement("div");
           aviso.id = "aviso-somente-helio";
-          aviso.innerHTML = "🔒 Somente visualização - Apenas 00425 - HELIO SOUZA SILVA pode alterar";
+          aviso.innerHTML = "🔒 Somente visualização - Apenas 00425 - HELIO SOUZA SILVA e 00001 - ELIEZER MIRANDA BARBOSA podem alterar";
           aviso.style = "background:#fff3cd;color:#856404;border:1px solid #ffeeba;padding:8px 12px;border-radius:8px;margin:0 0 10px 0;text-align:center;font-size:12px;font-weight:600";
           (doc.querySelector(".container") || doc.body).prepend(aviso);
         }
@@ -242,7 +244,6 @@
     setTimeout(aplicarTrava, 900);
     setInterval(aplicarTrava, 2000);
   }
-  // ===== FIM ALTERAÇÃO TRAVA ADM =====
 
   let paginaAtual = 'Cadastro.html';
   function abrir(pagina, botao, titulo){
@@ -254,7 +255,8 @@
     let alvo = document.getElementById('frame-'+pagina);
     if(alvo){ alvo.classList.add('ativa'); }
     paginaAtual = pagina;
-    if(pagina === 'Cadastro.html'){ setTimeout(enviarParaForm, 200); }
+    if(pagina === 'Cadastro.html'){ jaEnviou=false; setTimeout(enviarParaForm, 200); }
+    if(pagina === 'Relatorio.html'){ jaEnviou=false; setTimeout(enviarParaForm, 200); }
     if(pagina === 'CadastroAdm.html'){ setTimeout(travarIframeAdm, 400); }
     if(window.innerWidth <= 768){ fecharMenuLateral(); }
   }
