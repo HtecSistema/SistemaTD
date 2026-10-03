@@ -52,7 +52,6 @@ function aplicarRegras(){
   const pode = isHelioMaster();
   const camposBloqueados = [nCont, nSenha, nNome, nCPF, nSexo, nIgreja, nStatus];
   if(nMat){
-    nMat.disabled = false;
     nMat.readOnly = false;
     nMat.style.backgroundColor = "";
     nMat.style.pointerEvents = "auto";
