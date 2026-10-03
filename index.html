@@ -17,7 +17,7 @@
   *{box-sizing:border-box;}
   body{margin:0; font-family:'Segoe UI', Inter, Arial, sans-serif; height:100vh; background:#f5f3ff; overflow:hidden;}
   #tela-login{height:100vh; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle at top, #ede9fe, #f8f7ff);}
-.card-login{background:#fff; width:400px; padding:18px 36px 36px 36px; border-radius:20px; border:1px solid #e9e8f0; box-shadow: 0 20px 50px rgba(124,58,237,0.12); text-align:center;}.card-login.logo{width:100%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;}
+.card-login{background:#fff; width:400px; padding:18px 36px 36px 36px; border-radius:20px; border:1px solid #e9e8f0; box-shadow: 0 20px 50px rgba(124,58,237,0.12); text-align:center; max-height:96vh; overflow-y:auto}.card-login.logo{width:100%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;}
 .card-login h2{margin:0 0 6px 0; font-size:22px; font-weight:700;}
 .card-login p{margin:0 0 24px 0; color:#6b7280; font-size:14px;}
 .card-login input{width:100%; padding:13px 16px; margin-bottom:12px; border:1px solid #e5e7eb; border-radius:10px; outline:none; font-size:14px; text-transform:uppercase; transition:0.2s; background:#f9fafb;}
@@ -26,6 +26,8 @@
 .card-login button{width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; margin-top:8px; transition:0.2s;}
 .card-login button:hover{background:#000; transform:translateY(-1px);}
   #erro-login{color:#ef4444; font-size:13px; margin-top:12px; display:none; background:#fef2f2; padding:8px; border-radius:8px; border:1px solid #fecaca;}
+  #link-primeiro{margin-top:14px; font-size:13px; color:#7c3aed; cursor:pointer; font-weight:700; display:inline-block; text-decoration:underline;}
+  #box-primeiro-acesso{display:none; margin-top:16px; text-align:left; background:#f9f8ff; border:1px solid #ede9fe; border-radius:12px; padding:14px;}
   #sistema{display:none; flex-direction:row; height:100vh;}
   #menu-lateral{width:270px; background:#ffffff; border-right:1px solid #e9e8f0; display:flex; flex-direction:column; padding:0; box-shadow: 4px 0 24px rgba(0,0,0,0.04); transition: transform 0.3s ease; z-index:1000;}
 .menu-topo{padding:24px 20px; border-bottom:1px solid #f3f4f6;}
@@ -74,9 +76,29 @@
     <p>Informe sua matrícula e senha</p>
     <input type="text" id="matricula" placeholder="MATRÍCULA" onblur="formatarMatricula(this); buscarNome()" oninput="formatarMatriculaAoDigitar(this)">
     <input type="text" id="nome" placeholder="NOME COMPLETO" readonly>
-    <input type="password" id="senha" placeholder="SENHA" style="text-transform:none">
-    <button onclick="logar()">Entrar no Sistema</button>
+    <input type="password" id="senha" placeholder="SENHA" style="text-transform:none;">
+
+    <!-- AQUI OS DOIS BOTOES -->
+
+<!-- AQUI OS DOIS BOTOES DO MESMO TAMANHO -->
+<div style="display:flex; gap:8px; margin-top:8px;">
+  <button onclick="logar()" style="flex:1; background:#111; padding:13px; border-radius:10px; font-weight:700; border:none; color:#fff; cursor:pointer;">Entrar no Sistema</button>
+  <button onclick="limparCampos()" style="flex:1; background:#fff; color:#111; border:1px solid #e5e7eb; padding:13px; border-radius:10px; font-weight:700; cursor:pointer;">Limpar</button>
+</div>
+
     <div id="erro-login"></div>
+
+    <div id="link-primeiro" onclick="abrirPrimeiroAcesso()">🔑 Primeiro acesso / Esqueci minha senha</div>
+    <div id="box-primeiro-acesso">
+      <h4 style="margin:0 0 8px 0;font-size:14px">Recuperar senha por e-mail</h4>
+      <div id="primeiro-mat-info" style="padding:8px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-weight:700;font-size:13px;margin-bottom:10px;display:none"></div>
+      <label style="font-size:11px;font-weight:700;color:#374151">DIGITE SEU E-MAIL</label>
+      <input type="email" id="emailPrimeiro" placeholder="seuemail@gmail.com" style="text-transform:lowercase;margin-top:4px">
+      <button onclick="enviarSenhaParaEmail()" style="background:#7c3aed">📧 ENVIAR MINHA SENHA NO E-MAIL</button>
+      <div id="resultado-email" style="margin-top:10px"></div>
+      <div style="text-align:center;margin-top:10px"><span onclick="fecharPrimeiroAcesso()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div>
+    </div>
+
   </div>
 </div>
 
@@ -122,17 +144,12 @@
 
   function formatarMatricula(el){
     let v = (el.value||'').trim().replace(/\D/g,'');
-    if(!v) return;
-    el.value = v.padStart(5,'0').toUpperCase();
+    if(v) el.value = v.padStart(5,'0').toUpperCase();
   }
   function formatarMatriculaAoDigitar(el){
     let v = (el.value||'').replace(/\D/g,'');
     if(v.length>5) v = v.slice(-5);
-    if(v.length>0){
-      let formatado = v.padStart(5,'0');
-      if(v.length>=1) el.value = formatado;
-    }
-    if(!v) el.value = '';
+    el.value = v? v.padStart(5,'0') : '';
   }
 
   async function buscarNome(){
@@ -141,23 +158,48 @@
     if(cacheDados.length===0){
       try{ document.getElementById('nome').value='BUSCANDO...'; let res = await apiGet('todos'); cacheDados = res.data||[]; }catch(e){ document.getElementById('nome').value=''; return; }
     }
-    let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim(); return m===mat || m.replace('F','')===mat.replace('F','') || m+'F'===mat; });
-    if(achado){ let nome = achado.Nome||achado.NOME||achado.D||achado.d||achado.E||''; document.getElementById('nome').value = String(nome).toUpperCase(); localStorage.setItem('mat_logada', mat); localStorage.setItem('nome_logado', String(nome).toUpperCase()); }else{ document.getElementById('nome').value=''; mostrarErro('MATRÍCULA NÃO ENCONTRADA EM DADOS - COL B'); }
+    let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); return m===mat.padStart(5,'0'); });
+    if(achado){
+      let nome = achado.Nome||achado.NOME||achado.D||'';
+      document.getElementById('nome').value = String(nome).toUpperCase();
+      localStorage.setItem('mat_logada', mat.padStart(5,'0'));
+      localStorage.setItem('nome_logado', String(nome).toUpperCase());
+    }
   }
 
   async function logar(){
-    const mat = (document.getElementById('matricula').value||'').trim().toUpperCase();
+    const mat = (document.getElementById('matricula').value||'').trim().toUpperCase().padStart(5,'0');
     const sen = (document.getElementById('senha').value||'').trim().toUpperCase();
     if(!mat){ mostrarErro('DIGITE A MATRICULA'); return; }
     if(!sen){ mostrarErro('DIGITE A SENHA'); return; }
     try{
       if(cacheDados.length===0){ let res = await apiGet('todos'); cacheDados = res.data||[]; }
-      let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||'').toUpperCase().trim(); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return (m===mat || m.replace('F','')===mat.replace('F','') || m+'F'===mat) && s===sen; });
-      if(achado){ usuarioLogado = achado; localStorage.setItem("logado", "true"); localStorage.setItem('mat_logada', mat); localStorage.setItem('senha_logada', sen); let nome = achado.Nome||achado.NOME||achado.D||''; localStorage.setItem('nome_logado', String(nome).toUpperCase()); mostrarSistema(); } else { let existeMat = cacheDados.find(x=> { let m=String(x.Matricula||x.MATRICULA||'').toUpperCase().trim(); return m===mat || m.replace('F','')===mat.replace('F',''); }); if(existeMat) mostrarErro('SENHA NÃO CONFERE COM A MATRICULA - COL AL'); else mostrarErro('MATRICULA E SENHA NÃO ENCONTRADOS'); }
+      let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||'').toUpperCase().trim().padStart(5,'0'); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return m===mat && s===sen; });
+      if(achado){
+        usuarioLogado = achado;
+        localStorage.setItem("logado", "true");
+        localStorage.setItem('mat_logada', mat);
+        localStorage.setItem('senha_logada', sen);
+        let nome = achado.Nome||achado.NOME||achado.D||'';
+        localStorage.setItem('nome_logado', String(nome).toUpperCase());
+        mostrarSistema();
+      } else {
+        mostrarErro('SENHA NÃO CONFERE');
+      }
     }catch(e){ mostrarErro('ERRO AO BUSCAR: '+e.message); }
   }
 
   function mostrarErro(msg){ let el=document.getElementById('erro-login'); el.innerText=msg; el.style.display='block'; }
+
+  function limparCampos(){
+    document.getElementById('matricula').value='';
+    document.getElementById('nome').value='';
+    document.getElementById('senha').value='';
+    document.getElementById('erro-login').style.display='none';
+    document.getElementById('box-primeiro-acesso').style.display='none';
+    document.getElementById('link-primeiro').style.display='inline-block';
+    document.getElementById('matricula').focus();
+  }
 
   function enviarParaForm(){
     if(jaEnviou) return;
@@ -182,7 +224,6 @@
     let nomeLogado = (localStorage.getItem('nome_logado')||'').trim();
     let matFmt = String(matLogada).padStart(5,'0');
     document.getElementById("user-display").innerText = matFmt + ' - ' + nomeLogado;
-    document.getElementById("user-display").title = matFmt + ' - ' + nomeLogado;
     let iframe = document.getElementById('tela-Cadastro.html');
     iframe.onload = function(){ jaEnviou = false; setTimeout(enviarParaForm, 800); };
     setTimeout(enviarParaForm, 800);
@@ -190,39 +231,45 @@
     setTimeout(travarIframeAdm, 1000);
   }
 
-  function limparTodosFormularios(){
-    try{
-      document.querySelectorAll("iframe").forEach(ifr=>{
-        try{
-          const doc = ifr.contentWindow.document;
-          doc.querySelectorAll("form").forEach(f=>f.reset());
-          doc.querySelectorAll("input, select, textarea").forEach(el=>{
-            const ph = (el.placeholder||'').toUpperCase();
-            if(ph.includes("MATRICULA") && el.id==="matricula") return;
-            if(el.type==='button' || el.type==='submit') return;
-            if(el.type!=='checkbox' && el.type!=='radio') el.value="";
-          });
-        }catch(e){}
-      });
-    }catch(e){}
-    document.querySelectorAll("input, select, textarea").forEach(el=>{
-      if(el.id!=='matricula' && el.id!=='senha' && el.id!=='nome'){
-        if(el.type!=='button' && el.type!=='submit') el.value="";
-      }
-    });
-  }
+  function limparTodosFormularios(){ try{ document.querySelectorAll("iframe").forEach(ifr=>{ try{ const doc = ifr.contentWindow.document; doc.querySelectorAll("form").forEach(f=>f.reset()); }catch(e){} }); }catch(e){} }
+  function sair(){ localStorage.clear(); sessionStorage.clear(); location.reload(); }
 
-  function sair(){
-    limparTodosFormularios();
-    localStorage.removeItem("logado");
-    localStorage.removeItem('mat_logada');
-    localStorage.removeItem('senha_logada');
-    localStorage.removeItem('nome_logado');
-    localStorage.clear();
-    sessionStorage.clear();
-    location.reload();
+  function abrirPrimeiroAcesso(){
+    let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
+    let nome=(document.getElementById('nome').value||'').trim();
+    let box=document.getElementById("box-primeiro-acesso");
+    let info=document.getElementById("primeiro-mat-info");
+    box.style.display="block";
+    document.getElementById("link-primeiro").style.display="none";
+    if(!mat || mat==="00000"){
+      info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima";
+      return;
+    }
+    info.style.display="block"; info.innerHTML=mat+" - "+nome;
+    let achado = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
+    document.getElementById("emailPrimeiro").value = achado?.Email||"";
+    document.getElementById("resultado-email").innerHTML="";
   }
-  window.addEventListener('pagehide', ()=>{ sessionStorage.clear(); });
+  function fecharPrimeiroAcesso(){
+    document.getElementById("box-primeiro-acesso").style.display="none";
+    document.getElementById("link-primeiro").style.display="inline-block";
+  }
+  async function enviarSenhaParaEmail(){
+    let email=(document.getElementById("emailPrimeiro").value||'').trim();
+    let resDiv=document.getElementById("resultado-email");
+    let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
+    if(!email.includes("@")){resDiv.innerHTML="<div style='color:#ef4444;font-size:12px'>Digite um e-mail válido</div>";return;}
+    if(cacheDados.length===0){let r=await apiGet('todos');cacheDados=r.data||[]}
+    let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
+    if(!achado){resDiv.innerHTML="Matrícula não encontrada";return;}
+    resDiv.innerHTML="⏳ Enviando sua senha para "+email+"...";
+    try{await apiGet('enviarSenhaEmail',{matricula:mat,email:email});}catch(e){}
+    document.getElementById("senha").value="";
+    document.getElementById("senha").type="password";
+    document.getElementById("senha").placeholder="DIGITE A SENHA RECEBIDA NO E-MAIL";
+    document.getElementById("senha").focus();
+    resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Enviado!</b><br><br>Enviamos sua senha para:<br><b>${email}</b><br><br>Verifique seu e-mail e digite a senha no campo SENHA.<br><small style='color:#6b7280'>A senha ficará com *****</small></div>`;
+  }
 
   const MATRICULAS_MASTER = ["00425","00001"];
   function travarIframeAdm(){
@@ -237,28 +284,14 @@
         doc.querySelectorAll("input, select, textarea").forEach(el=>{
           const ph = (el.placeholder||'').toUpperCase();
           if(ph.includes("BUSCAR")) return;
-          el.disabled = true;
-          el.readOnly = true;
-          el.style.backgroundColor = "#f3f4f6";
-          el.style.pointerEvents = "none";
-          el.style.opacity = "0.7";
+          el.disabled = true; el.readOnly = true; el.style.backgroundColor = "#f3f4f6"; el.style.pointerEvents = "none"; el.style.opacity = "0.7";
         });
         doc.querySelectorAll("button").forEach(btn=>{
           const t = (btn.innerText||'').toUpperCase();
           if(t.includes("CADASTRO DE ADMINISTRADOR") || t.includes("LIMPAR") || t.includes("EDITAR")){
-            btn.disabled = true;
-            btn.style.pointerEvents = "none";
-            btn.style.opacity = "0.35";
-            if(t.includes("EDITAR")) btn.style.display = "none";
+            btn.disabled = true; btn.style.pointerEvents = "none"; btn.style.opacity = "0.35"; if(t.includes("EDITAR")) btn.style.display = "none";
           }
         });
-        if(!doc.getElementById("aviso-somente-helio")){
-          const aviso = doc.createElement("div");
-          aviso.id = "aviso-somente-helio";
-          aviso.innerHTML = "🔒 Somente visualização - Apenas 00425 - HELIO SOUZA SILVA e 00001 - ELIEZER MIRANDA BARBOSA podem alterar";
-          aviso.style = "background:#fff3cd;color:#856404;border:1px solid #ffeeba;padding:8px 12px;border-radius:8px;margin:0 0 10px 0;text-align:center;font-size:12px;font-weight:600";
-          (doc.querySelector(".container") || doc.body).prepend(aviso);
-        }
       }catch(e){}
     };
     iframeAdm.addEventListener('load', ()=> setTimeout(aplicarTrava, 700));
@@ -281,25 +314,14 @@
     if(pagina === 'CadastroAdm.html'){ setTimeout(travarIframeAdm, 400); }
     if(window.innerWidth <= 768){ fecharMenuLateral(); }
   }
-
-  function abrirMenuLateral(){
-    document.getElementById('menu-lateral').classList.add('aberto');
-    document.getElementById('overlay').classList.add('aberto');
-  }
-  function fecharMenuLateral(){
-    document.getElementById('menu-lateral').classList.remove('aberto');
-    document.getElementById('overlay').classList.remove('aberto');
-  }
-  function toggleMenuLateral(){
-    var menu = document.getElementById('menu-lateral');
-    if(menu.classList.contains('aberto')){
-      fecharMenuLateral();
-    } else {
-      abrirMenuLateral();
+  function abrirMenuLateral(){ document.getElementById('menu-lateral').classList.add('aberto'); document.getElementById('overlay').classList.add('aberto'); }
+  function fecharMenuLateral(){ document.getElementById('menu-lateral').classList.remove('aberto'); document.getElementById('overlay').classList.remove('aberto'); }
+  function toggleMenuLateral(){ var menu = document.getElementById('menu-lateral'); if(menu.classList.contains('aberto')) fecharMenuLateral(); else abrirMenuLateral(); }
+  document.addEventListener("keydown", e => {
+    if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){
+      if(document.getElementById("box-primeiro-acesso").style.display==="block"){ enviarSenhaParaEmail(); } else { logar(); }
     }
-  }
-
-  document.addEventListener("keydown", e => { if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){ logar(); } });
+  });
 </script>
 </body>
 </html>
