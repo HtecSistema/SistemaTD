@@ -33,11 +33,12 @@ body{margin:0; background:#efefef; -webkit-font-smoothing:antialiased; -moz-osx-
 .filtros-busca{display:flex; gap:8px; margin-top:8px; flex-wrap:nowrap; background:#fff; padding:8px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 .filtros-busca input{flex:1!important; min-width:0!important; height:44px; border:1.5px solid #000; border-radius:10px; text-align:center; font-size:11px; font-weight:700; padding:0 8px; background:#fff;}
 #fNome:disabled, #fMatr:disabled{background:#e5e7eb!important; opacity:0.6; pointer-events:none;}
-#msg{margin-top:10px; font-size:12px; font-weight:700; background:#fff; padding:8px; border-radius:8px;}
-.tab{background:#fff; border-radius:10px; overflow:auto; margin-top:10px; max-height:380px; display:none; outline:none; -webkit-overflow-scrolling:touch;}
+#msg{margin-top:6px; font-size:12px; font-weight:700; background:#fff; padding:8px; border-radius:8px;}
+.tab{background:#fff; border-radius:10px; overflow:auto; margin-top:4px; max-height:300px; display:none; outline:none; -webkit-overflow-scrolling:touch;}
 table{width:100%; border-collapse:collapse;}
-th{background:#000; color:#fff; font-size:10px; padding:7px 4px; text-align:left; white-space:nowrap; position:sticky; top:0; z-index:1;}
-td{font-size:11px; padding:6px 4px; border-bottom:1px solid #eee; white-space:nowrap;}
+th{background:#000; color:#fff; font-size:9px; padding:3px 4px; text-align:left; white-space:nowrap; position:sticky; top:0; z-index:1; height:18px; line-height:1;}
+td{font-size:10px; padding:2px 4px; border-bottom:1px solid #eee; white-space:nowrap; height:20px; line-height:1.1;}
+tr{height:20px;}
 tr:hover{background:#eef6ff; cursor:pointer;}
 .selecionado{background:#cfe2ff!important; outline:2px solid #0d6efd;}
 .na{background:#ffcccc!important; color:#c00; font-weight:800;}
