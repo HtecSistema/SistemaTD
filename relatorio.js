@@ -1212,3 +1212,4 @@ function puxarDoCadastro(){
   if(m2) m2.value = mat;
 }
 window.addEventListener('load', function(){ setTimeout(puxarDoCadastro, 600); });
+
