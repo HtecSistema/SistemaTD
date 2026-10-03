@@ -62,7 +62,7 @@
     <p>Um produto Htec@</p>
     <h2>Bem-vindo</h2>
     <p>Informe sua matrícula e senha</p>
-    <input type="text" id="matricula" placeholder="MATRÍCULA" onblur="buscarNome()" oninput="this.value=this.value.toUpperCase()">
+    <input type="text" id="matricula" placeholder="MATRÍCULA" onblur="formatarMatricula(this); buscarNome()" oninput="formatarMatriculaAoDigitar(this)">
     <input type="text" id="nome" placeholder="NOME COMPLETO" readonly>
     <input type="password" id="senha" placeholder="SENHA" style="text-transform:none">
     <button onclick="logar()">Entrar no Sistema</button>
@@ -109,6 +109,26 @@
   let jaEnviou = false;
 
   if(localStorage.getItem("logado") === "true"){ mostrarSistema(); }
+
+
+  function formatarMatricula(el){
+    let v = (el.value||'').trim().replace(/\D/g,'');
+    if(!v) return;
+    el.value = v.padStart(5,'0').toUpperCase();
+  }
+  function formatarMatriculaAoDigitar(el){
+    let v = (el.value||'').replace(/\D/g,'');
+    if(v.length>5) v = v.slice(-5);
+    if(v.length>0){
+      // mostra ja com 5 digitos enquanto digita
+      let formatado = v.padStart(5,'0');
+      // só aplica se já digitou pelo menos 1 numero
+      if(v.length>=1) el.value = formatado;
+    }
+    // se o usuario apagar tudo, deixa vazio
+    if(!v) el.value = '';
+  }
+
 
   async function buscarNome(){
     let mat = (document.getElementById('matricula').value||'').trim().toUpperCase();
