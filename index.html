@@ -177,7 +177,7 @@ let usuarioLogado = null;
 let jaEnviou = false;
 let modoPreCadastro = false;
 let modoNovoAluno = false;
-  if(localStorage.getItem("logado") === "true"){ mostrarSistema(); }
+  if(sessionStorage.getItem("logado") === "true"){ mostrarSistema(); } // 
   function formatarMatricula(el){
     let v = (el.value||'').trim().replace(/\D/g,'');
     if(v) el.value = v.padStart(5,'0').toUpperCase();
@@ -247,7 +247,7 @@ let modoNovoAluno = false;
       let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return m===mat && s===sen; });
       if(achado){
         usuarioLogado = achado;
-        localStorage.setItem("logado", "true");
+        sessionStorage.setItem("logado", "true");
         localStorage.setItem('mat_logada', mat);
         localStorage.setItem('senha_logada', sen);
         let nome = achado.Nome||achado.NOME||achado.D||'';
