@@ -60,7 +60,6 @@
     #btn-menu-mobile{display:block;}
     #overlay.aberto{display:block;}
   }
-  /* AJUSTE PARA ACESSO USUARIO FICAR NA ESQUERDA */
   #frame-AcessoUsuario.html{ align-items:flex-start; justify-content:flex-start; }
   #frame-AcessoUsuario.html iframe{ max-width:900px; margin:0; }
 </style>
@@ -126,11 +125,13 @@
     </div>
     <div id="box-novo-aluno">
       <h4 style="margin:0 0 8px 0;font-size:14px;color:#166534">Aluno Novo - Não tenho teste</h4>
-      <div style="padding:8px;background:#fff;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;margin-bottom:10px;">Digite matrícula e nome. A senha será gerada automaticamente e aparecerá no campo SENHA amarela.</div>
+      <div style="padding:8px;background:#fff;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;margin-bottom:10px;">Digite matrícula, nome e CPF. A senha será gerada automaticamente e aparecerá no campo SENHA amarela.</div>
       <label style="font-size:11px;font-weight:700">MATRÍCULA (5 dígitos)</label>
       <input type="text" id="novaMatricula" placeholder="EX: 00123" style="text-transform:none;margin-top:4px" oninput="formatarMatriculaAoDigitar(this)">
       <label style="font-size:11px;font-weight:700">NOME COMPLETO</label>
       <input type="text" id="novoNome" placeholder="NOME DO ALUNO" style="margin-top:4px">
+      <label style="font-size:11px;font-weight:700">CPF</label>
+      <input type="text" id="novoCpf" placeholder="000.000.000-00" maxlength="14" style="text-transform:none;margin-top:4px" oninput="formatarCPF(this)">
       <button onclick="salvarNovoAluno()" style="background:#16a34a">✅ GERAR SENHA E SALVAR EM DADOS</button>
       <div id="resultado-novo-aluno" style="margin-top:10px"></div>
       <div style="text-align:center;margin-top:10px"><span onclick="fecharNovoAluno()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div>
@@ -191,6 +192,22 @@ let modoNovoAluno = false;
     let v = (el.value||'').replace(/\D/g,'');
     if(v.length>5) v = v.slice(-5);
     el.value = v? v.padStart(5,'0') : '';
+  }
+  function formatarCPF(el){
+    let v = el.value.replace(/\D/g,'').slice(0,11);
+    if(v.length>9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    else if(v.length>6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+    else if(v.length>3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+    el.value = v;
+  }
+  function validarCPF(cpf){
+    cpf = cpf.replace(/\D/g,'');
+    if(cpf.length!=11 || /^(\d)\1{10}$/.test(cpf)) return false;
+    let s=0; for(let i=0;i<9;i++) s+=parseInt(cpf.charAt(i))*(10-i);
+    let r=11-(s%11); if(r==10||r==11) r=0; if(r!=parseInt(cpf.charAt(9))) return false;
+    s=0; for(let i=0;i<10;i++) s+=parseInt(cpf.charAt(i))*(11-i);
+    r=11-(s%11); if(r==10||r==11) r=0; if(r!=parseInt(cpf.charAt(10))) return false;
+    return true;
   }
   async function carregarPendentes(){
     try{
@@ -380,6 +397,8 @@ let modoNovoAluno = false;
     document.getElementById('link-novo-aluno').style.display='none';
     document.getElementById('novaMatricula').value = document.getElementById('matricula').value;
     document.getElementById('novoNome').value = "";
+    let cpfEl = document.getElementById('novoCpf');
+    if(cpfEl) cpfEl.value = "";
     document.getElementById('resultado-novo-aluno').innerHTML = "";
     document.getElementById('erro-login').style.display='none';
   }
@@ -412,12 +431,14 @@ let modoNovoAluno = false;
   async function salvarNovoAluno(){
     let mat=(document.getElementById('novaMatricula').value||'').trim().padStart(5,'0');
     let nome=(document.getElementById('novoNome').value||'').trim().toUpperCase();
+    let cpf=(document.getElementById('novoCpf').value||'').trim();
     let resDiv=document.getElementById('resultado-novo-aluno');
     if(mat=="00000" ||!mat){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula</div>"; return; }
     if(!nome || nome.length<3){ resDiv.innerHTML="<div style='color:#ef4444'>Digite o nome completo</div>"; return; }
-    resDiv.innerHTML="⏳ Gerando código e senha...";
+    if(!cpf ||!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite um CPF válido</div>"; return; }
+    resDiv.innerHTML="⏳ Verificando e gerando senha...";
     try{
-      let r = await apiGet('novoAluno',{matricula:mat, nome:nome});
+      let r = await apiGet('novoAluno',{matricula:mat, nome:nome, cpf:cpf});
       if(r.result=="ok"){
         document.getElementById('senha').type = "text";
         document.getElementById('senha').value = r.senha;
@@ -427,12 +448,12 @@ let modoNovoAluno = false;
         cacheDados = [];
         resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #16a34a;border-radius:8px;text-align:center'>
         <b style='color:#166534;font-size:14px'>✅ CADASTRADO!</b><br><br>
-        Matrícula: <b>${mat}</b><br>
+        Matrícula: <b>${mat}</b><br>CPF: <b>${cpf}</b><br>
         Código: <b>${r.codigo}</b><br>
         Senha: <b style='font-size:18px;background:#fef08a;padding:4px 8px;border-radius:6px'>${r.senha}</b><br><br>
         <small>Agora digite manualmente sua matrícula no campo MATRÍCULA e clique em Entrar.</small></div>`;
       }else{
-        resDiv.innerHTML=`<div style='color:#ef4444'>❌ ${r.msg||'Erro ao salvar'}</div>`;
+        resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ ${r.msg||'Erro ao salvar'}<br><br>Entre em contato com o administrador.</div>`;
       }
     }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ ${e.message}</div>`; }
   }
@@ -527,7 +548,6 @@ let modoNovoAluno = false;
     document.getElementById('matricula').value = mat;
     buscarNome();
   }
-  // FORCA ACESSO USUARIO PARA ESQUERDA
   document.getElementById('tela-AcessoUsuario.html').addEventListener('load', function(){
     try{
       let doc = this.contentDocument || this.contentWindow.document;
