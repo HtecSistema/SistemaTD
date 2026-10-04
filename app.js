@@ -8,6 +8,7 @@ let dadosListView=[],dadosFiltrados=[],indiceSelecionado=-1,modoEdicao=false,tip
 let cacheTodos=[];
 let matriculaOriginal='', codigoOriginal='';
 let listaTestes=[];
+let listaLiberacao=[];
 let _travaTeste={cod:'',tempo:0};
 function normaliza5Dig(v){ return String(v||'').replace(/\D/g,'').padStart(5,'0').slice(-5); }
 function setarMatriculaLogin(){
@@ -358,7 +359,16 @@ async function abrirTeste52(){
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
   modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - TESTES - CARREGANDO...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>`;
   document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
-  try{ let r = await apiGet('testeLink',{}); listaTestes = r.data || r || []; document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length; renderTestes(listaTestes); }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
+  try{
+    let r = await apiGet('testeLink',{});
+    listaTestes = r.data || r || [];
+    try{
+      let rLib = await apiGet('getliberacao',{});
+      listaLiberacao = rLib.data || rLib || [];
+    }catch(e){ listaLiberacao = []; }
+    document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length;
+    renderTestes(listaTestes);
+  }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
 function renderTestes(lista){
   listaTestes = lista;
@@ -374,14 +384,32 @@ function renderTestes(lista){
     let cod=t.Cod||(ciclo+'-'+nf);
     let tema=t.Tema||'Conhecendo Jesus e o Seu Reino';
     let ja=!!abertos[cod];
+
+    let cicloNumBotao = (ciclo.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
+    let testeNumBotao = nf.replace(/^0+/,'') || '0';
+    let emReedicao = listaLiberacao.some(it=>{
+      let c = String(it.CICLO || it.E || it.e || '').toUpperCase().trim();
+      let tt = String(it.TESTE || it.F || it.f || '').toUpperCase().trim();
+      if(!c ||!tt) return false;
+      let cNum = (c.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
+      let tNum = (tt.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
+      return cNum===cicloNumBotao && tNum===testeNumBotao;
+    });
+
     let cor = cores[ciclo] || '#111827';
     let card = document.createElement('div');
-    card.style = `background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center`;
-    card.innerHTML = `<div style="flex:1"><span style="background:${cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${ja?'✓':''}</span><div style="font-size:11px">${tema}</div></div>`;
+    card.style = `background:${emReedicao?'#fef3c7':(ja?'#ecfdf5':'white')};border-left:6px solid ${emReedicao?'#f59e0b':cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;opacity:${emReedicao?'0.9':''}`;
+    card.innerHTML = `<div style="flex:1"><span style="background:${emReedicao?'#f59e0b':cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${emReedicao?'⏸️ REEDIÇÃO':(ja?'✓':'')}</span><div style="font-size:11px">${emReedicao?'Teste aberto a reedição. Por gentileza, aguarde':tema}</div></div>`;
     let btn = document.createElement('button');
-    btn.innerText = ja?'FEITO':'🚀 ABRIR';
-    btn.style = `background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer`;
-    btn.onclick = () => abrirTeste(t.LinkAcesso, cod);
+    if(emReedicao){
+      btn.innerText = '⏸️ REEDIÇÃO';
+      btn.style = `background:#9ca3af;color:white;border:0;padding:10px 14px;border-radius:10px;font-weight:900;cursor:not-allowed`;
+      btn.onclick = () => { alert('Teste aberto a reedição. Por gentileza, aguarde'); toast('Teste aberto a reedição. Por gentileza, aguarde','err'); };
+    }else{
+      btn.innerText = ja?'FEITO':'🚀 ABRIR';
+      btn.style = `background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer`;
+      btn.onclick = () => abrirTeste(t.LinkAcesso, cod);
+    }
     card.appendChild(btn);
     div.appendChild(card);
   });
@@ -395,13 +423,47 @@ function abrirTeste(linkOriginal, codUnico){
   }
 }
 
-function abrirTeste(linkOriginal, codUnico, rowId){
+async function abrirTeste(linkOriginal, codUnico, rowId){
   let agora = Date.now();
   if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
   _travaTeste = {cod: codUnico, tempo: agora};
+
+  try{
+    let item = listaTestes.find(t=>String(t.Cod)===String(codUnico));
+    let cicloStr = item? String(item.Ciclo||'').toUpperCase() : '';
+    let cicloNumBotao = (cicloStr.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
+    let m = String(codUnico).match(/-(\d+)/);
+    let testeNumBotao = m? m[1].replace(/^0+/,'') || '0' : '';
+
+    let listaCheck = listaLiberacao.length? listaLiberacao : [];
+    if(!listaCheck.length){
+      try{
+        let rLib = await apiGet('getliberacao',{});
+        listaCheck = rLib.data || rLib || [];
+        listaLiberacao = listaCheck;
+      }catch(e){}
+    }
+
+    if(cicloNumBotao && testeNumBotao && listaCheck.length){
+      let bloqueado = listaCheck.some(it=>{
+        let c = String(it.CICLO || it.E || it.e || '').toUpperCase().trim();
+        let t = String(it.TESTE || it.F || it.f || '').toUpperCase().trim();
+        if(!c ||!t) return false;
+        let cNum = (c.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
+        let tNum = (t.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
+        return cNum===cicloNumBotao && tNum===testeNumBotao;
+      });
+      if(bloqueado){
+        alert('Teste aberto a reedição. Por gentileza, aguarde');
+        toast('Teste aberto a reedição. Por gentileza, aguarde','err');
+        return;
+      }
+    }
+  }catch(e){ console.log('erro lib', e); }
+
   const d = coletarDados();
-  let ciclo='4'; let testeNum='1';
-  try{ let item=listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo=String(item.Ciclo).replace(/\D/g,''); let m=String(codUnico).match(/-(\d+)/); if(m) testeNum=m[1]; }catch(e){}
+  let ciclo='4'; let testeNum2='1';
+  try{ let item=listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo=String(item.Ciclo).replace(/\D/g,''); let m2=String(codUnico).match(/-(\d+)/); if(m2) testeNum2=m2[1]; }catch(e){}
   let base = linkOriginal;
   try{
     base = linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
@@ -469,6 +531,7 @@ async function recuperar(){
   try{
     let res = await apiGet('getliberacao',{});
     let lista = res.data || res || [];
+    listaLiberacao = lista;
     let filtrados = lista.filter(it=>{
       let mat = normaliza5Dig(String(it.MATRICULA||it.Matricula||it.A||it.a||'').trim());
       return mat && mat===matAtual;
