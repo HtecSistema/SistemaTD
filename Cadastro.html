@@ -1,220 +1,230 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="auth.js"></script>
-<title>TDCadastro</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Htec | SistemaTD</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta property="og:title" content="Htec | SistemaTD">
+<meta property="og:description" content="IEADMI 360 V1">
+<meta property="og:image" content="https://htecsistema.github.io/SistemaTD/og-image.jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://htecsistema.github.io/SistemaTD/">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Segoe UI', Inter, Arial, sans-serif; height:100vh; background:#f5f3ff; overflow:hidden;}
+  #tela-login{height:100vh; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle at top, #ede9fe, #f8f7ff);}
+.card-login{background:#fff; width:400px; padding:18px 36px 36px 36px; border-radius:20px; border:1px solid #e9e8f0; box-shadow: 0 20px 50px rgba(124,58,237,0.12); text-align:center; max-height:96vh; overflow-y:auto}
+.card-login h2{margin:0 0 6px 0; font-size:22px; font-weight:700;}
+.card-login p{margin:0 0 24px 0; color:#6b7280; font-size:14px;}
+.card-login input{width:100%; padding:13px 16px; margin-bottom:12px; border:1px solid #e5e7eb; border-radius:10px; outline:none; font-size:14px; text-transform:uppercase; transition:0.2s; background:#f9fafb;}
+.card-login input:focus{border-color:#7c3aed; background:#fff; box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+.card-login input[readonly]{background:#f3f4f6;}
+.card-login button{width:100%; padding:13px; background:#111; color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; margin-top:8px; transition:0.2s;}
+.card-login button:hover{background:#000; transform:translateY(-1px);}
+  #erro-login{color:#ef4444; font-size:13px; margin-top:12px; display:none; background:#fef2f2; padding:8px; border-radius:8px; border:1px solid #fecaca;}
+  #box-primeiro-acesso{display:none; margin-top:16px; text-align:left; background:#f9f8ff; border:1px solid #ede9fe; border-radius:12px; padding:14px;}
+  #box-cadastro-novo{display:none; margin-top:16px; text-align:left; background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:14px;}
+  #box-novo-aluno{display:none; margin-top:16px; text-align:left; background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:14px;}
+  #sistema{display:none; flex-direction:row; height:100vh;}
+  #menu-lateral{width:270px; background:#ffffff; border-right:1px solid #e9e8f0; display:flex; flex-direction:column; padding:0; box-shadow: 4px 0 24px rgba(0,0,0,0.04); transition: transform 0.3s ease; z-index:1000;}
+.menu-topo{padding:24px 20px; border-bottom:1px solid #f3f4f6;}
+.logo-sistema{display:flex; align-items:center; gap:12px; font-weight:800; font-size:16px; letter-spacing:-0.5px;}
+.logo-icon{width:40px; height:40px; background:#111; color:#fff; display:grid; place-items:center; border-radius:10px; font-size:18px; cursor:pointer; overflow:hidden;}
+.user-info{margin-top:18px; padding:12px; background:#f9f8ff; border:1px solid #ede9fe; border-radius:10px;}
+.user-info small{color:#6b7280; font-size:11px; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;}
+.user-info b{color:#111; font-size:13px; display:block; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.menu-nav{flex:1; padding:16px 12px; display:flex; flex-direction:column; gap:6px;}
+.label{font-size:11px; color:#9ca3af; font-weight:700; letter-spacing:1px; padding:8px 12px 4px; text-transform:uppercase;}
+  button.menu-btn{width:100%; padding:12px 14px; cursor:pointer; border:1px solid transparent; background:transparent; border-radius:10px; font-size:14px; font-weight:500; color:#4b5563; transition: all 0.2s; display:flex; align-items:center; gap:10px; text-align:left;}
+  button.menu-btn:hover{background:#f9f8ff; color:#111; border-color:#ede9fe;}
+  button.menu-btn.ativo{background:#111; color:white; border-color:#111; box-shadow: 0 4px 12px rgba(0,0,0,0.15);}
+  #btn-sair{margin-top:16px; width:100%; background:#fff; border:1px solid #fee2e2!important; color:#ef4444!important; justify-content:flex-start; font-weight:600; border-radius:10px;}
+  #btn-sair:hover{background:#fef2f2!important; border-color:#fecaca!important;}
+  #conteudo-direita{flex:1; background:#f8f7ff; padding:20px; overflow:hidden; display:flex; flex-direction:column;}
+.barra-topo-conteudo{height:48px; background:#fff; border:1px solid #e9e8f0; border-radius:12px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+.barra-topo-conteudo span{font-size:13px; color:#6b7280;}
+.barra-topo-conteudo b{color:#111;}
+  #conteudo-direita iframe{flex:1; width:100%; border:1px solid #e9e8f0; border-radius:14px; background:white; box-shadow: 0 8px 24px rgba(0,0,0,0.06);}
+.tela-frame{flex:1; display:none; flex-direction:column; overflow:hidden;}
+.tela-frame.ativa{display:flex;}
+  #btn-menu-mobile{display:none; background:#111; color:#fff; border:0; border-radius:8px; padding:8px 12px; font-size:18px;}
+  #overlay{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:999;}
+  @media (max-width: 768px){
+    #menu-lateral{position:fixed; left:0; top:0; bottom:0; transform: translateX(-100%);}
+    #menu-lateral.aberto{transform: translateX(0);}
+    #conteudo-direita{width:100%;}
+    #btn-menu-mobile{display:block;}
+    #overlay.aberto{display:block;}
+  }
+</style>
 </head>
 <body>
+<div id="tela-login">
+  <div class="card-login">
+    <div class="logo" style="margin-bottom:8px;"><img src="logo-branco.png" style="width:100px; height:auto; display:block; margin:0 auto;"></div>
+    <p style="margin-top:10px;">Sistema de Teste do Discipulado</p>
+    <h2 style="margin-top:22px;">Bem-vindo</h2>
+    <p>Informe sua matrícula e senha</p>
+    <input type="text" id="matricula" placeholder="MATRÍCULA" onblur="formatarMatricula(this); buscarNome()" oninput="formatarMatriculaAoDigitar(this)">
+    <input type="text" id="nome" placeholder="NOME COMPLETO" readonly>
+    <input type="password" id="senha" placeholder="SENHA" style="text-transform:none;">
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button onclick="logar()" style="flex:1; background:#111; padding:13px; border-radius:10px; font-weight:700; border:none; color:#fff; cursor:pointer;">Entrar no Sistema</button>
+      <button onclick="limparCampos()" style="flex:1; background:#fff; color:#111; border:1px solid #e5e7eb; padding:13px; border-radius:10px; font-weight:700; cursor:pointer;">Limpar</button>
+    </div>
+    <div id="erro-login"></div>
+    <div style="margin-top:18px; text-align:left; background:#fff; border:1px solid #eeeeee; border-radius:14px; padding:6px 10px; display:flex; flex-direction:column;">
+      <div id="link-primeiro" onclick="abrirPrimeiroAcesso()" style="display:flex; align-items:center; gap:10px; padding:12px 8px; cursor:pointer;"><span style="width:32px; height:32px; background:#f5f3ff; border-radius:8px; display:grid; place-items:center;">🔑</span><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:13px; font-weight:600; color:#111;">Tenho Teste</span><span style="font-size:13px; font-weight:800; color:#6d28d9; text-decoration:underline;">Preciso da Senha</span></div></div>
+      <div style="height:1px; background:#f3f4f6; margin-left:50px;"></div>
+      <div id="link-cadastro-novo" onclick="abrirCadastroNovo()" style="display:flex; align-items:center; gap:10px; padding:12px 8px; cursor:pointer;"><span style="width:32px; height:32px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; display:grid; place-items:center;">📄</span><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:13px; font-weight:600; color:#111;">Tenho Teste</span><span style="font-size:13px; font-weight:800; color:#111; text-decoration:underline;">Mas estou incluso nos Pendentes</span></div></div>
+      <div style="height:1px; background:#f3f4f6; margin-left:50px;"></div>
+      <div id="link-novo-aluno" onclick="abrirNovoAluno()" style="display:flex; align-items:center; gap:10px; padding:12px 8px; cursor:pointer;"><span style="width:32px; height:32px; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; display:grid; place-items:center;">📝</span><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:13px; font-weight:600; color:#111;">Aluno Novo</span><span style="font-size:13px; font-weight:800; color:#9a3412; text-decoration:underline;">Não tenho teste</span></div></div>
+    </div>
+    <div id="box-primeiro-acesso"><h4 style="margin:0 0 8px 0;font-size:14px">Tenho Teste - Preciso da Senha</h4><div id="primeiro-mat-info" style="padding:8px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-weight:700;font-size:13px;margin-bottom:10px;display:none"></div><label style="font-size:11px;font-weight:700;color:#374151">DIGITE SEU E-MAIL</label><input type="email" id="emailPrimeiro" placeholder="seuemail@gmail.com" style="text-transform:lowercase;margin-top:4px"><button onclick="enviarSenhaParaEmail()" style="background:#7c3aed">📧 ENVIAR MINHA SENHA NO E-MAIL</button><div id="resultado-email" style="margin-top:10px"></div><div style="text-align:center;margin-top:10px"><span onclick="fecharPrimeiroAcesso()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div></div>
 
-<div id="listViewContainer">
-  <div id="listViewBox">
-    <div style="padding:8px 12px;display:flex;justify-content:space-between;align-items:left;background:#0f766e;color:white">
-      <h3 id="listTitulo" style="margin:0;font-size:13px">📋 LISTA - SETA ↑↓ + ENTER ou DUPLO CLIQUE</h3>
-      <button onclick="fecharListView()" style="background:#dc2626;color:white;border:none;padding:6px 14px;border-radius:6px;font-weight:900;cursor:pointer">✕ FECHAR</button>
-    </div>
-    <div style="padding:6px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
-      <div style="font-size:10px;color:#64748b;font-weight:700;margin-bottom:4px">PESQUISAR POR CRITERIOS</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
-        <input id="filtroNome" placeholder="NOME" oninput="debounceFiltrar()">
-        <input id="filtroMatricula" placeholder="MATRICULA" oninput="debounceFiltrar()">
-        <input id="filtroCPF" placeholder="CPF" oninput="debounceFiltrar()">
-        <input id="filtroCongregacao" placeholder="CONGREGACAO" oninput="debounceFiltrar()">
-      </div>
-    </div>
-    <div id="listViewTableWrap"><table id="listViewTable"><thead><tr><th style="width:120px">MATRICULA</th><th>NOME</th><th>CONGREGACAO</th></tr></thead><tbody id="listViewBody"></tbody></table></div>
-    <div id="listViewFooter"><div id="listViewInfo">0 registros</div><button onclick="carregarSelecionado()" style="background:#0f766e;color:white;border:none;padding:8px 16px;border-radius:6px;font-weight:800">👁️ Visualizar (ENTER)</button></div>
+    <div id="box-cadastro-novo"><h4 style="margin:0 0 8px 0;font-size:14px;color:#9a3412">Tenho Teste - Estou nos Pendentes</h4><div id="cadastro-novo-info" style="padding:8px;background:#fff;border:1px solid #fed7aa;border-radius:6px;font-weight:700;font-size:12px;margin-bottom:10px;">Carregando Pendentes...</div><div id="lista-nomes-pendentes" style="max-height:220px;overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:6px;display:none;margin-bottom:10px;"></div>
+      <label style="font-size:11px;font-weight:700;color:#9a3412">CPF * OBRIGATÓRIO - VAI GRAVAR NA COLUNA K</label>
+      <input type="text" id="cpfPendente" placeholder="000.000.000-00" maxlength="14" style="text-transform:none;margin-top:4px;background:#fff" oninput="formatarCPF(this)">
+      <button id="btn-salvar-pendente" onclick="salvarPreCadastro()" style="background:#ea580c">💾 SALVAR E MIGRAR PARA DADOS</button><div id="resultado-cadastro-novo" style="margin-top:10px"></div><div style="text-align:center;margin-top:10px"><span onclick="fecharCadastroNovo()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div></div>
+
+    <div id="box-novo-aluno"><h4 style="margin:0 0 8px 0;font-size:14px;color:#166534">Aluno Novo - Não tenho teste</h4><div style="padding:8px;background:#fff;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;margin-bottom:10px;">Digite matrícula, nome e CPF. Se estiver em Pendentes o sistema vai avisar.</div><label style="font-size:11px;font-weight:700">MATRÍCULA (5 dígitos)</label><input type="text" id="novaMatricula" placeholder="EX: 00123" style="text-transform:none;margin-top:4px" oninput="formatarMatriculaAoDigitar(this)"><label style="font-size:11px;font-weight:700">NOME COMPLETO</label><input type="text" id="novoNome" placeholder="NOME DO ALUNO" style="margin-top:4px"><label style="font-size:11px;font-weight:700">CPF</label><input type="text" id="novoCpf" placeholder="000.000.000-00" maxlength="14" style="text-transform:none;margin-top:4px" oninput="formatarCPF(this)"><button onclick="salvarNovoAluno()" style="background:#16a34a">✅ GERAR SENHA E SALVAR EM DADOS</button><div id="resultado-novo-aluno" style="margin-top:10px"></div><div style="text-align:center;margin-top:10px"><span onclick="fecharNovoAluno()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div></div>
   </div>
 </div>
-
-<div class="container">
-
-<div class="actions" style="display:flex;flex-wrap:wrap;gap:10px">
-  <button class="btn btn-save" onclick="salvar()" style="flex:1;min-width:110px">💾 SALVAR</button>
-  <button class="btn btn-clear" onclick="limpar()" style="flex:1;min-width:110px">🧹 LIMPAR</button>
-  <button class="btn btn-search" onclick="buscar()" style="flex:1;min-width:110px">🔍 BUSCAR</button>
-  <button class="btn btn-list" onclick="listar()" style="flex:1;min-width:110px;display:none">📋 Pré-Cadastro</button>
-  <button class="btn" onclick="abrirTeste52()" style="background:#7c3aed;color:white;flex:1;min-width:110px">📝 TESTE</button>
-  <button class="btn" onclick="recuperar()" style="background:#ea580c;color:white;flex:1;min-width:110px">♻️ RECUPERAR</button>
-</div>
-
-<div class="form-section"><div class="section-title">DADOS PRINCIPAIS</div>
-<div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:10px">
-<div>
-  <label>SENHA</label>
-  <div style="position:relative">
-    <input id="Senha" type="password" readonly style="width:100%;padding-right:38px">
-    <span onclick="let i=document.getElementById('Senha'); i.type=i.type==='password'?'text':'password'; this.innerText=i.type==='password'?'👁️':'🙈'" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer">👁️</span>
+<div id="sistema">
+  <div id="overlay" onclick="fecharMenuLateral()"></div>
+  <div id="menu-lateral">
+      <div class="menu-topo"><div class="logo-sistema"><div class="logo-icon" onclick="toggleMenuLateral()" style="background:#fff; border:1px solid #e9e8f0; padding:4px;"><img src="logo-branco.png" style="width:100%; height:100%; object-fit:contain;"></div> SYSTEM TD</div><div class="user-info"><small>Usuário logado</small><b id="user-display">-</b></div></div>
+      <div class="menu-nav"><div class="label">Principal</div><button id="btn-acesso-usuario" class="menu-btn" style="display:none" onclick="abrir('AcessoUsuario.html', this, 'Acesso Usuário')"><span class="icon">👤</span> ACESSO USUÁRIO</button><button class="menu-btn" onclick="abrir('CadastroAdm.html', this, 'Administradores')"><span class="icon">👑</span> ADMINISTRADOR</button><button class="menu-btn ativo" onclick="abrir('Cadastro.html', this, 'Cadastro e Acesso Testes')"><span class="icon">📝</span> CADASTRO</button><button class="menu-btn" onclick="abrir('Relatorio.html', this, 'Relatórios')"><span class="icon">📊</span> CERTIFICADOS</button><button class="menu-btn" onclick="abrir('Liberacao.html', this, 'Liberação')"><span class="icon">🔓</span> LIBERAÇÃO</button><button class="menu-btn" onclick="abrir('Baixar.html', this, 'Lições')"><span class="icon">📖</span> LIÇÕES</button><button id="btn-sair" class="menu-btn" onclick="sair()"><span class="icon">🚪</span> SAIR DO SISTEMA</button></div>
   </div>
+  <div id="conteudo-direita"><div class="barra-topo-conteudo"><div style="display:flex; align-items:center; gap:10px;"><button id="btn-menu-mobile" onclick="abrirMenuLateral()">☰</button><span>📍 <b id="pagina-atual">Cadastro e Acesso Testes</b></span></div><span id="hora-atual">-</span></div><div id="frame-Cadastro.html" class="tela-frame ativa"><iframe id="tela-Cadastro.html" src="Cadastro.html"></iframe></div><div id="frame-CadastroAdm.html" class="tela-frame"><iframe id="tela-CadastroAdm.html" src="CadastroAdm.html"></iframe></div><div id="frame-Relatorio.html" class="tela-frame"><iframe id="tela-Relatorio.html" src="Relatorio.html"></iframe></div><div id="frame-Liberacao.html" class="tela-frame"><iframe id="tela-Liberacao.html" src="Liberacao.html"></iframe></div><div id="frame-Baixar.html" class="tela-frame"><iframe id="tela-Baixar.html" src="Baixar.html"></iframe></div><div id="frame-AcessoUsuario.html" class="tela-frame"><iframe id="tela-AcessoUsuario.html" src="AcessoUsuario.html"></iframe></div></div>
 </div>
-  <div><label>CODIGO</label><input id="Codigo" readonly></div>
-  <div><label>LOGIN MAT</label><input id="MatriculaLogin" readonly style="background:#e2e8f0;font-weight:900;text-align:center"></div>
-</div>
-<div class="grid" style="grid-template-columns:1.2fr 0.6fr 1fr;margin-top:10px;align-items:end">
-  <div><label>MATRICULA * PESQUISE</label><input id="Matricula" autocomplete="off"></div>
-  <div><label style="opacity:0">.</label><button id="btnPesquiseMat" onclick="buscarMatriculaBD1()" style="width:100%;height:38px;background:#0f766e;color:white;border:none;border-radius:8px;font-weight:900;cursor:pointer">🔵 PESQUISE</button></div>
-  <div><label>CPF *</label><input id="CPF" maxlength="11" autocomplete="off"></div>
-</div>
-<div class="grid" style="grid-template-columns:1fr;margin-top:10px">
-  <div><label>NOME COMPLETO *</label><input id="Nome" autocomplete="off"></div>
-</div>
-<div class="grid" style="grid-template-columns:0.6fr 1fr 0.8fr;margin-top:10px">
-  <div><label>SEXO *</label><div class="combo-wrap" id="wrap_Sexo"><input id="Sexo" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Sexo"></div></div></div>
-  <div><label>WHATSAPP *</label><input id="WhatsApp" maxlength="11"></div>
-  <div><label>NASCIMENTO * <span id="idadeDisplay"></span></label><input id="Nascimento" type="date"></div>
-</div>
-<div style="display:none"><input id="FaixaEtaria"></div>
-<div class="grid" style="grid-template-columns:1fr;margin-top:10px">
-  <div><label>NOME DA CONGREGAÇAO *</label><div class="combo-wrap" id="wrap_Congregacao"><input id="Congregacao" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Congregacao"></div></div></div>
-</div>
-<div class="grid" style="grid-template-columns:1fr;margin-top:10px"><div style="display:none"></div><div><label>NOME DA MAE</label><input id="Mae"></div></div>
-</div>
-<div class="form-section"><div class="section-title">DADOS PESSOAIS E ECLESIASTICOS</div>
-<div class="grid" style="grid-template-columns:1fr 1fr;margin-top:10px"><div><label>SITUACAO CONJUGAL *</label><div class="combo-wrap" id="wrap_SitConjugal"><input id="SitConjugal" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_SitConjugal"></div></div></div><div><label>CURSO TEOLOGICO *</label><div class="combo-wrap" id="wrap_Cteologico"><input id="Cteologico" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Cteologico"></div></div></div></div>
-<div class="grid" style="grid-template-columns:1.3fr 1.3fr;margin-top:10px"><div><label>GRAU</label><div class="combo-wrap" id="wrap_GrauCurso"><input id="GrauCurso" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_GrauCurso"></div></div></div><div><label>ANDAMENTO DO CURSO</label><div class="combo-wrap" id="wrap_Andamento"><input id="Andamento" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Andamento"></div></div></div></div>
-<div style="display:none"><input id="RG"><input id="DataCasamento" type="date"><input id="Conjuge"><input id="DataTermino" type="date"></div>
-<div class="grid" style="grid-template-columns:0.7fr 0.7fr 0.7fr;margin-top:10px"><div><label>MEMBRO *</label><div class="combo-wrap" id="wrap_BatizadoAgua"><input id="BatizadoAgua" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_BatizadoAgua"></div></div></div><div><label>BT ESPIRITO SANTO *</label><div class="combo-wrap" id="wrap_EspSanto"><input id="EspSanto" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_EspSanto"></div></div></div><div><label>FUNCAO ECLESIASTICA *</label><div class="combo-wrap" id="wrap_TFunEclesiastica"><input id="TFunEclesiastica" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_TFunEclesiastica"></div></div></div></div>
-<div class="grid" style="grid-template-columns:1fr 1fr;margin-top:10px"><div><label>QUAL FUNCAO</label><div class="combo-wrap" id="wrap_QualFuncao"><input id="QualFuncao" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_QualFuncao"></div></div></div><div><label>FUNCAO NA CONGREGACAO</label><div class="combo-wrap" id="wrap_Fcongregacao"><input id="Fcongregacao" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Fcongregacao"></div></div></div></div>
-<div class="grid" style="grid-template-columns:1fr 1fr;margin-top:10px"><div><label>DEPARTAMENTO</label><div class="combo-wrap" id="wrap_Departamentoinserido"><input id="Departamentoinserido" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Departamentoinserido"></div></div></div><div><label>FUNCAO DEPARTAMENTO</label><div class="combo-wrap" id="wrap_FuncaoDepartamento"><input id="FuncaoDepartamento" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_FuncaoDepartamento"></div></div></div></div>
-<div class="grid grid-1" style="margin-top:10px"><div><label>OUTRAS FUNCOES</label><div class="combo-wrap" id="wrap_OFuncoes"><input id="OFuncoes" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_OFuncoes"></div></div></div></div>
-</div>
-<div class="form-section"><div class="section-title">ENDERECO</div>
-<div class="grid" style="grid-template-columns:0.9fr 2.2fr 0.9fr"><div><label>CEP</label><input id="CEP" maxlength="8" onblur="buscarCEP(this.value)" oninput="if(this.value.replace(/\D/g,'').length==8) buscarCEP(this.value)"></div><div><label>ENDERECO</label><input id="end"></div><div><label>NUMERO</label><input id="Numero"></div></div>
-<div class="grid grid-3" style="margin-top:10px"><div><label>BAIRRO</label><input id="Bairro"></div><div><label>COMPLEMENTO</label><input id="Complemento"></div><div><label>OBSERVACAO</label><input id="Observacao"></div></div>
-<div class="grid grid-2" style="margin-top:10px"><div><label>UF ENDERECO</label><div class="combo-wrap" id="wrap_UfEndereco"><input id="UfEndereco" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_UfEndereco"></div></div></div><div><label>CIDADE ENDERECO</label><div class="combo-wrap" id="wrap_CidadeEndereco"><input id="CidadeEndereco" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_CidadeEndereco"></div></div></div></div>
-<div class="grid grid-2" style="display:none"><div><label>ESTADO</label><div class="combo-wrap" id="wrap_Estado"><input id="Estado" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_Estado"></div></div></div><div><label>CIDADE NASC</label><div class="combo-wrap" id="wrap_CidadeNascimento"><input id="CidadeNascimento" class="combo-input"><div class="combo-arrow">▼</div><div class="combo-list" id="list_CidadeNascimento"></div></div></div></div>
-</div>
-</div>
-<div id="toast" class="toast"></div>
-<div id="overlayTeste" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999"></div>
-<script src="app.js"></script>
-
 <script>
-// SOMENTE 00425 HELIO VE O BOTAO BUSCAR
-(function(){
-  function verificaBuscar(){
+const API_URL = 'https://script.google.com/macros/s/AKfycbxLXw-nu5oXXtjE8HKik_W_bbT9CGjTNJWw-dUm4wWYv-hjcz1dOhMHLxoUTRHGJA3D0A/exec';
+const API_LOG = 'https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec';
+async function apiGet(a,p={}){p.t=Date.now();const u=API_URL+'?action='+a+'&'+new URLSearchParams(p);const r=await fetch(u,{cache:'no-store'});const t=await r.text();try{return JSON.parse(t)}catch{return{result:'ok',data:[]}}}
+async function apiLog(a,p={}){p.t=Date.now();const u=API_LOG+'?action='+a+'&'+new URLSearchParams(p);fetch(u,{mode:'no-cors',cache:'no-store'});return {result:'ok'};}
+let cacheDados = []; let cachePendentes = []; let usuarioLogado = null; let jaEnviou = false; let modoPreCadastro = false; let modoNovoAluno = false;
+if(sessionStorage.getItem("logado") === "true"){ mostrarSistema(); }
+function formatarMatricula(el){ let v = (el.value||'').trim().replace(/\D/g,''); if(v) el.value = v.padStart(5,'0').toUpperCase(); }
+function formatarMatriculaAoDigitar(el){ let v = (el.value||'').replace(/\D/g,''); if(v.length>5) v = v.slice(-5); el.value = v? v.padStart(5,'0') : ''; }
+function formatarCPF(el){ let v = el.value.replace(/\D/g,'').slice(0,11); if(v.length>9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if(v.length>6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if(v.length>3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2"); el.value = v; }
+function validarCPF(cpf){ cpf = cpf.replace(/\D/g,''); if(cpf.length!=11 || /^(\d)\1{10}$/.test(cpf)) return false; let s=0; for(let i=0;i<9;i++) s+=parseInt(cpf.charAt(i))*(10-i); let r=11-(s%11); if(r==10||r==11) r=0; if(r!=parseInt(cpf.charAt(9))) return false; s=0; for(let i=0;i<10;i++) s+=parseInt(cpf.charAt(i))*(11-i); r=11-(s%11); if(r==10||r==11) r=0; if(r!=parseInt(cpf.charAt(10))) return false; return true; }
+async function carregarPendentes(){ try{ document.getElementById('cadastro-novo-info').innerText = "⏳ Carregando Pendentes..."; let res = await apiGet('todosPendentes'); cachePendentes = res.data || []; document.getElementById('cadastro-novo-info').innerText = `✅ ${cachePendentes.length} pendentes - Clique para selecionar`; mostrarListaPendentes(cachePendentes); }catch(e){ document.getElementById('cadastro-novo-info').innerText = "❌ Erro ao carregar Pendentes"; } }
+function mostrarListaPendentes(lista){ let listaDiv = document.getElementById('lista-nomes-pendentes'); if(!lista || lista.length==0){ listaDiv.innerHTML = "<div style='padding:8px;font-size:12px;color:#6b7280'>Nenhum pendente encontrado</div>"; listaDiv.style.display='block'; return; } let mostrar = lista.slice(0,200); listaDiv.innerHTML = mostrar.map(f=> `<div onclick="selecionarPendente('${String(f.Matricula||f.B||'').padStart(5,'0')}')" style='padding:10px;border-bottom:1px solid #f3f4f6;cursor:pointer;font-size:12px;text-align:left'><b>${String(f.Matricula||'').padStart(5,'0')}</b> - ${f.Nome||''}<br><small style='color:#6b7280'>${f.Congregacao||''} | ${f.WhatsApp||''} | CPF: ${f.CPF||''}</small></div>`).join(''); listaDiv.style.display='block'; }
+async function buscarNome(){ let mat = (document.getElementById('matricula').value||'').trim().toUpperCase(); if(!mat) return; if(modoPreCadastro){ if(cachePendentes.length===0) await carregarPendentes(); let matFmt = mat.padStart(5,'0'); let achado = cachePendentes.find(x=> String(x.Matricula||x.B||'').padStart(5,'0')===matFmt ); if(achado){ document.getElementById('nome').value = String(achado.Nome||achado.C||'').toUpperCase(); document.getElementById('cpfPendente').value = achado.CPF? achado.CPF : ''; formatarCPF(document.getElementById('cpfPendente')); document.getElementById('cadastro-novo-info').innerHTML = `✅ Selecionado: <b>${achado.Nome}</b><br>Mat: ${matFmt} | ${achado.Congregacao||''} | CPF: ${achado.CPF||'vazio - digite'}`; document.getElementById('resultado-cadastro-novo').innerHTML = `<div style='padding:8px;background:#dcfce7;border-radius:6px;font-size:12px'>Confirme o CPF e clique em SALVAR</div>`; }else{ document.getElementById('cadastro-novo-info').innerText = "Matrícula não encontrada em Pendentes. Selecione na lista abaixo"; mostrarListaPendentes(cachePendentes); } return; } if(cacheDados.length===0){ try{ document.getElementById('nome').value='BUSCANDO...'; let res = await apiGet('todos'); cacheDados = res.data||[]; }catch(e){ document.getElementById('nome').value=''; return; } } let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); return m===mat.padStart(5,'0'); }); if(achado){ let nome = achado.Nome||achado.NOME||achado.D||''; document.getElementById('nome').value = String(nome).toUpperCase(); localStorage.setItem('mat_logada', mat.padStart(5,'0')); localStorage.setItem('nome_logado', String(nome).toUpperCase()); } }
+async function logar(){ const mat = (document.getElementById('matricula').value||'').trim().toUpperCase().padStart(5,'0'); const sen = (document.getElementById('senha').value||'').trim().toUpperCase(); if(!mat){ mostrarErro('DIGITE A MATRICULA'); return; } if(!sen){ mostrarErro('DIGITE A SENHA'); return; } try{ if(cacheDados.length===0){ let res = await apiGet('todos'); cacheDados = res.data||[]; } let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return m===mat && s===sen; }); if(achado){ usuarioLogado = achado; sessionStorage.setItem("logado", "true"); localStorage.setItem('mat_logada', mat); localStorage.setItem('senha_logada', sen); let nome = achado.Nome||achado.NOME||achado.D||''; localStorage.setItem('nome_logado', String(nome).toUpperCase()); let cod = achado.Codigo||achado.CODIGO||achado.A||''; apiLog('logAcesso',{matricula:mat, nome:String(nome).toUpperCase(), codigo:cod}); mostrarSistema(); } else { mostrarErro('SENHA NÃO CONFERE'); } }catch(e){ mostrarErro('ERRO AO BUSCAR: '+e.message); } }
+function mostrarErro(msg){ let el=document.getElementById('erro-login'); el.innerHTML=msg; el.style.display='block'; }
+function limparCampos(){ document.getElementById('matricula').value=''; document.getElementById('nome').value=''; document.getElementById('senha').value=''; document.getElementById('senha').type='password'; document.getElementById('senha').style.background='#f9fafb'; document.getElementById('senha').style.fontWeight='400'; document.getElementById('senha').style.fontSize='14px'; document.getElementById('erro-login').style.display='none'; document.getElementById('box-primeiro-acesso').style.display='none'; document.getElementById('box-cadastro-novo').style.display='none'; document.getElementById('box-novo-aluno').style.display='none'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('link-novo-aluno').style.display='flex'; document.getElementById('nome').readOnly = true; document.getElementById('nome').style.background = "#f3f4f6"; modoPreCadastro = false; modoNovoAluno = false; document.getElementById('matricula').placeholder = "MATRÍCULA"; document.getElementById('matricula').focus(); }
+function enviarParaForm(){ if(jaEnviou) return; let mat = localStorage.getItem('mat_logada')||''; let sen = localStorage.getItem('senha_logada')||''; let nome = localStorage.getItem('nome_logado')||''; let iframe = document.getElementById('tela-Cadastro.html'); if(iframe && iframe.contentWindow && mat){ iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*'); } let iframeRel = document.getElementById('tela-Relatorio.html'); if(iframeRel && iframeRel.contentWindow && mat){ iframeRel.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*'); } jaEnviou = true; }
+function mostrarSistema(){ document.getElementById("tela-login").style.display = "none"; document.getElementById("sistema").style.display = "flex"; let matLogada = (localStorage.getItem('mat_logada')||'').trim(); let nomeLogado = (localStorage.getItem('nome_logado')||'').trim(); let matFmt = String(matLogada).padStart(5,'0'); document.getElementById("user-display").innerText = matFmt + ' - ' + nomeLogado; let btnAcessoUsuario = document.getElementById('btn-acesso-usuario'); if(matFmt === '00425'){ if(btnAcessoUsuario) btnAcessoUsuario.style.display = 'flex'; }else{ if(btnAcessoUsuario) btnAcessoUsuario.style.display = 'none'; } let iframe = document.getElementById('tela-Cadastro.html'); iframe.onload = function(){ jaEnviou = false; setTimeout(enviarParaForm, 800); }; setTimeout(enviarParaForm, 800); setInterval(()=>{ document.getElementById('hora-atual').innerText = new Date().toLocaleString('pt-BR'); },1000); setTimeout(travarIframeAdm, 1000); }
+function sair(){ localStorage.clear(); sessionStorage.clear(); location.reload(); }
+function abrirPrimeiroAcesso(){ fecharCadastroNovo(); fecharNovoAluno(); let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); let nome=(document.getElementById('nome').value||'').trim(); let box=document.getElementById("box-primeiro-acesso"); let info=document.getElementById("primeiro-mat-info"); box.style.display="block"; document.getElementById("link-primeiro").style.display="none"; if(!mat || mat==="00000"){ info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima"; return; } info.style.display="block"; info.innerHTML=mat+" - "+nome; let achado = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); document.getElementById("emailPrimeiro").value = achado?.Email||""; document.getElementById("resultado-email").innerHTML=""; }
+function fecharPrimeiroAcesso(){ document.getElementById("box-primeiro-acesso").style.display="none"; document.getElementById("link-primeiro").style.display="flex"; }
+function abrirCadastroNovo(){ fecharPrimeiroAcesso(); fecharNovoAluno(); modoPreCadastro = true; modoNovoAluno = false; document.getElementById('box-cadastro-novo').style.display='block'; document.getElementById('link-cadastro-novo').style.display='none'; document.getElementById('nome').readOnly = false; document.getElementById('nome').style.background = "#fff"; document.getElementById('nome').placeholder = "DIGITE PARA FILTRAR POR NOME"; document.getElementById('nome').value = ""; document.getElementById('matricula').placeholder = "MATRÍCULA DE PENDENTES"; document.getElementById('cpfPendente').value=""; document.getElementById('erro-login').style.display='none'; carregarPendentes(); document.getElementById('matricula').focus(); }
+function fecharCadastroNovo(){ document.getElementById('box-cadastro-novo').style.display='none'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('nome').readOnly = true; document.getElementById('nome').style.background = "#f3f4f6"; document.getElementById('nome').placeholder = "NOME COMPLETO"; document.getElementById('lista-nomes-pendentes').style.display='none'; document.getElementById('resultado-cadastro-novo').innerHTML=''; modoPreCadastro = false; }
+function abrirNovoAluno(){ fecharPrimeiroAcesso(); fecharCadastroNovo(); modoNovoAluno = true; modoPreCadastro = false; document.getElementById('box-novo-aluno').style.display='block'; document.getElementById('link-novo-aluno').style.display='none'; document.getElementById('novaMatricula').value = document.getElementById('matricula').value; document.getElementById('novoNome').value = ""; let cpfEl = document.getElementById('novoCpf'); if(cpfEl) cpfEl.value = ""; document.getElementById('resultado-novo-aluno').innerHTML = ""; document.getElementById('erro-login').style.display='none'; }
+function fecharNovoAluno(){ document.getElementById('box-novo-aluno').style.display='none'; document.getElementById('link-novo-aluno').style.display='flex'; modoNovoAluno = false; }
+
+// === SALVAR PENDENTE COM CPF NA COLUNA K ===
+async function salvarPreCadastro(){
+  let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
+  let nome=(document.getElementById('nome').value||'').trim();
+  let cpfRaw=(document.getElementById('cpfPendente').value||'').trim();
+  let cpf = cpfRaw.replace(/\D/g,'');
+  let resDiv=document.getElementById('resultado-cadastro-novo');
+  if(!mat || mat=="00000"){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula ou clique na lista</div>"; return; }
+  if(!nome){ resDiv.innerHTML="<div style='color:#ef4444'>Selecione um nome da lista</div>"; return; }
+  if(!cpf){ resDiv.innerHTML="<div style='color:#ef4444'>Digite o CPF - obrigatório para coluna K</div>"; return; }
+  if(!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite CPF válido com 11 dígitos</div>"; return; }
+
+  // CARREGA DADOS PARA CHECAR DUPLICIDADE DE CPF NA COLUNA K
+  if(cacheDados.length===0){
+    resDiv.innerHTML="⏳ Verificando duplicidade de CPF...";
+    try{ let rD=await apiGet('todos'); cacheDados=rD.data||[]; }catch(e){}
+  }
+  let duplicado = cacheDados.find(x=>{
+    let c = String(x.CPF||x.cpf||x.K||x.k||'').replace(/\D/g,'');
+    return c && c===cpf;
+  });
+  if(duplicado){
+    let matDup = String(duplicado.Matricula||duplicado.MATRICULA||'').padStart(5,'0');
+    let nomeDup = duplicado.Nome||duplicado.NOME||'';
+    resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ CPF JÁ CADASTRADO!<br><br>CPF ${cpfRaw} já existe em DADOS<br>Mat: ${matDup} - ${nomeDup}<br><br>Não pode duplicar coluna K</div>`;
+    return;
+  }
+
+  resDiv.innerHTML="⏳ Salvando em DADOS com CPF na coluna K e removendo de Pendentes...";
+  try{
+    let r = await apiGet('migrarPendente',{matricula:mat, cpf:cpf, cpfFormatado:cpfRaw});
+    if(r.result=="ok"){
+      resDiv.innerHTML=`<div style='padding:10px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Salvo!</b><br>Matrícula ${mat} migrada para DADOS<br>CPF: ${cpfRaw} salvo na coluna K<br>Código: ${r.codigo||''} | Senha: ${r.senha||''}<br>Pendentes excluído</div>`;
+      cachePendentes = cachePendentes.filter(x=> String(x.Matricula||x.B||'').padStart(5,'0')!==mat);
+      mostrarListaPendentes(cachePendentes);
+      cacheDados = [];
+      document.getElementById('cpfPendente').value="";
+    }else{
+      resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${r.msg||'Não foi possível migrar'}</div>`;
+    }
+  }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${e.message}</div>`; }
+}
+
+async function salvarNovoAluno(){
+    let mat=(document.getElementById('novaMatricula').value||'').trim().padStart(5,'0');
+    let nome=(document.getElementById('novoNome').value||'').trim().toUpperCase();
+    let cpf=(document.getElementById('novoCpf').value||'').trim();
+    let resDiv=document.getElementById('resultado-novo-aluno');
+    if(mat=="00000" ||!mat){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula</div>"; return; }
+    if(!nome || nome.length<3){ resDiv.innerHTML="<div style='color:#ef4444'>Digite o nome completo</div>"; return; }
+    if(!cpf ||!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite um CPF válido</div>"; return; }
+    // BUSCA EM PENDENTES ANTES DE SALVAR: CODIGO Matricula congregacao Nome Sexo RG CPF WhatsApp
     try{
-      var mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0');
-      var btn = document.querySelector('.btn-search');
-      if(!btn) return;
-      if(mat === '00425'){ btn.style.display = ''; } else { btn.style.display = 'none'; }
-    }catch(e){}
-  }
-  setTimeout(verificaBuscar, 300);
-  setInterval(verificaBuscar, 1500);
-})();
-</script>
-
-<script>
-// === CORREÇÃO DEFINITIVA: SÓ ACEITA O QUE ESTÁ NA LISTA + AUTO PESQUISE 1X ===
-(function(){
-  var jaPesquisou=false;
-  window.__OPCOES_VALIDAS = {}; // memória das listas originais
-
-  function toast(m){
-    if(typeof showToast==='function'){ showToast(m); return; }
-    var t=document.getElementById('toast'); if(t){ t.textContent=m; t.className='toast show'; t.style.display='block'; setTimeout(function(){t.style.display='none';},4000);} else alert(m);
-  }
-  function norm(s){ return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' '); }
-
-  function coletarOpcoes(){
-    document.querySelectorAll('[id^="list_"]').forEach(function(list){
-      var idInput = list.id.replace('list_','');
-      var ops = Array.from(list.children).map(function(o){return norm(o.textContent||o.innerText);}).filter(Boolean);
-      if(ops.length>0){
-        if(!__OPCOES_VALIDAS[idInput]) __OPCOES_VALIDAS[idInput]=new Set();
-        ops.forEach(function(o){ __OPCOES_VALIDAS[idInput].add(o); });
+      if(cachePendentes.length===0){
+        resDiv.innerHTML="⏳ Verificando se está em Pendentes...";
+        let rPend = await apiGet('todosPendentes');
+        cachePendentes = rPend.data||[];
       }
-    });
-  }
-
-  // observa as listas sendo preenchidas pelo app.js
-  var obs = new MutationObserver(function(){ coletarOpcoes(); });
-  document.querySelectorAll('[id^="list_"]').forEach(function(l){ obs.observe(l, {childList:true}); });
-  setInterval(coletarOpcoes, 500);
-
-  function ehValido(id, valor){
-    var v=norm(valor); if(!v) return true;
-    var set = __OPCOES_VALIDAS[id];
-    if(!set || set.size===0){
-      // fallback: tenta ler direto da lista no momento
-      var el=document.getElementById('list_'+id);
-      if(el){ var tmp=Array.from(el.children).map(function(o){return norm(o.textContent);}).filter(Boolean); if(tmp.length>0) return tmp.indexOf(v)!==-1; }
-      return true; // ainda não carregou
-    }
-    return set.has(v);
-  }
-
-  function validarTodos(){
-    var combos=document.querySelectorAll('.combo-input');
-    for(var i=0;i<combos.length;i++){
-      var inp=combos[i]; var val=inp.value; if(!val) continue;
-      if(!ehValido(inp.id, val)){
-        toast('❌ "'+val+'" NÃO existe em '+inp.id+'. Onde tem ▼ só pode escolher da lista.');
-        inp.value=''; inp.style.border='2px solid #ef4444'; inp.style.background='#fef2f2';
-        inp.focus();
-        var wrap=document.getElementById('wrap_'+inp.id);
-        if(wrap){ var list=document.getElementById('list_'+inp.id); if(list) list.style.display='block'; wrap.classList.add('open'); }
-        return false;
-      } else { inp.style.border=''; inp.style.background=''; }
-    }
-    return true;
-  }
-
-  // bloqueia na saída e no colar
-  document.addEventListener('focusout', function(e){
-    if(e.target.classList.contains('combo-input')){
-      setTimeout(function(){
-        if(e.target.value &&!ehValido(e.target.id, e.target.value)){
-          toast('⚠️ "'+e.target.value+'" inválido em '+e.target.id+'. Escolha da lista ▼');
-          e.target.value=''; e.target.style.border='2px solid #ef4444'; e.target.style.background='#fef2f2';
-        }
-      },150);
-    }
-  }, true);
-  document.addEventListener('paste', function(e){
-    if(e.target.classList.contains('combo-input')){
-      setTimeout(function(){ if(e.target.value &&!ehValido(e.target.id, e.target.value)){ e.target.value=''; toast('❌ Não pode colar valor fora da lista ▼'); } },80);
-    }
-  }, true);
-
-  // trava o SALVAR/ALTERAR - captura antes
-  document.addEventListener('click', function(e){
-    var btn=e.target.closest('.btn-save');
-    if(btn &&!validarTodos()){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
-  }, true);
-
-  var t=0; var iv=setInterval(function(){
-    t++; coletarOpcoes();
-    if(typeof window.salvar==='function' &&!window.salvar._travado){
-      var orig=window.salvar;
-      window.salvar=function(){
-        coletarOpcoes();
-        if(!validarTodos()) return false;
-        return orig.apply(this, arguments);
-      };
-      window.salvar._travado=true;
-      clearInterval(iv);
-    }
-    if(t>150) clearInterval(iv);
-  },300);
-
-  function autoPesquise(){
-    if(jaPesquisou) return; jaPesquisou=true;
-    try{
-      var ml=(document.getElementById('MatriculaLogin')?.value||localStorage.getItem('mat_logada')||'').trim();
-      if(ml){ var im=document.getElementById('Matricula'); if(im &&!im.value) im.value=ml.replace(/\D/g,'').padStart(5,'0'); }
-      if(typeof buscarMatriculaBD1==='function') buscarMatriculaBD1();
-      else { var b=document.getElementById('btnPesquiseMat'); if(b) b.click(); }
+      let cpfSoNum = cpf.replace(/\D/g,'');
+      let matSemZero = mat.replace(/^0+/,'');
+      let achadoPend = cachePendentes.find(x=>{
+        let m = String(x.Matricula||x.B||'').replace(/\D/g,'').padStart(5,'0');
+        let mSemZero = String(x.Matricula||x.B||'').replace(/\D/g,'').replace(/^0+/,'');
+        let n = String(x.Nome||x.C||'').toUpperCase().trim();
+        let c = String(x.CPF||'').replace(/\D/g,'');
+        let rg = String(x.RG||'').replace(/\D/g,'');
+        return (m==mat || mSemZero==matSemZero) || (c && c==cpfSoNum) || (n && (n==nome || n.includes(nome) || nome.includes(n)));
+      });
+      if(achadoPend){
+        resDiv.innerHTML=`<div style='padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;text-align:center;color:#9a3412'><b>⚠️ VOCÊ JÁ ESTÁ EM PENDENTES!</b><br><br>Encontrado: <b>${String(achadoPend.Matricula||'').padStart(5,'0')} - ${achadoPend.Nome||''}</b><br>CPF: ${achadoPend.CPF||''}<br><br>Não pode cadastrar como Aluno Novo.<br><br>Use a opção:<br><b>"Tenho Teste - Mas estou incluso nos Pendentes"</b></div>`;
+        return;
+      }
     }catch(e){}
+    resDiv.innerHTML="⏳ Verificando e gerando senha...";
+    try{
+      let r = await apiGet('novoAluno',{matricula:mat, nome:nome, cpf:cpf});
+      if(r.result=="ok"){
+        document.getElementById('senha').type="text"; document.getElementById('senha').value=r.senha; document.getElementById('senha').style.background="#fef08a"; document.getElementById('senha').style.fontWeight="800"; document.getElementById('senha').style.fontSize="18px"; cacheDados=[];
+        resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #16a34a;border-radius:8px;text-align:center'><b style='color:#166534;font-size:14px'>✅ CADASTRADO!</b><br><br>Matrícula: <b>${mat}</b><br>CPF: <b>${cpf}</b><br>Código: <b>${r.codigo}</b><br>Senha: <b style='font-size:18px;background:#fef08a;padding:4px 8px;border-radius:6px'>${r.senha}</b></div>`;
+      }else{
+        resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ ${r.msg||'Erro ao salvar'}<br><br>Entre em contato com o administrador.</div>`;
+      }
+    }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ ${e.message}</div>`; }
   }
-  window.addEventListener('load', function(){ setTimeout(function(){ coletarOpcoes(); autoPesquise(); },900); });
-  setTimeout(function(){ if(!jaPesquisou) autoPesquise(); },1800);
-  setTimeout(function(){ if(!jaPesquisou) autoPesquise(); },3000);
-})();
+async function enviarSenhaParaEmail(){ let email=(document.getElementById("emailPrimeiro").value||'').trim(); let resDiv=document.getElementById("resultado-email"); let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); if(!email.includes("@")){resDiv.innerHTML="<div style='color:#ef4444;font-size:12px'>Digite um e-mail válido</div>";return;} if(cacheDados.length===0){let r=await apiGet('todos');cacheDados=r.data||[]} let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); if(!achado){resDiv.innerHTML="Matrícula não encontrada";return;} resDiv.innerHTML="⏳ Enviando sua senha para "+email+"..."; try{await apiGet('enviarSenhaEmail',{matricula:mat,email:email});}catch(e){} document.getElementById("senha").value=""; document.getElementById("senha").type="password"; document.getElementById("senha").placeholder="DIGITE A SENHA RECEBIDA NO E-MAIL"; document.getElementById("senha").focus(); resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Enviado!</b><br><br>Enviamos sua senha para:<br><b>${email}</b><br><br>Verifique seu e-mail e digite a senha no campo SENHA.</div>`; }
+const MATRICULAS_MASTER = ["00425","00001"];
+function travarIframeAdm(){ const iframeAdm = document.getElementById('tela-CadastroAdm.html'); if(!iframeAdm) return; const aplicarTrava = ()=>{ try{ let mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0'); if(MATRICULAS_MASTER.includes(mat)) return; const doc = iframeAdm.contentWindow.document; if(!doc ||!doc.body) return; doc.querySelectorAll("input, select, textarea").forEach(el=>{ const ph = (el.placeholder||'').toUpperCase(); const id = (el.id||'').toUpperCase(); if(ph.includes("BUSCAR")) return; if(ph.includes("MATRICULA")) return; if(id.includes("NMAT")) return; if(id.includes("MAT")) return; el.disabled = true; el.readOnly = true; el.style.backgroundColor = "#f3f4f6"; el.style.pointerEvents = "none"; el.style.opacity = "0.7"; }); doc.querySelectorAll("button").forEach(btn=>{ const t = (btn.innerText||'').toUpperCase(); if(t.includes("CADASTRO DE ADMINISTRADOR") || t.includes("LIMPAR") || t.includes("EDITAR")){ btn.disabled = true; btn.style.pointerEvents = "none"; btn.style.opacity = "0.35"; if(t.includes("EDITAR")) btn.style.display = "none"; } }); }catch(e){} }; iframeAdm.addEventListener('load', ()=> setTimeout(aplicarTrava, 700)); setTimeout(aplicarTrava, 900); setInterval(aplicarTrava, 2000); }
+let paginaAtual = 'Cadastro.html';
+function abrir(pagina, botao, titulo){ if(pagina === paginaAtual) { if(window.innerWidth <= 768){ fecharMenuLateral(); } return; } document.querySelectorAll('.menu-btn').forEach(b => { if(b.id!== 'btn-sair') b.classList.remove('ativo'); }); botao.classList.add('ativo'); document.getElementById('pagina-atual').innerText = titulo||pagina; document.querySelectorAll('.tela-frame').forEach(f=>f.classList.remove('ativa')); let alvo = document.getElementById('frame-'+pagina); if(alvo){ alvo.classList.add('ativa'); } paginaAtual = pagina; if(pagina === 'Cadastro.html'){ jaEnviou=false; setTimeout(enviarParaForm, 200); } if(pagina === 'Relatorio.html'){ jaEnviou=false; setTimeout(enviarParaForm, 200); } if(pagina === 'CadastroAdm.html'){ setTimeout(travarIframeAdm, 400); } if(window.innerWidth <= 768){ fecharMenuLateral(); } }
+function abrirMenuLateral(){ document.getElementById('menu-lateral').classList.add('aberto'); document.getElementById('overlay').classList.add('aberto'); }
+function fecharMenuLateral(){ document.getElementById('menu-lateral').classList.remove('aberto'); document.getElementById('overlay').classList.remove('aberto'); }
+function toggleMenuLateral(){ var menu = document.getElementById('menu-lateral'); if(menu.classList.contains('aberto')) fecharMenuLateral(); else abrirMenuLateral(); }
+document.addEventListener("keydown", e => { if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){ if(document.getElementById("box-primeiro-acesso").style.display==="block"){ enviarSenhaParaEmail(); } else if(document.getElementById("box-cadastro-novo").style.display==="block"){ salvarPreCadastro(); } else if(document.getElementById("box-novo-aluno").style.display==="block"){ salvarNovoAluno(); } else { logar(); } } });
+document.getElementById('nome').addEventListener('input', function(){ if(!modoPreCadastro) return; let termo = this.value.toUpperCase().trim(); if(termo.length < 2){ mostrarListaPendentes(cachePendentes); return; } let filtrados = cachePendentes.filter(x=>{ let n = String(x.Nome||x.C||'').toUpperCase(); let m = String(x.Matricula||x.B||'').toUpperCase(); return n.includes(termo) || m.includes(termo); }); mostrarListaPendentes(filtrados); });
+function selecionarPendente(mat){ document.getElementById('matricula').value = mat; buscarNome(); }
+document.getElementById('tela-AcessoUsuario.html').addEventListener('load', function(){ try{ let doc = this.contentDocument || this.contentWindow.document; if(doc){ let card = doc.querySelector('.card'); if(card){ card.style.margin = '0'; card.style.marginLeft = '0'; } doc.body.style.display = 'block'; doc.body.style.textAlign = 'left'; doc.body.style.padding = '0'; } }catch(e){} });
 </script>
-
 </body>
 </html>
