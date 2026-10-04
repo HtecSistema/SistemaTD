@@ -7,7 +7,6 @@ const LISTAS={"Sexo":["MASCULINO","FEMININO"],"FaixaEtaria":["LACTANTE (BEBE DE 
 let dadosListView=[],dadosFiltrados=[],indiceSelecionado=-1,modoEdicao=false,tipoListaAtual='NOVO',debounceTimer=null;
 let cacheTodos=[];
 let matriculaOriginal='', codigoOriginal='';
-
 function normaliza5Dig(v){ return String(v||'').replace(/\D/g,'').padStart(5,'0').slice(-5); }
 function setarMatriculaLogin(){
   let matLogada = normaliza5Dig(localStorage.getItem('mat_logada')||'');
@@ -51,12 +50,12 @@ function getNome(r){return (r.Nome || r.NOME || r.nome || r.E || '').toString().
 function debounceFiltrar(){clearTimeout(debounceTimer);debounceTimer=setTimeout(()=>{let n=(document.getElementById('filtroNome').value||'').toUpperCase();let m=(document.getElementById('filtroMatricula').value||'').toUpperCase();let cpf=(document.getElementById('filtroCPF').value||'').toUpperCase();let cong=(document.getElementById('filtroCongregacao').value||'').toUpperCase();let f=dadosListView.filter(it=>{let cn=getCong(it);return (!n||String(it.Nome||it.NOME||it.E||'').toUpperCase().includes(n))&&(!m||getMat(it).includes(m))&&(!cpf||String(it.CPF||'').toUpperCase().includes(cpf))&&(!cong||cn.includes(cong));});renderLista(f,'FILTRADO');},300)}
 function initCombos(){Object.keys(LISTAS).forEach(id=>{const input=document.getElementById(id);const list=document.getElementById('list_'+id);const wrap=document.getElementById('wrap_'+id);if(!input||!list)return;const arrow=wrap?wrap.querySelector('.combo-arrow'):null;let pos=-1;function pintar(){const itens=[...list.querySelectorAll('.combo-item')];itens.forEach(el=>{el.style.background='';el.style.color='';});if(itens[pos]){itens[pos].style.background='#0f766e';itens[pos].style.color='white';itens[pos].scrollIntoView({block:'nearest'});}}function render(f=''){list.innerHTML='';pos=-1;const items=(LISTAS[id]||[]).filter(v=>String(v).toUpperCase().includes(f.toUpperCase()));items.forEach(v=>{const d=document.createElement('div');d.className='combo-item';d.innerText=v;d.style.padding='8px 12px';d.style.cursor='pointer';d.onclick=()=>{input.value=v;list.style.display='none';pos=-1;};d.onmouseenter=()=>{const itens=[...list.querySelectorAll('.combo-item')];pos=itens.indexOf(d);pintar();};list.appendChild(d)});if(items.length>0){pos=0;pintar();}}input.addEventListener('focus',()=>{render(input.value);list.style.display='block'});input.addEventListener('input',()=>{render(input.value);list.style.display='block'});input.addEventListener('keydown',(e)=>{const itens=[...list.querySelectorAll('.combo-item')];if(list.style.display==='none' ||!itens.length) return;if(e.key==='ArrowDown'){e.preventDefault();pos++;if(pos>=itens.length)pos=0;pintar();}else if(e.key==='ArrowUp'){e.preventDefault();pos--;if(pos<0)pos=itens.length-1;pintar();}else if(e.key==='Enter'){if(pos>=0 && itens[pos]){e.preventDefault();itens[pos].click();}}else if(e.key==='Escape'){list.style.display='none';pos=-1;}});if(arrow)arrow.onclick=()=>{list.style.display=list.style.display==='block'?'none':'block';if(list.style.display==='block'){render(input.value);input.focus()}}});document.addEventListener('click',e=>{document.querySelectorAll('.combo-list').forEach(l=>{const w=l.parentElement;if(w&&!w.contains(e.target))l.style.display='none'})})}
 function calcularIdadeFaixa(){const nasc=document.getElementById('Nascimento').value;if(!nasc){document.getElementById('FaixaEtaria').value='';document.getElementById('idadeDisplay').innerText='';return}const hoje=new Date();const n=new Date(nasc);let idade=hoje.getFullYear()-n.getFullYear();const m=hoje.getMonth()-n.getMonth();if(m<0||(m===0&&hoje.getDate()<n.getDate()))idade--;document.getElementById('idadeDisplay').innerText=idade+' anos';let faixa='';if(idade<3)faixa='LACTANTE (BEBE DE COLO)';else if(idade<12)faixa='CRIANCA (03 A 11 ANOS)';else if(idade<18)faixa='ADOLESCENTE (12 A 17 ANOS)';else if(idade<40)faixa='ADULTO JOVEM (18 A 39 ANOS)';else if(idade<60)faixa='ADULTO DE MEIA-IDADE (40 A 59 ANOS)';else if(idade<80)faixa='TERCEIRA IDADE (60 ANOS ACIMA)';else faixa='LONGEVO (80 ANOS OU MAIS)';document.getElementById('FaixaEtaria').value=faixa}
-function renderLista(dados,titulo){let vistos=new Set();let unicos=[];dados.forEach(r=>{let mat=getMat(r);let nome=getNome(r);if(!mat&&!nome)return;let chave=(mat||'')+'|'+(nome||'');if(!vistos.has(chave)){vistos.add(chave);unicos.push(r);}});dados=unicos;dadosListView=dados;dadosFiltrados=dados;indiceSelecionado=-1;document.getElementById('listTitulo').innerText=titulo+' - '+dados.length+' registros';const tbody=document.getElementById('listViewBody');tbody.innerHTML='';dados.forEach((r,i)=>{let mat=getMat(r);let nome=getNome(r);let cong=getCong(r);const tr=document.createElement('tr');tr.innerHTML=<td>${mat}</td><td title="${nome}">${nome}</td><td title="${cong}">${cong}</td>;tr.onclick=()=>{document.querySelectorAll('#listViewBody tr').forEach(x=>x.classList.remove('selected'));tr.classList.add('selected');indiceSelecionado=i;};tr.ondblclick=()=>{indiceSelecionado=i;carregarSelecionado();};tbody.appendChild(tr);});document.getElementById('listViewInfo').innerText='Localizados '+dados.length+' registros';if(dados.length>0){indiceSelecionado=0;tbody.children[0]?.classList.add('selected');}}
+function renderLista(dados,titulo){let vistos=new Set();let unicos=[];dados.forEach(r=>{let mat=getMat(r);let nome=getNome(r);if(!mat&&!nome)return;let chave=(mat||'')+'|'+(nome||'');if(!vistos.has(chave)){vistos.add(chave);unicos.push(r);}});dados=unicos;dadosListView=dados;dadosFiltrados=dados;indiceSelecionado=-1;document.getElementById('listTitulo').innerText=titulo+' - '+dados.length+' registros';const tbody=document.getElementById('listViewBody');tbody.innerHTML='';dados.forEach((r,i)=>{let mat=getMat(r);let nome=getNome(r);let cong=getCong(r);const tr=document.createElement('tr');tr.innerHTML=`<td>${mat}</td><td title="${nome}">${nome}</td><td title="${cong}">${cong}</td>`;tr.onclick=()=>{document.querySelectorAll('#listViewBody tr').forEach(x=>x.classList.remove('selected'));tr.classList.add('selected');indiceSelecionado=i;};tr.ondblclick=()=>{indiceSelecionado=i;carregarSelecionado();};tbody.appendChild(tr);});document.getElementById('listViewInfo').innerText='Localizados '+dados.length+' registros';if(dados.length>0){indiceSelecionado=0;tbody.children[0]?.classList.add('selected');}}
 function organizarLayout(){['DataCasamento','Conjuge','DataTermino'].forEach(id=>{const el=document.getElementById(id);if(!el) return;el.value='';el.disabled=true;el.style.background='rgba(255,255,255,0.3)';el.style.border='1px dashed #aaa';el.style.color='#666';el.style.opacity='0.5';el.style.pointerEvents='none';});}
 async function buscar(){tipoListaAtual='ALTERAR';modoEdicao=true;document.getElementById('listViewContainer').style.display='flex';document.getElementById('listViewBody').innerHTML='<tr><td colspan=3 style="text-align:center;padding:20px">Buscando...</td></tr>';try{const res=await apiGet('todos');cacheTodos=res.data||[];renderLista(cacheTodos,'BUSCA - ALTERAR');}catch(e){document.getElementById('listViewBody').innerHTML='<tr><td colspan=3>Erro: '+e.message+'</td></tr>'}}
 async function listar(){tipoListaAtual='NOVO';modoEdicao=false;document.getElementById('listViewContainer').style.display='flex';document.getElementById('listViewBody').innerHTML='<tr><td colspan=3 style="text-align:center;padding:20px">Buscando Pré...</td></tr>';try{const res=await apiGet('ciclo');renderLista(res.data||[],'PRÉ-CADASTRO - NOVO');const todos=await apiGet('todos');cacheTodos=todos.data||[];}catch(e){document.getElementById('listViewBody').innerHTML='<tr><td colspan=3>Erro: '+e.message+'</td></tr>'}}
 function coletarDados(){var g=id=>{var el=document.getElementById(id);return el?el.value.trim().toUpperCase():''};return{Codigo:g('Codigo'),Matricula:g('Matricula'),Congregacao:g('Congregacao'),Fcongregacao:g('Fcongregacao'),Nome:g('Nome'),Nascimento:dataParaBR(document.getElementById('Nascimento').value),Mae:g('Mae'),CidadeNascimento:g('CidadeNascimento'),Estado:g('Estado'),Sexo:g('Sexo'),RG:g('RG'),CPF:g('CPF'),WhatsApp:g('WhatsApp'),FaixaEtaria:g('FaixaEtaria'),SitConjugal:g('SitConjugal'),DtCasamento:dataParaBR(document.getElementById('DataCasamento').value),Conjuge:g('Conjuge'),Cteologico:g('Cteologico'),GrauCurso:g('GrauCurso'),Andamento:g('Andamento'),DataTermino:dataParaBR(document.getElementById('DataTermino').value),BatizadoAgua:g('BatizadoAgua'),BEspSanto:g('EspSanto'),EspSanto:g('EspSanto'),TFunEclesiastica:g('TFunEclesiastica'),QualFuncao:g('QualFuncao'),Departamentoinserido:g('Departamentoinserido'),FuncaoDepartamento:g('FuncaoDepartamento'),OFuncoes:g('OFuncoes'),CEP:g('CEP'),end:g('end'),Numero:g('Numero'),Bairro:g('Bairro'),Complemento:g('Complemento'),Observacao:g('Observacao'),uff:g('UfEndereco'),yCid:g('CidadeEndereco'),Senha:g('Senha')}}
-function validaCPF(cpf){cpf=String(cpf||'').replace(/\D/g,'');if(cpf.length!==11||/^(\d)\1+$/.test(cpf))return false;let s=0;for(let i=0;i<9;i++)s+=parseInt(cpf[i])(10-i);let r=(s*10)%11;if(r===10)r=0;if(r!==parseInt(cpf[9]))return false;s=0;for(let i=0;i<10;i++)s+=parseInt(cpf[i])(11-i);r=(s*10)%11;if(r===10)r=0;return r===parseInt(cpf[10]);}
+function validaCPF(cpf){cpf=String(cpf||'').replace(/\D/g,'');if(cpf.length!==11||/^(\d)\1+$/.test(cpf))return false;let s=0;for(let i=0;i<9;i++)s+=parseInt(cpf[i])*(10-i);let r=(s*10)%11;if(r===10)r=0;if(r!==parseInt(cpf[9]))return false;s=0;for(let i=0;i<10;i++)s+=parseInt(cpf[i])*(11-i);r=(s*10)%11;if(r===10)r=0;return r===parseInt(cpf[10]);}
 async function salvar(){
   let dados=coletarDados();
   if(dados.Matricula){
@@ -102,13 +101,10 @@ async function salvar(){
     if(btn){btn.disabled=false;btn.innerHTML=modoEdicao?'💾 ALTERAR':'💾 SALVAR';}
   }
 }
-
-
 function limpar(){
   try{
     localStorage.removeItem('estado_cadastro_ATUAL');
     localStorage.removeItem('estado_cadastro_'+getMatriculaLogin());
-    // limpa todos os estados antigos também
     for(let i=localStorage.length-1;i>=0;i--){
       let k=localStorage.key(i);
       if(k && k.startsWith('estado_cadastro_')) localStorage.removeItem(k);
@@ -144,12 +140,7 @@ function limpar(){
   document.getElementById('idadeDisplay').innerText='';
   organizarLayout();
 }
-
-
 function carregarSelecionado(){if(indiceSelecionado<0){toast('Selecione um nome!','err');return}let it=dadosFiltrados[indiceSelecionado];matriculaOriginal=getMat(it);codigoOriginal=String(it.Codigo||it.codigo||it.CODIGO||document.getElementById('Codigo').value||'').trim();let norm={};Object.keys(it).forEach(k=>{let nk=String(k).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');norm[nk]=it[k];norm[String(k).toLowerCase()]=it[k];});function pega(...nomes){for(let n of nomes){let nn=String(n).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');if(norm[nn]!==undefined&&String(norm[nn]).trim()!=='')return String(norm[nn]);if(it[n]!==undefined&&String(it[n]).trim()!=='')return String(it[n]);let lower=String(n).toLowerCase();if(it[lower]!==undefined&&String(it[lower]).trim()!=='')return String(it[lower]);}return'';}const mapa={Codigo:['Codigo','codigo'],Matricula:['Matricula','matricula'],Congregacao:['Congregacao','congregacao','Origem','origem'],Fcongregacao:['Fcongregacao','fcongregacao'],Nome:['Nome','nome'],WhatsApp:['WhatsApp','whatsapp','Contato','contato'],Mae:['Mae','mae'],Sexo:['Sexo','sexo'],RG:['RG','rg'],CPF:['CPF','cpf'],FaixaEtaria:['FaixaEtaria','faixaetaria'],SitConjugal:['SitConjugal','sitconjugal'],Conjuge:['Conjuge','conjuge'],Cteologico:['Cteologico','cteologico'],GrauCurso:['GrauCurso','graucurso'],Andamento:['Andamento','andamento'],BatizadoAgua:['BatizadoAgua','batizadoagua'],EspSanto:['EspSanto','espsanto','BEspSanto'],TFunEclesiastica:['TFunEclesiastica','tfuneclesiastica'],QualFuncao:['QualFuncao','qualfuncao'],Departamentoinserido:['Departamentoinserido','departamentoinserido'],FuncaoDepartamento:['FuncaoDepartamento','funcaodepartamento'],OFuncoes:['OFuncoes','ofuncoes'],CEP:['CEP','cep'],end:['end','endereco'],Numero:['Numero','numero'],Bairro:['Bairro','bairro'],Complemento:['Complemento','complemento'],Observacao:['Observacao','observacao'],UfEndereco:['UfEndereco','uff','UFF','uf','UFENDERECO'],CidadeEndereco:['CidadeEndereco','yCid','YCID','ycid','yCID','cidadeendereco'],Estado:['Estado','estado'],CidadeNascimento:['CidadeNascimento','cidadenascimento'],Senha:['Senha','senha']};Object.keys(mapa).forEach(id=>{let el=document.getElementById(id);if(!el)return;let v=pega(...mapa[id]);if(v)el.value=v.toUpperCase();});let nasc=pega('Nascimento','nascimento');let cas=pega('DtCasamento','dtcasamento','DataCasamento');let term=pega('DataTermino','datatermino');if(nasc)document.getElementById('Nascimento').value=dataParaISO(nasc);if(cas)document.getElementById('DataCasamento').value=dataParaISO(cas);if(term)document.getElementById('DataTermino').value=dataParaISO(term);if(!document.getElementById('UfEndereco').value){let uf=it.uff||it.UFF||it.uf||it.Uf||'';if(uf)document.getElementById('UfEndereco').value=String(uf).toUpperCase();}if(!document.getElementById('CidadeEndereco').value){let cid=it.yCid||it.YCID||it.ycid||it.yCID||'';if(cid)document.getElementById('CidadeEndereco').value=String(cid).toUpperCase();}window.dadosBuscaSelecionado={...it};fecharListView();const btn=document.getElementById('btnSalvar')||document.querySelector('.btn-save');if(tipoListaAtual==='ALTERAR'){modoEdicao=true;if(btn)btn.innerHTML='💾 ALTERAR';toast('MODO ALTERAR - '+getMat(it),'ok');}else{modoEdicao=false;document.getElementById('Codigo').value=String(Date.now()).slice(-6);const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=ch.charAt(Math.floor(Math.random()*ch.length));document.getElementById('Senha').value=s;if(btn)btn.innerHTML='💾 SALVAR';toast('MODO NOVO','ok');}calcularIdadeFaixa();try{ salvarEstadoCadastro(); }catch(e){} window.scrollTo({top:0,behavior:'smooth'});}
-
-// === MEMORIA PARA NAO APAGAR AO VOLTAR DE CERTIFICADO ===
-// === MEMORIA FIXA - NAO APAGA AO VOLTAR DE CERTIFICADO ===
 function salvarEstadoCadastro(){
   try{
     let estado={};
@@ -160,7 +151,6 @@ function salvarEstadoCadastro(){
     estado['_DataCasamentoISO']=document.getElementById('DataCasamento')?.value||'';
     estado['_DataTerminoISO']=document.getElementById('DataTermino')?.value||'';
     estado['_salvoEm']=Date.now();
-    // salva em 2 lugares: ATUAL (sempre) + por matricula
     localStorage.setItem('estado_cadastro_ATUAL', JSON.stringify(estado));
     let ml = normaliza5Dig(localStorage.getItem('mat_logada')||'') || getMatriculaLogin();
     if(ml) localStorage.setItem('estado_cadastro_'+ml, JSON.stringify(estado));
@@ -170,7 +160,6 @@ function restaurarEstadoCadastro(){
   try{
     let raw = localStorage.getItem('estado_cadastro_ATUAL');
     if(!raw){
-      // tenta achar qualquer estado salvo
       for(let i=0;i<localStorage.length;i++){
         let k=localStorage.key(i);
         if(k && k.startsWith('estado_cadastro_')){
@@ -182,7 +171,6 @@ function restaurarEstadoCadastro(){
     if(!raw) return false;
     let estado=JSON.parse(raw);
     if(!estado.Nome || estado.Nome.length<3) return false;
-    // restaura todos os inputs
     Object.keys(estado).forEach(id=>{
       if(id.startsWith('_')) return;
       let el=document.getElementById(id);
@@ -195,14 +183,9 @@ function restaurarEstadoCadastro(){
     return true;
   }catch(e){ return false; }
 }
-
-
-
 window.addEventListener('load',async()=>{
   initCombos();organizarLayout();
   try{let lista=[];let tentativas=['congregacoes','listaIgrejas','getListaIgrejas','congregacao'];for(let act of tentativas){try{let res=await apiGet(act);let dados=res.data||res||[];if(Array.isArray(dados)&&dados.length){lista=dados.map(v=>String(v.Nome||v.nome||v.Congregacao||v.congregacao||v||'').trim()).filter(v=>v);if(lista.length)break;}}catch(e){}}lista=lista.map(v=>String(v||'').trim().toUpperCase()).filter(v=>v&&v.length>=3);lista=[...new Set(lista)].sort();if(lista.length>0){LISTAS.Congregacao=lista;}}catch(e){}
-
-  // NÃO LIMPA SE JÁ TINHA DADOS - RESTAURA
   setarMatriculaLogin();
   if(restaurarEstadoCadastro()){
     let ml=getMatriculaLogin();
@@ -210,7 +193,6 @@ window.addEventListener('load',async()=>{
     const btn=document.getElementById('btnSalvar')||document.querySelector('.btn-save');
     if(btn) btn.innerHTML='💾 ALTERAR';
     tipoListaAtual='ALTERAR'; modoEdicao=true;
-    // salva de novo a cada alteração pra não perder
     document.querySelectorAll('.form-section input').forEach(el=>{
       el.addEventListener('change', ()=>{ try{ salvarEstadoCadastro(); }catch(e){} });
     });
@@ -218,12 +200,10 @@ window.addEventListener('load',async()=>{
   }else{
     limpar();
   }
-
   document.getElementById('CEP')?.addEventListener('blur',function(){buscarCEP(this.value)});
   document.getElementById('Nascimento')?.addEventListener('change',()=>{calcularIdadeFaixa(); try{salvarEstadoCadastro();}catch(e){}});
   try{const r=await apiGet('todos');cacheTodos=r.data||[];}catch{}
 });
-
 document.addEventListener('keydown',function(e){let c=document.getElementById('listViewContainer');if(!c||c.style.display==='none')return;const rows=document.querySelectorAll('#listViewBody tr');if(rows.length===0)return;if(e.key==='ArrowDown'){e.preventDefault();if(indiceSelecionado<dadosFiltrados.length-1)indiceSelecionado++;else indiceSelecionado=0;rows.forEach((r,i)=>r.classList.toggle('selected',i===indiceSelecionado));rows[indiceSelecionado]?.scrollIntoView({block:'nearest'})}else if(e.key==='ArrowUp'){e.preventDefault();if(indiceSelecionado>0)indiceSelecionado--;else indiceSelecionado=dadosFiltrados.length-1;rows.forEach((r,i)=>r.classList.toggle('selected',i===indiceSelecionado));rows[indiceSelecionado]?.scrollIntoView({block:'nearest'})}else if(e.key==='Enter'&&indiceSelecionado>=0){e.preventDefault();carregarSelecionado()}else if(e.key==='Escape'){fecharListView()}});
 async function buscarCEP(cep){cep=(cep||'').replace(/\D/g,'');if(cep.length!==8)return;try{const r=await fetch('https://viacep.com.br/ws/'+cep+'/json/');const d=await r.json();if(d.logradouro)document.getElementById('end').value=d.logradouro.toUpperCase();if(d.bairro)document.getElementById('Bairro').value=d.bairro.toUpperCase();if(d.localidade)document.getElementById('CidadeEndereco').value=d.localidade.toUpperCase();if(d.uf){const mapa={'AC':'ACRE','AL':'ALAGOAS','AP':'AMAPA','AM':'AMAZONAS','BA':'BAHIA','CE':'CEARA','DF':'DISTRITO FEDERAL','ES':'ESPIRITO SANTO','GO':'GOIAS','MA':'MARANHAO','MT':'MATO GROSSO','MS':'MATO GROSSO DO SUL','MG':'MINAS GERAIS','PA':'PARA','PB':'PARAIBA','PR':'PARANA','PE':'PERNAMBUCO','PI':'PIAUI','RJ':'RIO DE JANEIRO','RN':'RIO GRANDE DO NORTE','RS':'RIO GRANDE DO SUL','RO':'RONDONIA','RR':'RORAIMA','SC':'SANTA CATARINA','SP':'SAO PAULO','SE':'SERGIPE','TO':'TOCANTINS'};document.getElementById('UfEndereco').value=mapa[d.uf]||d.uf}toast('Endereço preenchido','ok')}catch{}}
 async function buscarMatriculaBD1(){
@@ -374,20 +354,58 @@ function tornarMovel(modalId, handleId){
 async function abrirTeste52(){
   let m = document.getElementById('modalTestes'); if(m){ m.remove(); return; }
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
-  modal.innerHTML = <div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - TESTES - CARREGANDO...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>;
+  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - TESTES - CARREGANDO...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>`;
   document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
   try{ let r = await apiGet('testeLink',{}); listaTestes = r.data || r || []; document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length; renderTestes(listaTestes); }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
+
+// ==== LISTA TOP DE LINHA COM COR POR CICLO ====
 function renderTestes(lista){
   listaTestes = lista; let div = document.getElementById('listaTestes'); if(!div) return;
-  let abertos={}; try{abertos=JSON.parse(localStorage.getItem('testes_abertos')||'{}')}catch(e){} let cont={};
+  let abertos={}; try{abertos=JSON.parse(localStorage.getItem('testes_abertos')||'{}')}catch(e){}
+  let cores = {
+    'CICLO 01':'#0f766e',
+    'CICLO 02':'#2563eb',
+    'CICLO 03':'#7c3aed',
+    'CICLO 04':'#dc2626',
+    'CICLO 05':'#ea580c',
+    'CICLO 06':'#0891b2',
+    'CICLO 07':'#059669',
+    'CICLO 08':'#9333ea'
+  };
+  let cont={};
   div.innerHTML = lista.map((t,idx)=>{
-    let ciclo=(t.Ciclo||'CICLO 01').toUpperCase(); if(!cont[ciclo]) cont[ciclo]=0; cont[ciclo]++; let nf=String(cont[ciclo]).padStart(2,'0');
-    let cod=t.Cod||(ciclo+'-'+nf); let tema=t.Tema||'Conhecendo Jesus e o Seu Reino'; let ja=!!abertos[cod]; let rowId='row_'+idx;
-    return <div id="${rowId}" style="background:${ja?'#198754':'white'};border:1px solid ${ja?'#198754':'#e5e7eb'};border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:900;font-size:13px;color:${ja?'white':'#111'}">${nf} - ${ciclo} | TESTE ${nf} ${ja?'✓':''}</div><div style="font-size:11px;color:${ja?'#d1fae5':'#555'}">${tema}</div></div><button onclick="abrirTeste('${t.LinkAcesso}','${cod}','${rowId}')" style="background:${ja?'white':'#1a73e8'};color:${ja?'#198754':'white'};border:0;padding:8px 18px;border-radius:8px;font-weight:900">${ja?'FEITO':'ABRIR'}</button></div>;
+    let ciclo=(t.Ciclo||'CICLO 01').toUpperCase();
+    if(!cont[ciclo]) cont[ciclo]=0;
+    cont[ciclo]++;
+    let nf=String(cont[ciclo]).padStart(2,'0');
+    let cod=t.Cod||(ciclo+'-'+nf);
+    let tema=t.Tema||'Conhecendo Jesus e o Seu Reino';
+    let ja=!!abertos[cod];
+    let rowId='row_'+idx;
+    let cor = cores[ciclo] || '#111827';
+    return `<div id="${rowId}" style="background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,0.05)">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="background:${cor};color:white;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:0.5px">${ciclo}</span>
+          <span style="font-weight:900;font-size:13px;color:#111">TESTE ${nf} ${ja?'✓':''}</span>
+        </div>
+        <div style="font-size:11px;color:#444;margin-top:4px;font-weight:600">${tema}</div>
+      </div>
+      <button onclick="abrirTeste('${t.LinkAcesso}','${cod}','${rowId}')" style="background:${ja?'${cor}':'${cor}'};color:white;border:0;padding:8px 18px;border-radius:8px;font-weight:900;min-width:70px;opacity:${ja?'0.6':'1'}">${ja?'FEITO':'ABRIR'}</button>
+    </div>`;
   }).join('');
 }
+
+// ==== CORREÇÃO DEFINITIVA - 1 ABA SÓ - SEM POPUP ====
+let _travaTeste = {cod:'', tempo:0};
 async function abrirTeste(linkOriginal, codUnico, rowId){
+  let agora = Date.now();
+  if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500){
+    return;
+  }
+  _travaTeste = {cod: codUnico, tempo: agora};
+
   const d=coletarDados();
   let obrig = [
     {id:'Matricula', label:'MATRICULA'},
@@ -403,28 +421,37 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
   obrig.forEach(o=>{ let el=document.getElementById(o.id); let v=el?String(el.value||'').trim():''; if(!v) faltando.push(o.label); });
   if(faltando.length>0){
     toast('PREENCHA: '+faltando.join(', '),'err');
-    alert('PREENCHA OS CAMPOS OBRIGATÓRIOS:\n\n• '+faltando.join('\n• ')+'\n\nO TESTE NÃO VAI ABRIR SEM ISSO.');
+    alert('PREENCHA OS CAMPOS OBRIGATÓRIOS:\n\n• '+faltando.join('\n• '));
+    _travaTeste = {cod:'', tempo:0};
     return;
   }
+
   let ciclo = '4'; let testeNum = '1';
   try{ let item = listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo = String(item.Ciclo).replace(/\D/g,''); let m = String(codUnico).match(/-(\d+)/); if(m) testeNum = m[1]; }catch(e){}
-  try{
-    toast('Verificando liberação...','ok');
-    let check = await apiGet('verificarliberacao',{matricula:d.Matricula,ciclo:ciclo,teste:testeNum});
-    if(!check.liberado){
-      if(check.nota>=70){ toast('⛔ JÁ APROVADO com '+check.nota+' - Não pode refazer','err'); alert('⛔ BLOQUEADO\nVocê já tirou '+check.nota+' no Teste '+testeNum+' Ciclo '+ciclo+'\nNota >=70 não pode refazer'); return; }
-      else{ toast('⛔ SEM LIBERAÇÃO: '+check.motivo,'err'); alert('⛔ BLOQUEADO\nNota: '+(check.nota||'')+'\nMotivo: '+check.motivo+'\n\nPeça liberação ao admin 00425'); return; }
-    }
-  }catch(e){}
   let base=linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
   let entries=[...linkOriginal.matchAll(/entry\.(\d+)/g)].map(x=>x[0]);
   let bat=String(d.BatizadoAgua||'').toUpperCase(); if(bat!=='SIM'&&bat!=='NAO') bat='SIM';
   let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
   if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
+
+  // ABRE 1 VEZ SÓ - DIRETO - ANTES DE QUALQUER AWAIT
+  window.open(base, '_blank');
+
+  try{
+    let check = await apiGet('verificarliberacao',{matricula:d.Matricula,ciclo:ciclo,teste:testeNum});
+    if(!check.liberado){
+      if(check.nota>=70){ toast('⛔ JÁ APROVADO com '+check.nota,'err'); }
+      else{ toast('⛔ SEM LIBERAÇÃO: '+check.motivo,'err'); }
+      _travaTeste = {cod:'', tempo:0};
+      return;
+    }
+  }catch(e){}
+
   const payload = {...d, CodigoTeste: codUnico, Ciclo: ciclo};
-  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).then(r=>{ window.open(base,'_blank'); }).catch(()=>{ window.open(base,'_blank'); });
+  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).catch(()=>{});
+
   let ov=document.getElementById('overlayTeste');
-  ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center"><b>Teste '+codUnico+' Ciclo '+ciclo+'</b><br>gravando...<br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;margin-top:12px;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900">✓ JÁ ENVIEI - VOLTAR</button></div>';
+  ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center;max-width:340px"><b>Teste '+codUnico+' aberto em outra aba</b><br><small>SistemaTD continua aberto atrás</small><br><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900;margin-bottom:8px">✓ JÁ ENVIEI - VOLTAR</button><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\';" style="width:100%;background:#e5e7eb;color:#111;border:0;padding:10px;border-radius:10px;font-weight:700">✕ FECHAR</button></div>';
   ov.style.display='flex'; ov.style.alignItems='center'; ov.style.justifyContent='center';
 }
 (function(){
@@ -477,7 +504,7 @@ async function recuperar(){
   let modal = document.createElement('div');
   modal.id = 'modalRecuperar';
   modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
-  modal.innerHTML = <div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleRecup" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalRecuperar').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloRecup" style="margin:0;font-size:13px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - RECUPERAÇÃO - ${matAtual}</h3></div><div id="listaRecup" style="overflow-y:auto;padding:10px;background:#f8f9fa">Buscando ${matAtual}...</div></div>;
+  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleRecup" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalRecuperar').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloRecup" style="margin:0;font-size:13px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - RECUPERAÇÃO - ${matAtual}</h3></div><div id="listaRecup" style="overflow-y:auto;padding:10px;background:#f8f9fa">Buscando ${matAtual}...</div></div>`;
   document.body.appendChild(modal);
   tornarMovel('modalRecuperar','handleRecup');
   try{
@@ -493,11 +520,11 @@ async function recuperar(){
     let div = document.getElementById('listaRecup');
     let tit = document.getElementById('tituloRecup');
     if(filtrados.length===0){
-      tit.innerText = 📝 RECUPERAÇÃO - ${matAtual} - 0;
-      div.innerHTML = <div style="text-align:center;padding:20px">Nenhuma recuperação liberada para<br><b>${matAtual} - ${nomeAtual}</b><br><br>Só aparece se a matrícula estiver na guia LIBERACAO.</div>;
+      tit.innerText = `📝 RECUPERAÇÃO - ${matAtual} - 0`;
+      div.innerHTML = `<div style="text-align:center;padding:20px">Nenhuma recuperação liberada para<br><b>${matAtual} - ${nomeAtual}</b><br><br>Só aparece se a matrícula estiver na guia LIBERACAO.</div>`;
       return;
     }
-    tit.innerText = 📝 ARRASTE AQUI - RECUPERAÇÃO - ${matAtual} - ${filtrados.length};
+    tit.innerText = `📝 ARRASTE AQUI - RECUPERAÇÃO - ${matAtual} - ${filtrados.length}`;
     div.innerHTML = filtrados.map(it=>{
       let ciclo = String(it.CICLO||it.E||'').toUpperCase();
       let teste = String(it.TESTE||it.F||'').toUpperCase();
@@ -519,9 +546,9 @@ async function recuperar(){
 }
 function abrirLinkRecuperacao(link){
   if(!link){ toast('Link vazio','err'); return; }
+  window.open(link,'_blank','noopener');
   try{
     let d=coletarDados();
     apiGet('salvarNaResposta',{dados:JSON.stringify({...d, tipo:'RECUPERACAO'}), cod:'RECUP-'+Date.now(), ciclo:'RECUP'}).catch(()=>{});
   }catch(e){}
-  window.open(link,'_blank');
 }
