@@ -384,76 +384,20 @@ function renderTestes(lista){
     let ja=!!abertos[cod];
     let rowId='row_'+idx;
     let cor = cores[ciclo] || '#111827';
-    return `<div id="${rowId}" style="background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,0.05)">
+    return `<div id="${rowId}" style="background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;border-radius:12px;padding:12px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.06)">
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:6px">
-          <span style="background:${cor};color:white;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:0.5px">${ciclo}</span>
+          <span style="background:${cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:0.5px;box-shadow:0 2px 4px ${cor}40">${ciclo}</span>
           <span style="font-weight:900;font-size:13px;color:#111">TESTE ${nf} ${ja?'✓':''}</span>
         </div>
-        <div style="font-size:11px;color:#444;margin-top:4px;font-weight:600">${tema}</div>
+        <div style="font-size:11px;color:#444;margin-top:5px;font-weight:600">${tema}</div>
       </div>
-      <button onclick="abrirTeste('${t.LinkAcesso}','${cod}','${rowId}')" style="background:${ja?'${cor}':'${cor}'};color:white;border:0;padding:8px 18px;border-radius:8px;font-weight:900;min-width:70px;opacity:${ja?'0.6':'1'}">${ja?'FEITO':'ABRIR'}</button>
+      <button onclick="abrirTeste('${t.LinkAcesso}','${cod}','${rowId}')" style="background:linear-gradient(135deg, ${cor} 0%, ${cor}dd 100%);color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;min-width:78px;box-shadow:0 4px 12px ${cor}50, 0 1px 3px rgba(0,0,0,0.2);cursor:pointer;transform:translateY(0);transition:all 0.15s ease;letter-spacing:0.5px;opacity:${ja?'0.5':'1'}" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" onmouseenter="this.style.boxShadow='0 6px 16px ${cor}60, 0 2px 6px rgba(0,0,0,0.2)'; this.style.transform='translateY(-1px)'" onmouseleave="this.style.boxShadow='0 4px 12px ${cor}50, 0 1px 3px rgba(0,0,0,0.2)'; this.style.transform='translateY(0)'">${ja?'FEITO':'🚀 ABRIR'}</button>
     </div>`;
   }).join('');
 }
 
-// ==== CORREÇÃO DEFINITIVA - 1 ABA SÓ - SEM POPUP ====
-let _travaTeste = {cod:'', tempo:0};
-async function abrirTeste(linkOriginal, codUnico, rowId){
-  let agora = Date.now();
-  if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500){
-    return;
-  }
-  _travaTeste = {cod: codUnico, tempo: agora};
 
-  const d=coletarDados();
-  let obrig = [
-    {id:'Matricula', label:'MATRICULA'},
-    {id:'Nome', label:'PESQUISE'},
-    {id:'Sexo', label:'SEXO'},
-    {id:'WhatsApp', label:'WHATSAPP'},
-    {id:'Congregacao', label:'CONGREGACAO'},
-    {id:'Fcongregacao', label:'NOME DA CONGREGAÇAO'},
-    {id:'BatizadoAgua', label:'MEMBRO'},
-    {id:'QualFuncao', label:'FUNCAO ECLESIASTICA'}
-  ];
-  let faltando = [];
-  obrig.forEach(o=>{ let el=document.getElementById(o.id); let v=el?String(el.value||'').trim():''; if(!v) faltando.push(o.label); });
-  if(faltando.length>0){
-    toast('PREENCHA: '+faltando.join(', '),'err');
-    alert('PREENCHA OS CAMPOS OBRIGATÓRIOS:\n\n• '+faltando.join('\n• '));
-    _travaTeste = {cod:'', tempo:0};
-    return;
-  }
-
-  let ciclo = '4'; let testeNum = '1';
-  try{ let item = listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo = String(item.Ciclo).replace(/\D/g,''); let m = String(codUnico).match(/-(\d+)/); if(m) testeNum = m[1]; }catch(e){}
-  let base=linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
-  let entries=[...linkOriginal.matchAll(/entry\.(\d+)/g)].map(x=>x[0]);
-  let bat=String(d.BatizadoAgua||'').toUpperCase(); if(bat!=='SIM'&&bat!=='NAO') bat='SIM';
-  let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
-  if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
-
-  // ABRE 1 VEZ SÓ - DIRETO - ANTES DE QUALQUER AWAIT
-  window.open(base, '_blank');
-
-  try{
-    let check = await apiGet('verificarliberacao',{matricula:d.Matricula,ciclo:ciclo,teste:testeNum});
-    if(!check.liberado){
-      if(check.nota>=70){ toast('⛔ JÁ APROVADO com '+check.nota,'err'); }
-      else{ toast('⛔ SEM LIBERAÇÃO: '+check.motivo,'err'); }
-      _travaTeste = {cod:'', tempo:0};
-      return;
-    }
-  }catch(e){}
-
-  const payload = {...d, CodigoTeste: codUnico, Ciclo: ciclo};
-  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).catch(()=>{});
-
-  let ov=document.getElementById('overlayTeste');
-  ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center;max-width:340px"><b>Teste '+codUnico+' aberto em outra aba</b><br><small>SistemaTD continua aberto atrás</small><br><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900;margin-bottom:8px">✓ JÁ ENVIEI - VOLTAR</button><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\';" style="width:100%;background:#e5e7eb;color:#111;border:0;padding:10px;border-radius:10px;font-weight:700">✕ FECHAR</button></div>';
-  ov.style.display='flex'; ov.style.alignItems='center'; ov.style.justifyContent='center';
-}
 (function(){
   function ativarArraste(){
     const container = document.getElementById('listViewContainer'); if(!container) return;
