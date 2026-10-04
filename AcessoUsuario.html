@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acessos</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0; font-family:'Segoe UI', Inter, sans-serif; background:#f5f7ff; padding:0; display:flex; justify-content:flex-start; align-items:flex-start; min-height:100vh;}
+.card{background:#fff; max-width:620px; width:100%; margin:0; margin-left:0; border-radius:0 16px 16px 0; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,0.06); border:1px solid #eef0f6; border-left:0;}
+.card h2{margin:0 0 12px 0; font-size:15px; font-weight:800; color:#111827;}
+.busca{width:100%; padding:10px 12px; border-radius:10px; border:2px solid #111; font-weight:700; font-size:12px; outline:none; margin-bottom:8px; text-transform:uppercase;}
+.filtros-data{display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; align-items:center; background:#f9fafb; padding:8px; border-radius:8px; border:1px solid #e5e7eb;}
+.filtros-data label{font-size:10px; font-weight:700;}
+.filtros-data input[type="date"]{padding:6px 8px; border-radius:6px; border:1px solid #d1d5db; font-size:11px; flex:1;}
+.filtros-data button{padding:6px 10px; border-radius:6px; border:none; font-weight:700; font-size:10px; cursor:pointer;}
+.tabela{width:100%; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; display:flex; flex-direction:column;}
+.tabela-header{display:flex; background:#111827; color:#fff; padding:6px 8px; font-size:10px; font-weight:700; text-transform:uppercase; position:sticky; top:0; z-index:2;}
+.tabela-header div{padding-right:4px;}
+#lista{max-height:70vh; height:420px; overflow-y:auto; overflow-x:hidden;}
+.linha{display:flex; align-items:center; padding:5px 8px; border-bottom:1px solid #f3f4f6; font-size:11px; background:#fff; line-height:1.2;}
+.linha:nth-child(even){background:#fafbff;}
+.linha:hover{background:#eef2ff;}
+.linha div{padding-right:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.col-cod{width:10%; text-align:center;}
+.col-mat{width:13%; text-align:center;}
+.col-nome{width:42%;}
+.col-data{width:20%; text-align:center;}
+.col-hora{width:15%; text-align:center;}
+.top-actions{display:flex; gap:6px; margin-bottom:10px;}
+.top-actions button{padding:6px 10px; border-radius:8px; border:none; font-weight:700; font-size:10px; cursor:pointer;}
+.btn-black{background:#111; color:#fff;}
+.btn-white{background:#fff; border:1px solid #e5e7eb!important; color:#111;}
+.btn-blue{background:#2563eb; color:#fff;}
+.btn-gray{background:#e5e7eb; color:#111;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Acesso de Usuários</h2>
+  <div class="top-actions">
+    <button class="btn-black" onclick="carregar()">🔄 ATUALIZAR</button>
+    <button class="btn-white" onclick="exportarCSV()">📥 CSV</button>
+    <span style="margin-left:auto; font-size:11px; background:#f3f4f6; padding:5px 10px; border-radius:20px;">Total: <b id="total">0</b></span>
+  </div>
+  <input type="text" id="buscar" class="busca" placeholder="BUSCAR NOME OU MAT..." oninput="filtrar()">
+  <div class="filtros-data">
+    <label>De:</label>
+    <input type="date" id="dataInicio">
+    <label>Até:</label>
+    <input type="date" id="dataFim">
+    <button class="btn-blue" onclick="filtrar()">FILTRAR</button>
+    <button class="btn-gray" onclick="limparDatas()">LIMPAR</button>
+  </div>
+  <div class="tabela">
+    <div class="tabela-header">
+      <div class="col-cod">Cod</div>
+      <div class="col-mat">Mat</div>
+      <div class="col-nome">Nome</div>
+      <div class="col-data">Data</div>
+      <div class="col-hora">hora</div>
+    </div>
+    <div id="lista">
+      <div style="padding:20px; text-align:center; color:#6b7280;">Clique em ATUALIZAR para carregar</div>
+    </div>
+  </div>
+</div>
+<script>
+const API_LOG = 'https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec';
+let dados = [];
+let dadosFiltrados = [];
+function soData(v){if(!v) return '';let s=String(v).trim();if(s.includes('T')){let d=s.split('T')[0];let p=d.split('-');if(p.length==3) return p[2]+'/'+p[1]+'/'+p[0];return d;}if(s.includes('/')) return s.substring(0,10);if(s.includes('-')&&s.length>=10){let p=s.substring(0,10).split('-');if(p.length==3) return p[2]+'/'+p[1]+'/'+p[0];}return s.substring(0,10);}
+function soHora(v){if(!v) return '';let s=String(v).trim();if(s.includes('T')){let t=s.split('T')[1];return t.substring(0,5);}if(s.includes(':')) return s.substring(0,5);return s;}
+function dataParaComparar(dataStr){let s=soData(dataStr);if(!s) return null;let p=s.split('/');if(p.length!=3) return null;return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+async function carregar(){document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">⏳ Carregando...</div>';try{let r=await fetch(API_LOG+'?action=todosAcessos&t='+Date.now());let j=await r.json();dados=j.data||[];render(dados);}catch(e){document.getElementById('lista').innerHTML='<div style="padding:20px;color:red;text-align:center">Erro: '+e.message+'</div>';}}
+function render(lista){dadosFiltrados=lista;document.getElementById('total').innerText=lista.length;if(!lista.length){document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">Nenhum acesso</div>';return;}document.getElementById('lista').innerHTML=lista.map(l=>{return `<div class="linha"><div class="col-cod">${l.Cod||''}</div><div class="col-mat">${String(l.Matricula||'').padStart(5,'0')}</div><div class="col-nome">${l.Nome||''}</div><div class="col-data">${soData(l.Data)}</div><div class="col-hora">${soHora(l.Horario)}</div></div>`;}).join('');}
+function filtrar(){
+  if(!dados.length){ carregar().then(()=>{ filtrarInterno(); }); return; }
+  filtrarInterno();
+}
+function filtrarInterno(){
+  let termo=document.getElementById('buscar').value.toUpperCase().trim();
+  let inicio=document.getElementById('dataInicio').value;
+  let fim=document.getElementById('dataFim').value;
+  let f=[...dados];
+  if(termo){f=f.filter(x=>String(x.Matricula||'').toUpperCase().includes(termo)||String(x.Nome||'').toUpperCase().includes(termo));}
+  if(inicio){f=f.filter(x=>{let d=dataParaComparar(x.Data);return d&&d>=inicio;});}
+  if(fim){f=f.filter(x=>{let d=dataParaComparar(x.Data);return d&&d<=fim;});}
+  render(f);
+}
+function limparDatas(){
+  document.getElementById('dataInicio').value = '';
+  document.getElementById('dataFim').value = '';
+  document.getElementById('buscar').value = '';
+  dadosFiltrados = [];
+  document.getElementById('total').innerText = '0';
+  document.getElementById('lista').innerHTML = '<div style="padding:20px;text-align:center">Lista limpa - clique em ATUALIZAR</div>';
+}
+function exportarCSV(){let csv="Cod;Matricula;Nome;Data;horario\n";dadosFiltrados.forEach(l=>{csv+=`${l.Cod||''};${l.Matricula||''};${l.Nome||''};${soData(l.Data)};${soHora(l.Horario)}\n`;});let blob=new Blob([csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AcessoUsuario.csv';a.click();}
+// SEM carregar() automatico
+</script>
+</body>
+</html>
