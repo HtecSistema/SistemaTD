@@ -7,6 +7,8 @@ const LISTAS={"Sexo":["MASCULINO","FEMININO"],"FaixaEtaria":["LACTANTE (BEBE DE 
 let dadosListView=[],dadosFiltrados=[],indiceSelecionado=-1,modoEdicao=false,tipoListaAtual='NOVO',debounceTimer=null;
 let cacheTodos=[];
 let matriculaOriginal='', codigoOriginal='';
+let listaTestes=[];
+let _travaTeste={cod:'',tempo:0};
 function normaliza5Dig(v){ return String(v||'').replace(/\D/g,'').padStart(5,'0').slice(-5); }
 function setarMatriculaLogin(){
   let matLogada = normaliza5Dig(localStorage.getItem('mat_logada')||'');
@@ -358,63 +360,40 @@ async function abrirTeste52(){
   document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
   try{ let r = await apiGet('testeLink',{}); listaTestes = r.data || r || []; document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length; renderTestes(listaTestes); }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
-
-// ==== LISTA TOP DE LINHA COM COR POR CICLO ====
 function renderTestes(lista){
   listaTestes = lista; let div = document.getElementById('listaTestes'); if(!div) return;
   let abertos={}; try{abertos=JSON.parse(localStorage.getItem('testes_abertos')||'{}')}catch(e){}
-    if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500){
-    return;
-  }
+  let cores = {'CICLO 01':'#0f766e','CICLO 02':'#2563eb','CICLO 03':'#7c3aed','CICLO 04':'#dc2626','CICLO 05':'#ea580c','CICLO 06':'#0891b2','CICLO 07':'#059669','CICLO 08':'#9333ea'};
+  let cont={};
+  div.innerHTML = lista.map((t,idx)=>{
+    let ciclo=(t.Ciclo||'CICLO 01').toUpperCase();
+    if(!cont[ciclo]) cont[ciclo]=0; cont[ciclo]++;
+    let nf=String(cont[ciclo]).padStart(2,'0');
+    let cod=t.Cod||(ciclo+'-'+nf);
+    let tema=t.Tema||'Conhecendo Jesus e o Seu Reino';
+    let ja=!!abertos[cod];
+    let rowId='row_'+idx;
+    let cor = cores[ciclo] || '#111827';
+    return `<div id="${rowId}" style="background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"><div style="flex:1"><span style="background:${cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${ja?'✓':''}</span><div style="font-size:11px">${tema}</div></div><button onclick="abrirTeste('${t.LinkAcesso}','${cod}','${rowId}')" style="background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900">${ja?'FEITO':'🚀 ABRIR'}</button></div>`;
+  }).join('');
+}
+function abrirTeste(linkOriginal, codUnico, rowId){
+  let agora = Date.now();
+  if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
   _travaTeste = {cod: codUnico, tempo: agora};
-
-  const d=coletarDados();
-  let obrig = [
-    {id:'Matricula', label:'MATRICULA'},
-    {id:'Nome', label:'PESQUISE'},
-    {id:'Sexo', label:'SEXO'},
-    {id:'WhatsApp', label:'WHATSAPP'},
-    {id:'Congregacao', label:'CONGREGACAO'},
-    {id:'Fcongregacao', label:'NOME DA CONGREGAÇAO'},
-    {id:'BatizadoAgua', label:'MEMBRO'},
-    {id:'QualFuncao', label:'FUNCAO ECLESIASTICA'}
-  ];
-  let faltando = [];
-  obrig.forEach(o=>{ let el=document.getElementById(o.id); let v=el?String(el.value||'').trim():''; if(!v) faltando.push(o.label); });
-  if(faltando.length>0){
-    toast('PREENCHA: '+faltando.join(', '),'err');
-    alert('PREENCHA OS CAMPOS OBRIGATÓRIOS:\n\n• '+faltando.join('\n• '));
-    _travaTeste = {cod:'', tempo:0};
-    return;
-  }
-
-  let ciclo = '4'; let testeNum = '1';
-  try{ let item = listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo = String(item.Ciclo).replace(/\D/g,''); let m = String(codUnico).match(/-(\d+)/); if(m) testeNum = m[1]; }catch(e){}
-  let base=linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
-  let entries=[...linkOriginal.matchAll(/entry\.(\d+)/g)].map(x=>x[0]);
-  let bat=String(d.BatizadoAgua||'').toUpperCase(); if(bat!=='SIM'&&bat!=='NAO') bat='SIM';
-  let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
-  if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
-
-  // ABRE 1 VEZ SÓ - DIRETO - ANTES DE QUALQUER AWAIT
-  window.open(base, '_blank');
-
+  const d = coletarDados();
+  let ciclo='4'; let testeNum='1';
+  try{ let item=listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo=String(item.Ciclo).replace(/\D/g,''); let m=String(codUnico).match(/-(\d+)/); if(m) testeNum=m[1]; }catch(e){}
+  let base = linkOriginal;
   try{
-    let check = await apiGet('verificarliberacao',{matricula:d.Matricula,ciclo:ciclo,teste:testeNum});
-    if(!check.liberado){
-      if(check.nota>=70){ toast('⛔ JÁ APROVADO com '+check.nota,'err'); }
-      else{ toast('⛔ SEM LIBERAÇÃO: '+check.motivo,'err'); }
-      _travaTeste = {cod:'', tempo:0};
-      return;
-    }
-  }catch(e){}
-
-  const payload = {...d, CodigoTeste: codUnico, Ciclo: ciclo};
-  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).catch(()=>{});
-
-  let ov=document.getElementById('overlayTeste');
-  ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center;max-width:340px"><b>Teste '+codUnico+' aberto em outra aba</b><br><small>SistemaTD continua aberto atrás</small><br><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900;margin-bottom:8px">✓ JÁ ENVIEI - VOLTAR</button><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\';" style="width:100%;background:#e5e7eb;color:#111;border:0;padding:10px;border-radius:10px;font-weight:700">✕ FECHAR</button></div>';
-  ov.style.display='flex'; ov.style.alignItems='center'; ov.style.justifyContent='center';
+    base = linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
+    let entries=[...linkOriginal.matchAll(/entry\.(\d+)/g)].map(x=>x[0]);
+    let bat=String(d.BatizadoAgua||'').toUpperCase(); if(bat!=='SIM'&&bat!=='NAO') bat='SIM';
+    let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
+    if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
+  }catch(e){ base = linkOriginal; }
+  let a = document.createElement('a'); a.href = base; a.target = '_blank'; a.rel = 'noopener noreferrer'; document.body.appendChild(a); a.click(); setTimeout(()=>{ try{a.remove()}catch(e){} }, 800);
+  apiGet('salvarNaResposta',{dados:JSON.stringify({...d, CodigoTeste: codUnico, Ciclo: ciclo}), cod:codUnico, ciclo:ciclo}).catch(()=>{});
 }
 (function(){
   function ativarArraste(){
