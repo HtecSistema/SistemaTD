@@ -60,6 +60,9 @@
     #btn-menu-mobile{display:block;}
     #overlay.aberto{display:block;}
   }
+  /* AJUSTE PARA ACESSO USUARIO FICAR NA ESQUERDA */
+  #frame-AcessoUsuario.html{ align-items:flex-start; justify-content:flex-start; }
+  #frame-AcessoUsuario.html iframe{ max-width:900px; margin:0; }
 </style>
 </head>
 <body>
@@ -143,6 +146,7 @@
       </div>
       <div class="menu-nav">
 <div class="label">Principal</div>
+<button id="btn-acesso-usuario" class="menu-btn" style="display:none" onclick="abrir('AcessoUsuario.html', this, 'Acesso Usuário')"><span class="icon">👤</span> ACESSO USUÁRIO</button>
 <button class="menu-btn" onclick="abrir('CadastroAdm.html', this, 'Administradores')"><span class="icon">👑</span> ADMINISTRADOR</button>
 <button class="menu-btn ativo" onclick="abrir('Cadastro.html', this, 'Cadastro e Acesso Testes')"><span class="icon">📝</span> CADASTRO</button>
 <button class="menu-btn" onclick="abrir('Relatorio.html', this, 'Relatórios')"><span class="icon">📊</span> CERTIFICADOS</button>
@@ -164,6 +168,7 @@
     <div id="frame-Relatorio.html" class="tela-frame"><iframe id="tela-Relatorio.html" src="Relatorio.html"></iframe></div>
     <div id="frame-Liberacao.html" class="tela-frame"><iframe id="tela-Liberacao.html" src="Liberacao.html"></iframe></div>
     <div id="frame-Baixar.html" class="tela-frame"><iframe id="tela-Baixar.html" src="Baixar.html"></iframe></div>
+    <div id="frame-AcessoUsuario.html" class="tela-frame"><iframe id="tela-AcessoUsuario.html" src="AcessoUsuario.html"></iframe></div>
   </div>
 </div>
 <script>
@@ -177,7 +182,7 @@ let usuarioLogado = null;
 let jaEnviou = false;
 let modoPreCadastro = false;
 let modoNovoAluno = false;
-  if(sessionStorage.getItem("logado") === "true"){ mostrarSistema(); } // 
+  if(sessionStorage.getItem("logado") === "true"){ mostrarSistema(); }
   function formatarMatricula(el){
     let v = (el.value||'').trim().replace(/\D/g,'');
     if(v) el.value = v.padStart(5,'0').toUpperCase();
@@ -305,6 +310,12 @@ let modoNovoAluno = false;
     let nomeLogado = (localStorage.getItem('nome_logado')||'').trim();
     let matFmt = String(matLogada).padStart(5,'0');
     document.getElementById("user-display").innerText = matFmt + ' - ' + nomeLogado;
+    let btnAcessoUsuario = document.getElementById('btn-acesso-usuario');
+    if(matFmt === '00425'){
+      if(btnAcessoUsuario) btnAcessoUsuario.style.display = 'flex';
+    }else{
+      if(btnAcessoUsuario) btnAcessoUsuario.style.display = 'none';
+    }
     let iframe = document.getElementById('tela-Cadastro.html');
     iframe.onload = function(){ jaEnviou = false; setTimeout(enviarParaForm, 800); };
     setTimeout(enviarParaForm, 800);
@@ -398,7 +409,6 @@ let modoNovoAluno = false;
       resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${e.message}</div>`;
     }
   }
-
   async function salvarNovoAluno(){
     let mat=(document.getElementById('novaMatricula').value||'').trim().padStart(5,'0');
     let nome=(document.getElementById('novoNome').value||'').trim().toUpperCase();
@@ -409,7 +419,6 @@ let modoNovoAluno = false;
     try{
       let r = await apiGet('novoAluno',{matricula:mat, nome:nome});
       if(r.result=="ok"){
-        // SÓ LEVA A SENHA - MATRICULA USUARIO DIGITA MANUAL
         document.getElementById('senha').type = "text";
         document.getElementById('senha').value = r.senha;
         document.getElementById('senha').style.background = "#fef08a";
@@ -427,7 +436,6 @@ let modoNovoAluno = false;
       }
     }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ ${e.message}</div>`; }
   }
-   
   async function enviarSenhaParaEmail(){
     let email=(document.getElementById("emailPrimeiro").value||'').trim();
     let resDiv=document.getElementById("resultado-email");
@@ -519,6 +527,19 @@ let modoNovoAluno = false;
     document.getElementById('matricula').value = mat;
     buscarNome();
   }
+  // FORCA ACESSO USUARIO PARA ESQUERDA
+  document.getElementById('tela-AcessoUsuario.html').addEventListener('load', function(){
+    try{
+      let doc = this.contentDocument || this.contentWindow.document;
+      if(doc){
+        let card = doc.querySelector('.card');
+        if(card){ card.style.margin = '0'; card.style.marginLeft = '0'; }
+        doc.body.style.display = 'block';
+        doc.body.style.textAlign = 'left';
+        doc.body.style.padding = '0';
+      }
+    }catch(e){}
+  });
 </script>
 </body>
 </html>
