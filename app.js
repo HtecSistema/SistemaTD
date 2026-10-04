@@ -361,22 +361,40 @@ async function abrirTeste52(){
   try{ let r = await apiGet('testeLink',{}); listaTestes = r.data || r || []; document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length; renderTestes(listaTestes); }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
 function renderTestes(lista){
-  listaTestes = lista; let div = document.getElementById('listaTestes'); if(!div) return;
+  listaTestes = lista;
+  let div = document.getElementById('listaTestes'); if(!div) return;
   let abertos={}; try{abertos=JSON.parse(localStorage.getItem('testes_abertos')||'{}')}catch(e){}
   let cores = {'CICLO 01':'#0f766e','CICLO 02':'#2563eb','CICLO 03':'#7c3aed','CICLO 04':'#dc2626','CICLO 05':'#ea580c','CICLO 06':'#0891b2','CICLO 07':'#059669','CICLO 08':'#9333ea'};
   let cont={};
-  div.innerHTML = lista.map((t,idx)=>{
+  div.innerHTML = '';
+  lista.forEach((t,idx)=>{
     let ciclo=(t.Ciclo||'CICLO 01').toUpperCase();
     if(!cont[ciclo]) cont[ciclo]=0; cont[ciclo]++;
     let nf=String(cont[ciclo]).padStart(2,'0');
     let cod=t.Cod||(ciclo+'-'+nf);
     let tema=t.Tema||'Conhecendo Jesus e o Seu Reino';
     let ja=!!abertos[cod];
-    let rowId='row_'+idx;
     let cor = cores[ciclo] || '#111827';
-    return `<div id="${rowId}" style="background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"><div style="flex:1"><span style="background:${cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${ja?'✓':''}</span><div style="font-size:11px">${tema}</div></div><button onclick="abrirTeste('${t.LinkAcesso}','${cod}','${rowId}')" style="background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900">${ja?'FEITO':'🚀 ABRIR'}</button></div>`;
-  }).join('');
+    let card = document.createElement('div');
+    card.style = `background:${ja?'#ecfdf5':'white'};border-left:6px solid ${cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center`;
+    card.innerHTML = `<div style="flex:1"><span style="background:${cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${ja?'✓':''}</span><div style="font-size:11px">${tema}</div></div>`;
+    let btn = document.createElement('button');
+    btn.innerText = ja?'FEITO':'🚀 ABRIR';
+    btn.style = `background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer`;
+    btn.onclick = () => abrirTeste(t.LinkAcesso, cod);
+    card.appendChild(btn);
+    div.appendChild(card);
+  });
 }
+
+function abrirTeste(linkOriginal, codUnico){
+  let w = window.open(linkOriginal, '_blank', 'noopener,noreferrer');
+  if(!w){
+    let a=document.createElement('a'); a.href=linkOriginal; a.target='_blank'; a.rel='noopener noreferrer';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+}
+
 function abrirTeste(linkOriginal, codUnico, rowId){
   let agora = Date.now();
   if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
