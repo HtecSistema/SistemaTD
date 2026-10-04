@@ -358,8 +358,6 @@ async function abrirTeste52(){
   document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
   try{ let r = await apiGet('testeLink',{}); listaTestes = r.data || r || []; document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length; renderTestes(listaTestes); }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
-
-// ==== LISTA TOP DE LINHA COM COR POR CICLO ====
 function renderTestes(lista){
   listaTestes = lista; let div = document.getElementById('listaTestes'); if(!div) return;
   let abertos={}; try{abertos=JSON.parse(localStorage.getItem('testes_abertos')||'{}')}catch(e){}
@@ -396,8 +394,45 @@ function renderTestes(lista){
     </div>`;
   }).join('');
 }
+// ==== ABRIR TESTE - IGUAL LIÇÕES - 1 ABA SÓ ====
+let _travaTeste = {cod:'', tempo:0};
+function abrirTeste(linkOriginal, codUnico, rowId){
+  let agora = Date.now();
+  if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
+  _travaTeste = {cod: codUnico, tempo: agora};
 
+  const d = coletarDados();
+  let ciclo = '4'; let testeNum = '1';
+  try{ let item = listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo = String(item.Ciclo).replace(/\D/g,''); let m = String(codUnico).match(/-(\d+)/); if(m) testeNum = m[1]; }catch(e){}
 
+  let base = linkOriginal;
+  try{
+    base = linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
+    let entries=[...linkOriginal.matchAll(/entry\.(\d+)/g)].map(x=>x[0]);
+    let bat=String(d.BatizadoAgua||'').toUpperCase(); if(bat!=='SIM'&&bat!=='NAO') bat='SIM';
+    let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
+    if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
+  }catch(e){ base = linkOriginal; }
+
+  // ABRE EM OUTRA ABA - MESMO MÉTODO DAS LIÇÕES
+  let a = document.createElement('a');
+  a.href = base;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ try{a.remove()}catch(e){} }, 1000);
+
+  const payload = {...d, CodigoTeste: codUnico, Ciclo: ciclo};
+  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).catch(()=>{});
+  apiGet('verificarliberacao',{matricula:d.Matricula,ciclo:ciclo,teste:testeNum}).catch(()=>{});
+
+  let ov=document.getElementById('overlayTeste');
+  if(ov){
+    ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center;max-width:340px"><b>'+codUnico+' aberto em outra aba</b><br><small>SistemaTD continua aberto atrás</small><br><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900;margin-bottom:8px">✓ JÁ ENVIEI - VOLTAR</button><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\';" style="width:100%;background:#e5e7eb;color:#111;border:0;padding:10px;border-radius:10px;font-weight:700">✕ FECHAR</button></div>';
+    ov.style.display='flex'; ov.style.alignItems='center'; ov.style.justifyContent='center';
+  }
+}
 (function(){
   function ativarArraste(){
     const container = document.getElementById('listViewContainer'); if(!container) return;
@@ -481,7 +516,7 @@ async function recuperar(){
           <div style="font-size:10px;color:#333">${it.MATRICULA||''} - ${nome}</div>
           <div style="font-size:9px;color:#666">${it.CONGREGACAO||it.D||''}</div>
         </div>
-        <button onclick="window.open('${link}','_blank')" style="background:#0f766e;color:white;border:0;padding:8px 14px;border-radius:8px;font-weight:900;font-size:11px">ABRIR</button>
+        <button onclick="abrirLinkRecuperacao('${link}')" style="background:#0f766e;color:white;border:0;padding:8px 14px;border-radius:8px;font-weight:900;font-size:11px">ABRIR</button>
       </div>`;
     }).join('');
   }catch(e){
@@ -490,7 +525,13 @@ async function recuperar(){
 }
 function abrirLinkRecuperacao(link){
   if(!link){ toast('Link vazio','err'); return; }
-  window.open(link,'_blank','noopener');
+  let a = document.createElement('a');
+  a.href = link;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ try{a.remove()}catch(e){} }, 800);
   try{
     let d=coletarDados();
     apiGet('salvarNaResposta',{dados:JSON.stringify({...d, tipo:'RECUPERACAO'}), cod:'RECUP-'+Date.now(), ciclo:'RECUP'}).catch(()=>{});
