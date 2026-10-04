@@ -103,12 +103,10 @@ async function salvar(){
   }
 }
 
-
 function limpar(){
   try{
     localStorage.removeItem('estado_cadastro_ATUAL');
     localStorage.removeItem('estado_cadastro_'+getMatriculaLogin());
-    // limpa todos os estados antigos também
     for(let i=localStorage.length-1;i>=0;i--){
       let k=localStorage.key(i);
       if(k && k.startsWith('estado_cadastro_')) localStorage.removeItem(k);
@@ -145,11 +143,8 @@ function limpar(){
   organizarLayout();
 }
 
-
 function carregarSelecionado(){if(indiceSelecionado<0){toast('Selecione um nome!','err');return}let it=dadosFiltrados[indiceSelecionado];matriculaOriginal=getMat(it);codigoOriginal=String(it.Codigo||it.codigo||it.CODIGO||document.getElementById('Codigo').value||'').trim();let norm={};Object.keys(it).forEach(k=>{let nk=String(k).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');norm[nk]=it[k];norm[String(k).toLowerCase()]=it[k];});function pega(...nomes){for(let n of nomes){let nn=String(n).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');if(norm[nn]!==undefined&&String(norm[nn]).trim()!=='')return String(norm[nn]);if(it[n]!==undefined&&String(it[n]).trim()!=='')return String(it[n]);let lower=String(n).toLowerCase();if(it[lower]!==undefined&&String(it[lower]).trim()!=='')return String(it[lower]);}return'';}const mapa={Codigo:['Codigo','codigo'],Matricula:['Matricula','matricula'],Congregacao:['Congregacao','congregacao','Origem','origem'],Fcongregacao:['Fcongregacao','fcongregacao'],Nome:['Nome','nome'],WhatsApp:['WhatsApp','whatsapp','Contato','contato'],Mae:['Mae','mae'],Sexo:['Sexo','sexo'],RG:['RG','rg'],CPF:['CPF','cpf'],FaixaEtaria:['FaixaEtaria','faixaetaria'],SitConjugal:['SitConjugal','sitconjugal'],Conjuge:['Conjuge','conjuge'],Cteologico:['Cteologico','cteologico'],GrauCurso:['GrauCurso','graucurso'],Andamento:['Andamento','andamento'],BatizadoAgua:['BatizadoAgua','batizadoagua'],EspSanto:['EspSanto','espsanto','BEspSanto'],TFunEclesiastica:['TFunEclesiastica','tfuneclesiastica'],QualFuncao:['QualFuncao','qualfuncao'],Departamentoinserido:['Departamentoinserido','departamentoinserido'],FuncaoDepartamento:['FuncaoDepartamento','funcaodepartamento'],OFuncoes:['OFuncoes','ofuncoes'],CEP:['CEP','cep'],end:['end','endereco'],Numero:['Numero','numero'],Bairro:['Bairro','bairro'],Complemento:['Complemento','complemento'],Observacao:['Observacao','observacao'],UfEndereco:['UfEndereco','uff','UFF','uf','UFENDERECO'],CidadeEndereco:['CidadeEndereco','yCid','YCID','ycid','yCID','cidadeendereco'],Estado:['Estado','estado'],CidadeNascimento:['CidadeNascimento','cidadenascimento'],Senha:['Senha','senha']};Object.keys(mapa).forEach(id=>{let el=document.getElementById(id);if(!el)return;let v=pega(...mapa[id]);if(v)el.value=v.toUpperCase();});let nasc=pega('Nascimento','nascimento');let cas=pega('DtCasamento','dtcasamento','DataCasamento');let term=pega('DataTermino','datatermino');if(nasc)document.getElementById('Nascimento').value=dataParaISO(nasc);if(cas)document.getElementById('DataCasamento').value=dataParaISO(cas);if(term)document.getElementById('DataTermino').value=dataParaISO(term);if(!document.getElementById('UfEndereco').value){let uf=it.uff||it.UFF||it.uf||it.Uf||'';if(uf)document.getElementById('UfEndereco').value=String(uf).toUpperCase();}if(!document.getElementById('CidadeEndereco').value){let cid=it.yCid||it.YCID||it.ycid||it.yCID||'';if(cid)document.getElementById('CidadeEndereco').value=String(cid).toUpperCase();}window.dadosBuscaSelecionado={...it};fecharListView();const btn=document.getElementById('btnSalvar')||document.querySelector('.btn-save');if(tipoListaAtual==='ALTERAR'){modoEdicao=true;if(btn)btn.innerHTML='💾 ALTERAR';toast('MODO ALTERAR - '+getMat(it),'ok');}else{modoEdicao=false;document.getElementById('Codigo').value=String(Date.now()).slice(-6);const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=ch.charAt(Math.floor(Math.random()*ch.length));document.getElementById('Senha').value=s;if(btn)btn.innerHTML='💾 SALVAR';toast('MODO NOVO','ok');}calcularIdadeFaixa();try{ salvarEstadoCadastro(); }catch(e){} window.scrollTo({top:0,behavior:'smooth'});}
 
-// === MEMORIA PARA NAO APAGAR AO VOLTAR DE CERTIFICADO ===
-// === MEMORIA FIXA - NAO APAGA AO VOLTAR DE CERTIFICADO ===
 function salvarEstadoCadastro(){
   try{
     let estado={};
@@ -160,7 +155,6 @@ function salvarEstadoCadastro(){
     estado['_DataCasamentoISO']=document.getElementById('DataCasamento')?.value||'';
     estado['_DataTerminoISO']=document.getElementById('DataTermino')?.value||'';
     estado['_salvoEm']=Date.now();
-    // salva em 2 lugares: ATUAL (sempre) + por matricula
     localStorage.setItem('estado_cadastro_ATUAL', JSON.stringify(estado));
     let ml = normaliza5Dig(localStorage.getItem('mat_logada')||'') || getMatriculaLogin();
     if(ml) localStorage.setItem('estado_cadastro_'+ml, JSON.stringify(estado));
@@ -170,7 +164,6 @@ function restaurarEstadoCadastro(){
   try{
     let raw = localStorage.getItem('estado_cadastro_ATUAL');
     if(!raw){
-      // tenta achar qualquer estado salvo
       for(let i=0;i<localStorage.length;i++){
         let k=localStorage.key(i);
         if(k && k.startsWith('estado_cadastro_')){
@@ -182,7 +175,6 @@ function restaurarEstadoCadastro(){
     if(!raw) return false;
     let estado=JSON.parse(raw);
     if(!estado.Nome || estado.Nome.length<3) return false;
-    // restaura todos os inputs
     Object.keys(estado).forEach(id=>{
       if(id.startsWith('_')) return;
       let el=document.getElementById(id);
@@ -196,13 +188,10 @@ function restaurarEstadoCadastro(){
   }catch(e){ return false; }
 }
 
-
-
 window.addEventListener('load',async()=>{
   initCombos();organizarLayout();
   try{let lista=[];let tentativas=['congregacoes','listaIgrejas','getListaIgrejas','congregacao'];for(let act of tentativas){try{let res=await apiGet(act);let dados=res.data||res||[];if(Array.isArray(dados)&&dados.length){lista=dados.map(v=>String(v.Nome||v.nome||v.Congregacao||v.congregacao||v||'').trim()).filter(v=>v);if(lista.length)break;}}catch(e){}}lista=lista.map(v=>String(v||'').trim().toUpperCase()).filter(v=>v&&v.length>=3);lista=[...new Set(lista)].sort();if(lista.length>0){LISTAS.Congregacao=lista;}}catch(e){}
 
-  // NÃO LIMPA SE JÁ TINHA DADOS - RESTAURA
   setarMatriculaLogin();
   if(restaurarEstadoCadastro()){
     let ml=getMatriculaLogin();
@@ -210,7 +199,6 @@ window.addEventListener('load',async()=>{
     const btn=document.getElementById('btnSalvar')||document.querySelector('.btn-save');
     if(btn) btn.innerHTML='💾 ALTERAR';
     tipoListaAtual='ALTERAR'; modoEdicao=true;
-    // salva de novo a cada alteração pra não perder
     document.querySelectorAll('.form-section input').forEach(el=>{
       el.addEventListener('change', ()=>{ try{ salvarEstadoCadastro(); }catch(e){} });
     });
@@ -229,7 +217,7 @@ async function buscarCEP(cep){cep=(cep||'').replace(/\D/g,'');if(cep.length!==8)
 async function buscarMatriculaBD1(){
   let matRaw = (document.getElementById('Matricula').value||'').trim().toUpperCase();
   let sen = (document.getElementById('Senha').value||'').trim().toUpperCase();
-  if(!matRaw){ toast('Digite a matrícula','err'); return; }
+  if(!matRaw){ toast('Digite a matrícula','err'); return false; }
   let mat = normaliza5Dig(matRaw);
   document.getElementById('Matricula').value = mat;
   let matLogin = getMatriculaLogin();
@@ -240,7 +228,7 @@ async function buscarMatriculaBD1(){
       toast('⛔ VOCÊ SÓ PODE PESQUISAR: '+matLogin,'err');
       alert('⛔ BLOQUEADO\nLogado: '+matLogin+'\nVocê só pode pesquisar '+matLogin+'\nSó 00425 pesquisa tudo.');
       document.getElementById('Matricula').value=matLogin;
-      return;
+      return false;
     }
   }
   toast('Buscando '+mat+'...','ok');
@@ -252,13 +240,14 @@ async function buscarMatriculaBD1(){
       let m = normaliza5Dig(String(x.Matricula||x.MATRICULA||x.G||'').toUpperCase().trim());
       return m === mat;
     });
-    if(achados.length === 0){ toast('Matrícula '+mat+' não encontrada','err'); return; }
+    if(achados.length === 0){ toast('Matrícula '+mat+' não encontrada','err'); return false; }
     dadosFiltrados = achados; indiceSelecionado = 0; tipoListaAtual = 'ALTERAR'; modoEdicao = true; matriculaOriginal = mat;
     carregarSelecionado();
     if(eh425 || ehAdmin){ destravarMatricula(); } else { travarMatricula(mat); }
-    toast('DADOS CARREGADOS','ok');
+    toast('DADOS CARREGADOS - Agora pode alterar e ir para TESTE','ok');
     try{ salvarEstadoCadastro(); }catch(e){}
-  }catch(e){ toast('Erro: '+e.message,'err'); }
+    return true;
+  }catch(e){ toast('Erro: '+e.message,'err'); return false; }
 }
 function tornarMovel(modalId, handleId){
   let modal = document.getElementById(modalId);
@@ -372,6 +361,12 @@ function tornarMovel(modalId, handleId){
   if(document.readyState==='complete') ativarArrasteLista(); else window.addEventListener('load', ativarArrasteLista);
 })();
 async function abrirTeste52(){
+  // CORREÇÃO: pesquisa novamente antes de abrir a lista, se não alterou condena
+  try{
+    toast('Verificando dados atualizados...','ok');
+    await buscarMatriculaBD1();
+  }catch(e){}
+
   let m = document.getElementById('modalTestes'); if(m){ m.remove(); return; }
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
   modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - TESTES - CARREGANDO...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>`;
@@ -388,6 +383,16 @@ function renderTestes(lista){
   }).join('');
 }
 async function abrirTeste(linkOriginal, codUnico, rowId){
+  // CORREÇÃO: busca novamente antes de abrir o teste em nova aba
+  try{
+    toast('Verificando dados antes do teste...','ok');
+    let ok = await buscarMatriculaBD1();
+    if(!ok){
+      toast('Faça o PESQUISE e ALTERE antes do TESTE','err');
+      return;
+    }
+  }catch(e){}
+
   const d=coletarDados();
   let obrig = [
     {id:'Matricula', label:'MATRICULA'},
@@ -422,9 +427,25 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
   let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
   if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
   const payload = {...d, CodigoTeste: codUnico, Ciclo: ciclo};
-  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).then(r=>{ window.open(base,'_blank'); }).catch(()=>{ window.open(base,'_blank'); });
+
+  // CORREÇÃO DEFINITIVA: abre aba separada na hora (evita bloqueio de pop-up) e deixa sistema aberto atrás
+  let novaAba = window.open('about:blank', '_blank', 'noopener');
+  if(!novaAba){
+    toast('Permita pop-ups para abrir o teste em nova aba','err');
+    // fallback tenta abrir mesmo assim
+    novaAba = window.open('', '_blank');
+  }
+
+  apiGet('salvarNaResposta',{dados:JSON.stringify(payload), cod:codUnico, ciclo:ciclo}).then(r=>{
+    if(novaAba) novaAba.location.href = base;
+    else window.open(base,'_blank','noopener');
+  }).catch(()=>{
+    if(novaAba) novaAba.location.href = base;
+    else window.open(base,'_blank','noopener');
+  });
+
   let ov=document.getElementById('overlayTeste');
-  ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center"><b>Teste '+codUnico+' Ciclo '+ciclo+'</b><br>gravando...<br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;margin-top:12px;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900">✓ JÁ ENVIEI - VOLTAR</button></div>';
+  ov.innerHTML='<div style="background:white;padding:20px;border-radius:12px;text-align:center;max-width:340px"><b>Teste '+codUnico+' Ciclo '+ciclo+'</b><br><small style="color:#666">Abrindo em nova aba...<br>Se não abriu, permita pop-ups</small><br><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\'; let m={}; try{m=JSON.parse(localStorage.getItem(\'testes_abertos\')||\'{}\')}catch(e){}; m[\''+codUnico+'\']=Date.now(); localStorage.setItem(\'testes_abertos\',JSON.stringify(m)); renderTestes(listaTestes);" style="width:100%;margin-top:12px;background:#198754;color:white;border:0;padding:14px;border-radius:10px;font-weight:900">✓ JÁ ENVIEI - VOLTAR (sistema continua aberto)</button><br><button onclick="document.getElementById(\'overlayTeste\').style.display=\'none\';" style="width:100%;margin-top:8px;background:#e5e7eb;color:#111;border:0;padding:10px;border-radius:10px;font-weight:700">FECHAR</button></div>';
   ov.style.display='flex'; ov.style.alignItems='center'; ov.style.justifyContent='center';
 }
 (function(){
@@ -468,6 +489,12 @@ window.addEventListener('load', function(){
   }, 700);
 });
 async function recuperar(){
+  // CORREÇÃO: pesquisa de novo antes de abrir recuperação
+  try{
+    toast('Verificando dados atualizados...','ok');
+    await buscarMatriculaBD1();
+  }catch(e){}
+
   let m = document.getElementById('modalRecuperar'); if(m){ m.remove(); return; }
   let matAtual = getMatriculaLogin();
   if(!matAtual || matAtual==='00000'){
@@ -510,7 +537,7 @@ async function recuperar(){
           <div style="font-size:10px;color:#333">${it.MATRICULA||''} - ${nome}</div>
           <div style="font-size:9px;color:#666">${it.CONGREGACAO||it.D||''}</div>
         </div>
-        <button onclick="window.open('${link}','_blank')" style="background:#0f766e;color:white;border:0;padding:8px 14px;border-radius:8px;font-weight:900;font-size:11px">ABRIR</button>
+        <button onclick="abrirLinkRecuperacao('${link}')" style="background:#0f766e;color:white;border:0;padding:8px 14px;border-radius:8px;font-weight:900;font-size:11px">ABRIR</button>
       </div>`;
     }).join('');
   }catch(e){
@@ -523,5 +550,8 @@ function abrirLinkRecuperacao(link){
     let d=coletarDados();
     apiGet('salvarNaResposta',{dados:JSON.stringify({...d, tipo:'RECUPERACAO'}), cod:'RECUP-'+Date.now(), ciclo:'RECUP'}).catch(()=>{});
   }catch(e){}
-  window.open(link,'_blank');
+  // CORREÇÃO: sempre em aba separada
+  let win = window.open('about:blank','_blank','noopener');
+  if(win) win.location.href = link;
+  else window.open(link,'_blank','noopener');
 }
