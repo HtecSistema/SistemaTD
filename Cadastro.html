@@ -54,7 +54,7 @@
 </div>
 <div class="grid" style="grid-template-columns:1.2fr 0.6fr 1fr;margin-top:10px;align-items:end">
   <div><label>MATRICULA * PESQUISE</label><input id="Matricula" autocomplete="off"></div>
-  <div><label style="opacity:0">.</label><button onclick="buscarMatriculaBD1()" style="width:100%;height:38px;background:#0f766e;color:white;border:none;border-radius:8px;font-weight:900;cursor:pointer">🔵 PESQUISE</button></div>
+  <div><label style="opacity:0">.</label><button id="btnPesquiseMat" onclick="buscarMatriculaBD1()" style="width:100%;height:38px;background:#0f766e;color:white;border:none;border-radius:8px;font-weight:900;cursor:pointer">🔵 PESQUISE</button></div>
   <div><label>CPF *</label><input id="CPF" maxlength="11" autocomplete="off"></div>
 </div>
 <div class="grid" style="grid-template-columns:1fr;margin-top:10px">
@@ -108,6 +108,105 @@
   }
   setTimeout(verificaBuscar, 300);
   setInterval(verificaBuscar, 1500);
+})();
+</script>
+
+<script>
+// === REGRA: ONDE TEM ▼ SÓ ACEITA O QUE ESTÁ NA LISTA - SALVAR E ALTERAR + AUTO PESQUISE 1 VEZ ===
+(function(){
+  var jaPesquisouAuto = false;
+
+  function toastMsg(m){
+    if(typeof showToast==='function'){ showToast(m); return; }
+    var t=document.getElementById('toast');
+    if(t){ t.textContent=m; t.className='toast show'; t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3500); }
+    else alert(m);
+  }
+  function getLista(idLista){
+    var el=document.getElementById(idLista); if(!el) return [];
+    return Array.from(el.children).map(function(o){ return (o.textContent||'').trim().toUpperCase(); }).filter(Boolean);
+  }
+  function validarCampo(input, avisar){
+    if(!input ||!input.classList.contains('combo-input')) return true;
+    var v=(input.value||'').trim(); if(!v) return true;
+    var ops=getLista('list_'+input.id);
+    if(ops.length===0) return true; // lista ainda não carregou, deixa passar por enquanto
+    if(ops.indexOf(v.toUpperCase())===-1){
+      if(avisar) toastMsg('❌ "'+v+'" não existe em '+input.id+'. Onde tem ▼ só aceita da lista.');
+      input.value=''; input.style.border='2px solid #ef4444'; input.style.background='#fef2f2';
+      input.focus();
+      return false;
+    }
+    input.style.border=''; input.style.background=''; return true;
+  }
+  function validarTodosCampos(avisar){
+    var todos=document.querySelectorAll('.combo-input');
+    for(var i=0;i<todos.length;i++){
+      if(!validarCampo(todos[i], avisar)) return false;
+    }
+    return true;
+  }
+
+  // trava na digitação, blur, change, paste
+  document.addEventListener('blur', function(e){
+    if(e.target.classList.contains('combo-input')) setTimeout(function(){ validarCampo(e.target,true); },120);
+  }, true);
+  document.addEventListener('change', function(e){
+    if(e.target.classList.contains('combo-input')) validarCampo(e.target,true);
+  }, true);
+  document.addEventListener('paste', function(e){
+    if(e.target.classList.contains('combo-input')) setTimeout(function(){ validarCampo(e.target,true); },80);
+  }, true);
+
+  // intercepta salvar() que serve para salvar E alterar no seu app.js
+  function interceptarSalvar(){
+    if(typeof window.salvar!== 'function') return false;
+    if(window.salvar._jaInterceptado) return true;
+    var orig=window.salvar;
+    window.salvar=function(){
+      if(!validarTodosCampos(true)){
+        toastMsg('⚠️ Corrija os campos com ▼. Só aceita opção da lista.');
+        return;
+      }
+      return orig.apply(this, arguments);
+    };
+    window.salvar._jaInterceptado=true;
+    return true;
+  }
+
+  // tenta interceptar até conseguir (app.js carrega depois)
+  var tent=0; var iv=setInterval(function(){
+    if(interceptarSalvar() || tent>50) clearInterval(iv);
+    tent++;
+  },200);
+  setTimeout(interceptarSalvar, 500);
+  setTimeout(interceptarSalvar, 1500);
+
+  // AUTO ACIONA O BOTÃO PESQUISE SÓ 1 VEZ AO ENTRAR
+  function autoPesquise(){
+    if(jaPesquisouAuto) return;
+    jaPesquisouAuto=true;
+    try{
+      // espera MatriculaLogin ser preenchido pelo index.html
+      var matLogin = (document.getElementById('MatriculaLogin')?.value || localStorage.getItem('mat_logada') || '').trim();
+      if(matLogin){
+        var inpMat=document.getElementById('Matricula');
+        if(inpMat &&!inpMat.value) inpMat.value = matLogin.replace(/\D/g,'').padStart(5,'0');
+      }
+      if(typeof buscarMatriculaBD1==='function'){
+        buscarMatriculaBD1();
+      } else {
+        var btn=document.getElementById('btnPesquiseMat');
+        if(btn) btn.click();
+      }
+    }catch(e){}
+  }
+
+  window.addEventListener('load', function(){ setTimeout(autoPesquise, 800); });
+  // fallback caso load já tenha passado
+  setTimeout(function(){ if(!jaPesquisouAuto) autoPesquise(); }, 1500);
+  setTimeout(function(){ if(!jaPesquisouAuto) autoPesquise(); }, 2500);
+
 })();
 </script>
 
