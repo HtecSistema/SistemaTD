@@ -108,110 +108,111 @@
 </script>
 
 <script>
-// === TRAVA DEFINITIVA: ONDE TEM ▼ SÓ ACEITA LISTA - SALVAR E ALTERAR + AUTO PESQUISE 1X ===
+// === CORREÇÃO DEFINITIVA: SÓ ACEITA O QUE ESTÁ NA LISTA + AUTO PESQUISE 1X ===
 (function(){
-  var jaPesquisouAuto = false;
+  var jaPesquisou=false;
+  window.__OPCOES_VALIDAS = {}; // memória das listas originais
 
-  function toastMsg(m){
+  function toast(m){
     if(typeof showToast==='function'){ showToast(m); return; }
-    var t=document.getElementById('toast');
-    if(t){ t.textContent=m; t.className='toast show'; t.style.display='block'; setTimeout(function(){ t.style.display='none'; t.className='toast'; },4000); }
-    else alert(m);
+    var t=document.getElementById('toast'); if(t){ t.textContent=m; t.className='toast show'; t.style.display='block'; setTimeout(function(){t.style.display='none';},4000);} else alert(m);
+  }
+  function norm(s){ return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' '); }
+
+  function coletarOpcoes(){
+    document.querySelectorAll('[id^="list_"]').forEach(function(list){
+      var idInput = list.id.replace('list_','');
+      var ops = Array.from(list.children).map(function(o){return norm(o.textContent||o.innerText);}).filter(Boolean);
+      if(ops.length>0){
+        if(!__OPCOES_VALIDAS[idInput]) __OPCOES_VALIDAS[idInput]=new Set();
+        ops.forEach(function(o){ __OPCOES_VALIDAS[idInput].add(o); });
+      }
+    });
   }
 
-  function getOpcoes(idLista){
-    var el=document.getElementById(idLista); if(!el) return [];
-    // pega tanto div quanto li
-    return Array.from(el.children).map(function(o){ return (o.textContent||o.innerText||'').trim(); }).filter(Boolean);
-  }
+  // observa as listas sendo preenchidas pelo app.js
+  var obs = new MutationObserver(function(){ coletarOpcoes(); });
+  document.querySelectorAll('[id^="list_"]').forEach(function(l){ obs.observe(l, {childList:true}); });
+  setInterval(coletarOpcoes, 500);
 
-  function normaliza(s){ return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' '); }
-
-  function ehValido(idInput, valor){
-    var v = normaliza(valor);
-    if(!v) return true; // vazio deixa o app.js validar obrigatoriedade
-    var ops = getOpcoes('list_'+idInput).map(normaliza).filter(Boolean);
-    if(ops.length===0) return true; // lista ainda não carregou, não bloqueia ainda
-    // tem que ser IGUAL a uma opção da lista, não contém
-    return ops.indexOf(v)!== -1;
+  function ehValido(id, valor){
+    var v=norm(valor); if(!v) return true;
+    var set = __OPCOES_VALIDAS[id];
+    if(!set || set.size===0){
+      // fallback: tenta ler direto da lista no momento
+      var el=document.getElementById('list_'+id);
+      if(el){ var tmp=Array.from(el.children).map(function(o){return norm(o.textContent);}).filter(Boolean); if(tmp.length>0) return tmp.indexOf(v)!==-1; }
+      return true; // ainda não carregou
+    }
+    return set.has(v);
   }
 
   function validarTodos(){
-    var combos = document.querySelectorAll('.combo-input');
+    var combos=document.querySelectorAll('.combo-input');
     for(var i=0;i<combos.length;i++){
-      var inp = combos[i];
-      var val = inp.value;
-      if(!val) continue;
+      var inp=combos[i]; var val=inp.value; if(!val) continue;
       if(!ehValido(inp.id, val)){
-        toastMsg('❌ Campo "'+inp.id+'" inválido: "'+val+'". Onde tem ▼ só pode escolher da lista. Selecione uma opção válida.');
-        inp.value = '';
-        inp.style.border = '2px solid #ef4444';
-        inp.style.background = '#fef2f2';
+        toast('❌ "'+val+'" NÃO existe em '+inp.id+'. Onde tem ▼ só pode escolher da lista.');
+        inp.value=''; inp.style.border='2px solid #ef4444'; inp.style.background='#fef2f2';
         inp.focus();
-        // abre a lista pra forçar escolher
-        var wrap = document.getElementById('wrap_'+inp.id);
-        if(wrap){ wrap.classList.add('open'); var list=document.getElementById('list_'+inp.id); if(list) list.style.display='block'; }
+        var wrap=document.getElementById('wrap_'+inp.id);
+        if(wrap){ var list=document.getElementById('list_'+inp.id); if(list) list.style.display='block'; wrap.classList.add('open'); }
         return false;
-      }
+      } else { inp.style.border=''; inp.style.background=''; }
     }
     return true;
   }
 
-  // trava ao sair, colar, mudar
+  // bloqueia na saída e no colar
   document.addEventListener('focusout', function(e){
     if(e.target.classList.contains('combo-input')){
       setTimeout(function(){
         if(e.target.value &&!ehValido(e.target.id, e.target.value)){
-          toastMsg('⚠️ "'+e.target.value+'" não existe em '+e.target.id+'. Escolha da lista ▼');
+          toast('⚠️ "'+e.target.value+'" inválido em '+e.target.id+'. Escolha da lista ▼');
           e.target.value=''; e.target.style.border='2px solid #ef4444'; e.target.style.background='#fef2f2';
         }
       },150);
     }
   }, true);
-
-  // intercepta o clique no botão SALVAR/ALTERAR antes do onclick
-  document.addEventListener('click', function(e){
-    var btn = e.target.closest('.btn-save');
-    if(!btn) return;
-    if(!validarTodos()){
-      e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation();
-      return false;
+  document.addEventListener('paste', function(e){
+    if(e.target.classList.contains('combo-input')){
+      setTimeout(function(){ if(e.target.value &&!ehValido(e.target.id, e.target.value)){ e.target.value=''; toast('❌ Não pode colar valor fora da lista ▼'); } },80);
     }
   }, true);
 
-  // intercepta a função salvar() que faz tanto salvar quanto alterar
-  var tentativas=0;
-  var intSal= setInterval(function(){
-    tentativas++;
+  // trava o SALVAR/ALTERAR - captura antes
+  document.addEventListener('click', function(e){
+    var btn=e.target.closest('.btn-save');
+    if(btn &&!validarTodos()){ e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
+  }, true);
+
+  var t=0; var iv=setInterval(function(){
+    t++; coletarOpcoes();
     if(typeof window.salvar==='function' &&!window.salvar._travado){
-      var origSalvar = window.salvar;
-      window.salvar = function(){
+      var orig=window.salvar;
+      window.salvar=function(){
+        coletarOpcoes();
         if(!validarTodos()) return false;
-        return origSalvar.apply(this, arguments);
+        return orig.apply(this, arguments);
       };
       window.salvar._travado=true;
-      clearInterval(intSal);
+      clearInterval(iv);
     }
-    if(tentativas>100) clearInterval(intSal);
-  },200);
+    if(t>150) clearInterval(iv);
+  },300);
 
-  // AUTO PESQUISE 1 VEZ
   function autoPesquise(){
-    if(jaPesquisouAuto) return;
-    jaPesquisouAuto=true;
+    if(jaPesquisou) return; jaPesquisou=true;
     try{
-      var matLogin = (document.getElementById('MatriculaLogin')?.value || localStorage.getItem('mat_logada')||'').trim();
-      if(matLogin){
-        var inp=document.getElementById('Matricula');
-        if(inp &&!inp.value) inp.value = matLogin.replace(/\D/g,'').padStart(5,'0');
-      }
+      var ml=(document.getElementById('MatriculaLogin')?.value||localStorage.getItem('mat_logada')||'').trim();
+      if(ml){ var im=document.getElementById('Matricula'); if(im &&!im.value) im.value=ml.replace(/\D/g,'').padStart(5,'0'); }
       if(typeof buscarMatriculaBD1==='function') buscarMatriculaBD1();
       else { var b=document.getElementById('btnPesquiseMat'); if(b) b.click(); }
     }catch(e){}
   }
-  window.addEventListener('load', function(){ setTimeout(autoPesquise, 900); });
-  setTimeout(function(){ if(!jaPesquisouAuto) autoPesquise(); }, 1800);
-  setTimeout(function(){ if(!jaPesquisouAuto) autoPesquise(); }, 3000);
+  window.addEventListener('load', function(){ setTimeout(function(){ coletarOpcoes(); autoPesquise(); },900); });
+  setTimeout(function(){ if(!jaPesquisou) autoPesquise(); },1800);
+  setTimeout(function(){ if(!jaPesquisou) autoPesquise(); },3000);
 })();
 </script>
 
