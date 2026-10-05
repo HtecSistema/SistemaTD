@@ -67,15 +67,26 @@ function entrarAcessoGeral(){
     }
   }
 
-  LIBERADO=true; 
+ LIBERADO=true; 
   USUARIO_NOME=usuario.nome||usuario.NomeUsuario||usuario.B||''; 
   localStorage.setItem('mat_logada', usuario.matricula||usuario.Matricula||''); 
   localStorage.setItem('nome_logado', USUARIO_NOME); 
-  localStorage.setItem('status_logado', statusUsuario); // SALVA STATUS
+  localStorage.setItem('status_logado', statusUsuario);
   var inp=document.getElementById('inputMatricula'); 
   if(inp) inp.value=usuario.matricula||usuario.Matricula||''; 
   msg.style.color="#198754"; 
   msg.innerText="✅ Liberado "+USUARIO_NOME; 
+
+  // ===== SALVA NO MovAdm - Cod | Matricula | Nome | Data | horario =====
+  try{
+    var agora = new Date();
+    var dataHoje = agora.toLocaleDateString('pt-BR');
+    var horaHoje = agora.toLocaleTimeString('pt-BR');
+    var matLogada = localStorage.getItem('mat_logada')||usuario.matricula||usuario.Matricula||'';
+    var API_MOVADM = 'https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec';
+    fetch(API_MOVADM+"?action=registrarLogAcesso&adm="+encodeURIComponent(USUARIO_NOME)+"&mat="+encodeURIComponent(matLogada)+"&data="+encodeURIComponent(dataHoje)+"&hora="+encodeURIComponent(horaHoje)+"&t="+Date.now(), {mode:'no-cors'});
+  }catch(e){ console.log("Erro log MovAdm", e); }
+  // ===== FIM SALVA MovAdm =====
 
   // SE FOR APROVADO OU MASTER -> DESTRAVA TUDO
   if(statusUsuario === "APROVADO"){
@@ -87,8 +98,6 @@ function entrarAcessoGeral(){
     destravarAposLogin(usuario.matricula||usuario.Matricula||'');
   }
 }
-
-
 
 function carregarListaAcessoNomes(){ if(LISTA_ACESSO_CACHE.length>0) return; google.script.run.withSuccessHandler(function(lista){ LISTA_ACESSO_CACHE=lista; salvarCacheB(lista); }).listarAcessosPendentes(); }
 function renderDropdownAcessoNomes(lista){ var drop=document.getElementById('dropdownAcessoNome'); if(!drop) return; drop.innerHTML=''; var termo = (document.getElementById('acessoNome').value||'').trim(); if(!termo){ drop.style.display='none'; return; } if(!lista || lista.length==0){ drop.style.display='none'; return; } lista.slice(0,50).forEach(function(a){ var nome=(a.nome||a.NomeUsuario||a.B||"").toString().trim(); if(!nome) return; var st=(a.status||a.Status||"APROVADO").toUpperCase(); var cor=st=="APROVADO"?"#198754":"#dc3545"; var mat=(a.matricula||a.Matricula||a.D||"").toString(); var div=document.createElement('div'); div.className='dropdown-item'; div.innerHTML='<b>'+nome+'</b><small style="color:'+cor+'">Mat: '+mat+' - '+st+'</small>'; div.onclick=function(){ document.getElementById('acessoNome').value=nome; esconderAcessoNomes(); document.getElementById('acessoSenha').focus(); }; drop.appendChild(div); }); drop.style.display='block'; idxAcessoSel=-1; }
