@@ -16,10 +16,11 @@
 </div>
 <div class="progress-wrap" id="pWrap"><div class="progress-bar" id="pBar">0%</div></div>
 <div class="filtros">
-  <input id="fMat" placeholder="MAT" autocomplete="off">
-  <input id="fNome" placeholder="NOME" autocomplete="off">
-  <input id="fCong" placeholder="CONG" autocomplete="off">
+  <input id="fMat" placeholder="MAT" autocomplete="off" oninput="filtrar()">
+  <input id="fNome" placeholder="NOME" autocomplete="off" oninput="filtrar()">
+  <input id="fCong" placeholder="CONG" autocomplete="off" oninput="filtrar()">
 </div>
+
 <button id="btnEnviar" onclick="enviarParaLiberacao()">ENVIAR PARA LIBERAÇÃO</button>
 <div id="msg"></div>
 <div class="list-wrap" id="lista" tabindex="0">
