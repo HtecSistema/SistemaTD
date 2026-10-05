@@ -368,8 +368,177 @@ function gerarBoletim(){
 }
 
 function listarPendentesNA(a){ var lista=[]; for(var ciclo=1;ciclo<=4;ciclo++){ var chave='c'+ciclo; var obj = a[chave] || {}; for(var i=1;i<=13;i++){ var v = obj[i]; var teste = (i<10?'0'+i:i); if(v===undefined || v==='' || v===null){ lista.push('C'+ciclo+'-Teste '+teste+' - Pendente'); }else{ var num=parseFloat(v); if(!isNaN(num) && num<70){ lista.push('C'+ciclo+'-Teste '+teste+' - Nota abaixo de 70 (Nota: '+num+')'); } } } } return lista; }
-function gerarCertificado(){ if(!SELECIONADO &&!DETALHE){ var mat = document.getElementById("inputMatricula").value.trim(); if(mat){ pesquisar(); return; } alert("Selecione aluno"); return; } var a=DETALHE; if(a.totalNA>0 || a.totalFeitos<52 || a.mediaGeral<70){ var motivo=''; if(a.totalNA>0) motivo=a.totalNA+' nota(s) <70'; else if(a.totalFeitos<52) motivo='Faltam '+(52-a.totalFeitos)+' testes'; else motivo='Média '+a.mediaGeral.toFixed(2)+' <70'; var htmlBloq='<div style="background:#fff;padding:20px;border-radius:12px;border:3px solid #dc3545;text-align:center"><h2 style="color:#dc3545">⛔ CERTIFICADO BLOQUEADO</h2><div><b>'+a.nome.toUpperCase()+'</b><br>Motivo: <b>'+motivo+'</b></div><div style="margin-top:12px"><button onclick="gerarBoletim()" style="background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:10px 16px">VER BOLETIM</button></div></div>'; document.getElementById('boletim').innerHTML=htmlBloq; document.getElementById('boletim').style.display='block'; return; } var meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; var dataHoje=new Date(); var dataExtenso='Paragominas-PA, '+dataHoje.getDate()+' de '+meses[dataHoje.getMonth()]+' de '+dataHoje.getFullYear(); var html='<div id="certPrint" style="background:#fff;font-family:Arial;border:1px solid #ccc;overflow:hidden"><div style="display:flex;justify-content:flex-end;padding:8px 16px"><div style="display:flex;align-items:center;gap:8px"><img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:40px"><div style="font-size:8px"><b>IEADMI</b>Igreja Evangélica Assembleia de Deus Missões<br><span style="font-size:11px;font-weight:900;color:#c9a86a">Curso</span> <span style="font-size:13px;font-weight:900;color:#d4b87a">Discipulado</span><br>Pr. Eliezer Miranda Barbosa – Presidente</div></div></div><div style="display:flex;min-height:380px"><div style="width:38%;background:#8aa8c8;padding:30px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center"><div style="width:110px;height:110px;background:radial-gradient(circle,#e8d5a0 0%,#c9a86a 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #d4b87a"><span style="font-size:50px">🏅</span></div><div style="margin-top:30px;color:#fff;font-size:26px">Conclusão<br>de Curso<br><span style="font-weight:700">Discipulado</span></div></div><div style="width:62%;background:#7a8a9e;padding:30px;color:#fff;display:flex;flex-direction:column;justify-content:center"><div style="font-family:serif;font-size:42px;color:#d4c5a0;letter-spacing:3px">CERTIFICADO</div><div style="width:100%;height:2px;background:#d4c5a0;margin:12px 0 20px"></div><div style="font-size:11px;line-height:1.6">Declaramos que <b style="text-transform:uppercase">'+a.nome.toUpperCase()+'</b>, concluiu com êxito o Curso de Discipulado.</div><div style="margin-top:30px;font-size:10px;text-align:right">'+dataExtenso+'</div></div></div><div class="no-print" style="padding:12px;display:flex;gap:8px;justify-content:center;border-top:1px solid #eee"><button onclick="window.print()" style="background:#198754;color:#fff;border:0;border-radius:8px;padding:10px 20px;font-weight:800">🖨 IMPRIMIR CERTIFICADO</button><button onclick="document.getElementById(\'boletim\').style.display=\'none\'" style="background:#888;color:#fff;border:0;border-radius:8px;padding:10px 20px">FECHAR</button></div></div>'; document.getElementById('boletim').innerHTML=html; document.getElementById('boletim').style.display='block'; }
-function gerarWordDrive(){ if(!DETALHE){ var mat = document.getElementById('inputMatricula').value.trim() || (SELECIONADO?SELECIONADO.mat:''); if(!mat){ alert('Selecione aluno'); return; } google.script.run.withSuccessHandler(function(d){ if(!d){ alert('Aluno não encontrado'); return; } DETALHE=d; gerarWordDrive(); }).getDetalheAluno(mat); return; } var mat = DETALHE?DETALHE.mat : (SELECIONADO?SELECIONADO.mat:''); if(!mat){ alert('Matrícula não encontrada'); return; } if(DETALHE && (DETALHE.totalNA>0 || DETALHE.totalFeitos<52 || DETALHE.mediaGeral<70)){ alert('⛔ Não pode gerar Word - Aluno Pendente: '+DETALHE.status); return; } document.getElementById('msg').innerText='Gerando Word no Drive...'; document.getElementById('boletim').innerHTML='<div style="background:#fff;padding:20px;text-align:center"><b>⏳ Gerando Word no Drive...</b></div>'; document.getElementById('boletim').style.display='block'; google.script.run.withSuccessHandler(function(r){ if(!r.ok){ document.getElementById('msg').innerText='Erro: '+r.msg; return; } document.getElementById('msg').innerText='Word gerado: '+r.nome; var html='<div style="background:#fff;padding:20px;border-radius:12px;border:2px solid #2b579a;text-align:center"><h3 style="color:#2b579a">✅ WORD CRIADO NO DRIVE</h3><div><b>'+r.nome.toUpperCase()+'</b><br>Mat: '+r.mat+'</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><a href="'+r.urlDocs+'" target="_blank" style="background:#4285f4;color:#fff;padding:10px;border-radius:6px;text-decoration:none;font-weight:800">📄 Abrir Google Docs</a>'+(r.urlDocx?'<a href="'+r.urlDocx+'" target="_blank" style="background:#2b579a;color:#fff;padding:10px;border-radius:6px;text-decoration:none">📝 Word.docx</a>':'')+'</div></div>'; document.getElementById('boletim').innerHTML=html; }).withFailureHandler(function(err){ document.getElementById('msg').innerText='Erro: '+(err.message||err); }).gerarCertificadoWordDrive(mat); }
+
+
+function gerarCertificado(){ 
+  if(!SELECIONADO && !DETALHE){ 
+    var mat = document.getElementById("inputMatricula").value.trim(); 
+    if(mat){ pesquisar(); return; } 
+    alert("Selecione aluno"); return; 
+  } 
+  var a=DETALHE; 
+  if(a.totalNA>0 || a.totalFeitos<52 || a.mediaGeral<70){ 
+    var motivo=''; 
+    if(a.totalNA>0) motivo=a.totalNA+' nota(s) <70'; 
+    else if(a.totalFeitos<52) motivo='Faltam '+(52-a.totalFeitos)+' testes'; 
+    else motivo='Média '+a.mediaGeral.toFixed(2)+' <70'; 
+    var htmlBloq='<div style="background:#fff;padding:20px;border-radius:12px;border:3px solid #dc3545;text-align:center"><h2 style="color:#dc3545">⛔ CERTIFICADO BLOQUEADO</h2><div><b>'+a.nome.toUpperCase()+'</b><br>Motivo: <b>'+motivo+'</b></div><div style="margin-top:12px"><button onclick="gerarBoletim()" style="background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:10px 16px">VER BOLETIM</button></div></div>'; 
+    document.getElementById('boletim').innerHTML=htmlBloq; 
+    document.getElementById('boletim').style.display='block'; return; 
+  } 
+
+  var meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; 
+  var dataHoje=new Date(); 
+  var dataExtenso='Paragominas-PA, '+dataHoje.getDate()+' de '+meses[dataHoje.getMonth()]+' de '+dataHoje.getFullYear();
+
+  var html=`
+  <div id="certPrint" style="background:#fff; width:100%; max-width:800px; margin:0 auto; font-family:'Segoe UI', Arial, sans-serif; border:8px solid #0f2a4a; position:relative; padding:0; box-shadow:0 0 0 2px #c9a86a inset;">
+    <div style="border:1px solid #c9a86a; margin:6px; padding:0; position:relative; background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);">
+      <div style="height:8px; background: linear-gradient(90deg, #0f2a4a 0%, #1e4a7a 50%, #c9a86a 100%);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 28px 10px 28px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+<img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:62px; height:62px; border-radius:50%; border:2px solid #c9a86a; background:#fff; object-fit:contain;">
+
+                  <div style="line-height:1.2;">
+            <div style="font-size:11px; font-weight:900; color:#0f2a4a; letter-spacing:1px;">IEADMI</div>
+            <div style="font-size:8px; color:#555; max-width:180px;">Igreja Evangélica Assembleia de Deus Missões</div>
+            <div style="font-size:8px; color:#0f2a4a; font-weight:700;">Pr. Eliezer Miranda Barbosa – Presidente</div>
+          </div>
+        </div>
+        <div style="text-align:right; font-size:9px; color:#666;">
+          <div>Matrícula: <b style="color:#0f2a4a;">${a.mat}</b></div>
+          <div>Média: <b style="color:#198754;">${a.mediaGeral.toFixed(2)}</b></div>
+          <div style="font-size:7px; margin-top:2px; background:#f1f5f9; padding:2px 6px; border-radius:4px; display:inline-block;">${a.totalFeitos||52}/52 Testes Concluídos</div>
+        </div>
+      </div>
+      <div style="text-align:center; padding:8px 20px 0 20px;">
+        <div style="font-size:9px; letter-spacing:4px; color:#c9a86a; font-weight:800;">CERTIFICADO DE CONCLUSÃO</div>
+        <div style="font-family:Georgia, serif; font-size:42px; font-weight:900; color:#0f2a4a; letter-spacing:2px; margin:4px 0; line-height:1;">CERTIFICADO</div>
+        <div style="width:80px; height:3px; background: linear-gradient(90deg, #c9a86a, #0f2a4a); margin:0 auto 10px auto; border-radius:2px;"></div>
+      </div>
+      <div style="text-align:center; padding:10px 50px 10px 50px; line-height:1.6;">
+        <div style="font-size:12px; color:#333;">Certificamos que</div>
+        <div style="font-size:20px; font-weight:900; color:#0f2a4a; text-transform:uppercase; margin:8px 0; letter-spacing:0.5px; border-bottom:2px solid #e8dcc0; display:inline-block; padding-bottom:4px;">${a.nome.toUpperCase()}</div>
+        <div style="font-size:14px; color:#444; margin-top:10px; text-align:justify; text-align-last:left;">
+        <!-- <div style="font-size:12px; color:#444; margin-top:10px; text-align:justify; text-align-last:center;"> -->
+          Concluiu com êxito o <b>Curso de Discipulado – Ciclos 01 ao 04 com 52 Lições</b>, 
+          ministrado pela Igreja Evangélica Assembleia de Deus Missões – IEADMI. 
+          Demonstrando dedicação, esforço, persistência, aproveitamento 
+          e aptidão no exercício da Fé Cristã.
+        </div>
+        <div style="display:flex; justify-content:center; gap:20px; margin-top:14px;">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 14px; font-size:10px;"><b>Congregação:</b> ${a.congOrig||a.cong||''}</div>
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:6px 14px; font-size:10px;"><b>Status:</b> <span style="color:#16a34a; font-weight:900;">APROVADO</span></div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:18px 40px 22px 40px;">
+        <div style="text-align:center;">
+          <div style="width:80px; height:80px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #f9e7a0, #c9a86a); border:2px solid #a88b4a; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            <div style="font-size:10px; font-weight:900; color:#0f2a4a; line-height:1;">IEADMI<br><span style="font-size:14px;">★</span><br>2026</div>
+          </div>
+          <div style="font-size:7px; color:#888;">Selo Oficial</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:180px; border-top:1px solid #0f2a4a; padding-top:6px;">
+            <div style="font-size:10px; font-weight:800; color:#0f2a4a;">Pr. Eliezer Miranda Barbosa</div>
+            <div style="font-size:8px; color:#555;">Presidente IEADMI</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#0f2a4a; color:#c9a86a; text-align:center; padding:8px; font-size:8px; letter-spacing:0.5px;">
+        ${dataExtenso} • IEADMI Paragominas-PA • Documento válido com média ${a.mediaGeral.toFixed(2)}
+      </div>
+    </div>
+  </div>
+  <div class="no-print" style="max-width:800px; margin:12px auto; padding:0 12px; display:flex; gap:8px;">
+    <button onclick="window.print()" style="flex:1; height:44px; background:#0f2a4a; color:#fff; border:0; border-radius:8px; font-weight:900;">🖨 IMPRIMIR</button>
+    <button onclick="enviarZapPDF()" style="flex:1; height:44px; background:#25D366; color:#fff; border:0; border-radius:8px; font-weight:900;">📲 ENVIAR ZAP</button>
+    <button onclick="document.getElementById('boletim').style.display='none'" style="flex:1; height:44px; background:#e5e7eb; color:#111; border:0; border-radius:8px; font-weight:700;">FECHAR</button>
+  </div>`;
+
+  document.getElementById('boletim').innerHTML=html;
+  document.getElementById('boletim').style.display='block';
+  document.getElementById('boletim').scrollIntoView({behavior:'smooth'});
+}
+
+
+
+
+function enviarZapPDF(){
+  var a=DETALHE; if(!a) return;
+
+  var btn = document.querySelector('button[onclick="enviarZapPDF()"]');
+  var textoOriginal = btn? btn.innerHTML : '';
+  if(btn){ btn.innerHTML = '⏳ GERANDO PDF...'; btn.disabled = true; }
+
+  // Carrega biblioteca de PDF se ainda não tiver
+  function carregarScript(src){
+    return new Promise((res, rej)=>{
+      if(document.querySelector('script[src="'+src+'"]')) return res();
+      var s=document.createElement('script');
+      s.src=src; s.onload=res; s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  Promise.all([
+    carregarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+    carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+  ]).then(()=>{
+    var elemento = document.getElementById('certPrint');
+    if(!elemento){ alert('Certificado não encontrado'); return; }
+
+    return html2canvas(elemento, {scale:2, useCORS:true, backgroundColor:'#ffffff'}).then(canvas=>{
+      var imgData = canvas.toDataURL('image/png');
+      var { jsPDF } = window.jspdf;
+      var pdf = new jsPDF('landscape', 'mm', 'a4');
+      var pdfWidth = pdf.internal.pageSize.getWidth();
+      var pdfHeight = pdf.internal.pageSize.getHeight();
+      var imgWidth = pdfWidth - 10;
+      var imgHeight = canvas.height * imgWidth / canvas.width;
+      if(imgHeight > pdfHeight - 10) imgHeight = pdfHeight - 10;
+      var x = (pdfWidth - imgWidth)/2;
+      var y = (pdfHeight - imgHeight)/2;
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+
+      var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
+
+      // Tenta compartilhar o arquivo direto (Android/iPhone)
+      var pdfBlob = pdf.output('blob');
+      var pdfFile = new File([pdfBlob], nomeArquivo, {type:'application/pdf'});
+
+      if(navigator.canShare && navigator.canShare({files:[pdfFile]})){
+        return navigator.share({
+          files: [pdfFile],
+          title: 'Certificado IEADMI',
+          text: `Certificado de ${a.nome} - Curso de Discipulado IEADMI`
+        }).catch(()=>{});
+      } else {
+        // Fallback: baixa o PDF e abre o Zap com mensagem
+        pdf.save(nomeArquivo);
+        setTimeout(()=>{
+          var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
+          `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
+          `Seu Certificado foi gerado em PDF!%0A`+
+          `*Matrícula:* ${a.mat}%0A`+
+          `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
+          `Acabei de baixar o PDF. Agora é só anexar aqui no WhatsApp.`;
+          window.open('https://wa.me/?text='+msg, '_blank');
+        }, 800);
+      }
+    });
+  }).catch(err=>{
+    console.error(err);
+    alert('Erro ao gerar PDF. Tente clicar em IMPRIMIR e salvar como PDF.');
+    window.print();
+  }).finally(()=>{
+    if(btn){ btn.innerHTML = textoOriginal || '📲 ENVIAR ZAP'; btn.disabled = false; }
+  });
+}
+
+
+
+
 function carregarIgrejas(){ google.script.run.withSuccessHandler(function(lista){ LISTA_IGREJAS_CACHE=lista; }).getListaIgrejas(); }
 function filtrarIgrejas(){ var termo=semAcentoJS(document.getElementById('cadIgreja').value); var lista=LISTA_IGREJAS_CACHE.filter(function(n){ return!termo || semAcentoJS(n).indexOf(termo)!=-1; }); renderDropdownIgrejas(lista); mostrarIgrejas(); }
 function renderDropdownIgrejas(lista){ var drop=document.getElementById('dropdownIgrejas'); if(!drop) return; drop.innerHTML=''; lista.slice(0,50).forEach(function(nome){ var div=document.createElement('div'); div.className='dropdown-item'; div.innerHTML='<b>'+nome+'</b>'; div.onclick=function(){ document.getElementById('cadIgreja').value=nome; esconderIgrejas(); }; drop.appendChild(div); }); }
