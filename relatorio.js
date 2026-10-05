@@ -397,8 +397,7 @@ function gerarCertificado(){
       <div style="height:8px; background: linear-gradient(90deg, #0f2a4a 0%, #1e4a7a 50%, #c9a86a 100%);"></div>
       <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 28px 10px 28px;">
         <div style="display:flex; align-items:center; gap:12px;">
-<img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:62px; height:62px; border-radius:50%; border:2px solid #c9a86a; background:#fff; object-fit:contain;">
-
+  <img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:auto; height:58px; object-fit:contain; display:block; object-fit:contain">
                   <div style="line-height:1.2;">
             <div style="font-size:11px; font-weight:900; color:#0f2a4a; letter-spacing:1px;">IEADMI</div>
             <div style="font-size:8px; color:#555; max-width:180px;">Igreja Evangélica Assembleia de Deus Missões</div>
@@ -535,8 +534,6 @@ function enviarZapPDF(){
     if(btn){ btn.innerHTML = textoOriginal || '📲 ENVIAR ZAP'; btn.disabled = false; }
   });
 }
-
-
 
 
 function carregarIgrejas(){ google.script.run.withSuccessHandler(function(lista){ LISTA_IGREJAS_CACHE=lista; }).getListaIgrejas(); }
