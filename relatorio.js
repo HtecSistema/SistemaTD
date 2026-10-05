@@ -31,9 +31,65 @@ function carregarCacheB(){ try{ const c = JSON.parse(localStorage.getItem('cache
 carregarCacheB();
 function isMasterMat(mat){ var m = String(mat||"").replace(/\D/g,"").padStart(5,'0'); return m==="00425" || m==="00001"; }
 function isMasterNome(nome){ var n = semAcentoJS(nome||""); return n.indexOf("HELIO SOUZA SILVA")!==-1 || n.indexOf("ELIEZER MIRANDA BARBOSA")!==-1; }
-function travarPosMenu(matricula){ var matFinal = String(matricula || localStorage.getItem('mat_logada') || "").replace(/\D/g,"").padStart(5,'0'); var nomeFinal = USUARIO_NOME || localStorage.getItem('nome_logado') || ""; if(isMasterMat(matFinal) || isMasterNome(nomeFinal)) return; var fNome = document.getElementById('fNome'); var fMat = document.getElementById('fMatr'); if(fNome){ fNome.value = nomeFinal; fNome.readOnly = true; fNome.disabled = true; fNome.style.backgroundColor='#e5e7eb'; fNome.style.opacity='0.6'; fNome.style.pointerEvents='none'; } if(fMat){ fMat.value = matFinal; fMat.readOnly = true; fMat.disabled = true; fMat.style.backgroundColor='#e5e7eb'; fMat.style.opacity='0.6'; fMat.style.pointerEvents='none'; } }
-function destravarAposLogin(matricula){ var matFinal = String(matricula || "").replace(/\D/g,"").padStart(5,'0'); if(isMasterMat(matFinal) || isMasterNome(USUARIO_NOME)){ ['fNome','fMatr','buscar','fCong'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.disabled=false; el.readOnly=false; el.style.background=''; el.style.opacity='1'; el.style.pointerEvents='auto'; el.value=''; } }); } else { travarPosMenu(matFinal); } }
-function entrarAcessoGeral(){ var nome=document.getElementById('acessoNome').value.trim().toUpperCase(); var senha=document.getElementById('acessoSenha').value.trim().toUpperCase(); var msg=document.getElementById('msgAcesso'); if(!nome ||!senha){ msg.style.color="#c00"; msg.innerText="Informe nome e senha"; return; } if(LISTA_ACESSO_CACHE.length==0){ msg.style.color="#0d6efd"; msg.innerText="Carregando lista da coluna B..."; carregarListaAcessoNomes(); setTimeout(entrarAcessoGeral, 1000); return; } var usuario = LISTA_ACESSO_CACHE.find(u => semAcentoJS(u.nome||u.NomeUsuario||u.B||'') === semAcentoJS(nome)); if(!usuario){ msg.style.color="#c00"; msg.innerText="❌ Nome não encontrado na coluna B"; return; } if(String(usuario.senha||'').toUpperCase().trim()!== senha){ msg.style.color="#c00"; msg.innerText="❌ Senha não compatível"; return; } LIBERADO=true; USUARIO_NOME=usuario.nome||usuario.NomeUsuario||usuario.B||''; localStorage.setItem('mat_logada', usuario.matricula||usuario.Matricula||''); localStorage.setItem('nome_logado', USUARIO_NOME); var inp=document.getElementById('inputMatricula'); if(inp) inp.value=usuario.matricula||usuario.Matricula||''; msg.style.color="#198754"; msg.innerText="✅ Liberado "+USUARIO_NOME; destravarAposLogin(usuario.matricula||usuario.Matricula||''); }
+
+
+function travarPosMenu(matricula){ 
+  var statusLogado = (localStorage.getItem('status_logado')||'').toUpperCase();
+  if(statusLogado === "APROVADO") return; // SE FOR APROVADO NÃO TRAVA NADA
+
+  var matFinal = String(matricula || localStorage.getItem('mat_logada') || "").replace(/\D/g,"").padStart(5,'0'); 
+  var nomeFinal = USUARIO_NOME || localStorage.getItem('nome_logado') || ""; 
+  if(isMasterMat(matFinal) || isMasterNome(nomeFinal)) return; 
+  var fNome = document.getElementById('fNome'); 
+  var fMat = document.getElementById('fMatr'); 
+  if(fNome){ fNome.value = nomeFinal; fNome.readOnly = true; fNome.disabled = true; fNome.style.backgroundColor='#e5e7eb'; fNome.style.opacity='0.6'; fNome.style.pointerEvents='none'; } 
+  if(fMat){ fMat.value = matFinal; fMat.readOnly = true; fMat.disabled = true; fMat.style.backgroundColor='#e5e7eb'; fMat.style.opacity='0.6'; fMat.style.pointerEvents='none'; } 
+}
+
+function entrarAcessoGeral(){ 
+  var nome=document.getElementById('acessoNome').value.trim().toUpperCase(); 
+  var senha=document.getElementById('acessoSenha').value.trim().toUpperCase(); 
+  var msg=document.getElementById('msgAcesso'); 
+  if(!nome ||!senha){ msg.style.color="#c00"; msg.innerText="Informe nome e senha"; return; } 
+  if(LISTA_ACESSO_CACHE.length==0){ msg.style.color="#0d6efd"; msg.innerText="Carregando lista..."; carregarListaAcessoNomes(); setTimeout(entrarAcessoGeral, 1000); return; } 
+  var usuario = LISTA_ACESSO_CACHE.find(u => semAcentoJS(u.nome||u.NomeUsuario||u.B||'') === semAcentoJS(nome)); 
+  if(!usuario){ msg.style.color="#c00"; msg.innerText="❌ Nome não encontrado"; return; } 
+  if(String(usuario.senha||'').toUpperCase().trim()!== senha){ msg.style.color="#c00"; msg.innerText="❌ Senha não compatível"; return; } 
+
+  var statusUsuario = semAcentoJS(usuario.status || usuario.Status || usuario.H || '');
+  if(statusUsuario !== "APROVADO"){
+    // master passa mesmo se não for APROVADO
+    var matCheck = String(usuario.matricula||usuario.Matricula||'').replace(/\D/g,'').padStart(5,'0');
+    if(!isMasterMat(matCheck) && !isMasterNome(nome)){
+      msg.style.color="#c00";
+      msg.innerText="❌ Cadastro "+(usuario.status||'EM ANALISE')+" - Aguarde aprovação";
+      return;
+    }
+  }
+
+  LIBERADO=true; 
+  USUARIO_NOME=usuario.nome||usuario.NomeUsuario||usuario.B||''; 
+  localStorage.setItem('mat_logada', usuario.matricula||usuario.Matricula||''); 
+  localStorage.setItem('nome_logado', USUARIO_NOME); 
+  localStorage.setItem('status_logado', statusUsuario); // SALVA STATUS
+  var inp=document.getElementById('inputMatricula'); 
+  if(inp) inp.value=usuario.matricula||usuario.Matricula||''; 
+  msg.style.color="#198754"; 
+  msg.innerText="✅ Liberado "+USUARIO_NOME; 
+
+  // SE FOR APROVADO OU MASTER -> DESTRAVA TUDO
+  if(statusUsuario === "APROVADO"){
+    ['fNome','fMatr','buscar','fCong'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.disabled=false; el.readOnly=false; el.style.background=''; el.style.opacity='1'; el.style.pointerEvents='auto'; el.value=''; }
+    });
+  }else{
+    destravarAposLogin(usuario.matricula||usuario.Matricula||'');
+  }
+}
+
+
+
 function carregarListaAcessoNomes(){ if(LISTA_ACESSO_CACHE.length>0) return; google.script.run.withSuccessHandler(function(lista){ LISTA_ACESSO_CACHE=lista; salvarCacheB(lista); }).listarAcessosPendentes(); }
 function renderDropdownAcessoNomes(lista){ var drop=document.getElementById('dropdownAcessoNome'); if(!drop) return; drop.innerHTML=''; var termo = (document.getElementById('acessoNome').value||'').trim(); if(!termo){ drop.style.display='none'; return; } if(!lista || lista.length==0){ drop.style.display='none'; return; } lista.slice(0,50).forEach(function(a){ var nome=(a.nome||a.NomeUsuario||a.B||"").toString().trim(); if(!nome) return; var st=(a.status||a.Status||"APROVADO").toUpperCase(); var cor=st=="APROVADO"?"#198754":"#dc3545"; var mat=(a.matricula||a.Matricula||a.D||"").toString(); var div=document.createElement('div'); div.className='dropdown-item'; div.innerHTML='<b>'+nome+'</b><small style="color:'+cor+'">Mat: '+mat+' - '+st+'</small>'; div.onclick=function(){ document.getElementById('acessoNome').value=nome; esconderAcessoNomes(); document.getElementById('acessoSenha').focus(); }; drop.appendChild(div); }); drop.style.display='block'; idxAcessoSel=-1; }
 function mostrarAcessoNomes(){ var input = document.getElementById('acessoNome'); var termo = (input.value||'').trim(); if(!termo){ var drop=document.getElementById('dropdownAcessoNome'); if(drop){ drop.style.display='none'; drop.innerHTML=''; } return; } if(LISTA_ACESSO_CACHE.length==0){ if(!carregarCacheB()){ carregarListaAcessoNomes(); return; } } var termoSem = semAcentoJS(termo); var lista=LISTA_ACESSO_CACHE.filter(function(a){ var n=a.nome||a.NomeUsuario||a.B||""; return semAcentoJS(n).indexOf(termoSem)!=-1; }); renderDropdownAcessoNomes(lista); }
