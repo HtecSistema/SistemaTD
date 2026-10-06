@@ -359,7 +359,7 @@ function tornarMovel(modalId, handleId){
 async function abrirTeste52(){
   let m = document.getElementById('modalTestes'); if(m){ m.remove(); return; }
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
-  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 TESTES CARREGANDO, AGUARDE...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>`;
+  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 BEM VINDO AOS TESTES</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando, Aguarde...</div></div>`;
   document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
   try{
     let r = await apiGet('testeLink',{});
@@ -454,7 +454,7 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
   });
 
   if(faltando.length){
-    let msg = 'Preencha os campos obrigatórios antes de abrir o teste:\n\n• ' + faltando.join('\n• ');
+    let msg = 'Por gentileza, preencha os campos pendentes:\n\n• ' + faltando.join('\n• ');
     alert(msg);
     try{ if(typeof toast === 'function') toast('Preencha: '+faltando.join(', '), 'err'); }catch(e){}
     return; // NÃO ABRE
