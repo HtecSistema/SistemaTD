@@ -482,12 +482,12 @@ function enviarZapPDF(){
     var elemento = document.getElementById('certPrint');
     if(!elemento){ alert('Certificado não encontrado'); return; }
 
-    // CORREÇÃO PC x CELULAR: detecta celular e usa escala segura
+    // CORREÇÃO: escala que não estoura no celular mas fica igual do PC
     var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    var escala = isMobile ? 3 : 4; // 3 no celular não estoura memória, 4 no PC fica perfeito
+    var escala = isMobile? 3 : 4;
 
-    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, letterRendering:true, windowWidth: elemento.scrollWidth, windowHeight: elemento.scrollHeight}).then(canvas=>{
-      var imgData = canvas.toDataURL('image/jpeg', 1.0); // JPEG 1.0 em vez de PNG fica mais nítido no Zap
+    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, letterRendering:true}).then(canvas=>{
+      var imgData = canvas.toDataURL('image/jpeg', 1.0);
       var { jsPDF } = window.jspdf;
       var pdf = new jsPDF('landscape', 'mm', 'a4');
       var pdfWidth = pdf.internal.pageSize.getWidth();
@@ -501,24 +501,30 @@ function enviarZapPDF(){
         imgWidth = canvas.width * imgHeight / canvas.height;
         x = (pdfWidth - imgWidth)/2;
       }
-      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'FAST');
+      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'SLOW');
 
       var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
-      
-      // CORREÇÃO PRINCIPAL: SEMPRE BAIXA COMO DOCUMENTO, igual no PC
-      // Não usa mais navigator.share que faz o WhatsApp borrar no celular
-      pdf.save(nomeArquivo);
+      var pdfBlob = pdf.output('blob');
+      var pdfFile = new File([pdfBlob], nomeArquivo, {type:'application/pdf'});
 
-      setTimeout(()=>{
-        var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
-        `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
-        `Seu Certificado foi gerado em PDF!%0A`+
-        `*Matrícula:* ${a.mat}%0A`+
-        `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
-        `PDF baixado. Agora vá no WhatsApp, clique no CLIPS > DOCUMENTO > selecione o PDF. Assim fica nítido igual no computador.`;
-        // Não abre mais wa.me automaticamente pra não confundir, só avisa
-        alert('PDF salvo! Agora envie pelo WhatsApp como DOCUMENTO para ficar nítido igual no PC.');
-      }, 800);
+      if(navigator.canShare && navigator.canShare({files:[pdfFile]})){
+        return navigator.share({
+          files: [pdfFile],
+          title: 'Certificado IEADMI',
+          text: `Certificado de ${a.nome} - Curso de Discipulado IEADMI`
+        }).catch(()=>{});
+      } else {
+        pdf.save(nomeArquivo);
+        setTimeout(()=>{
+          var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
+          `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
+          `Seu Certificado foi gerado em PDF!%0A`+
+          `*Matrícula:* ${a.mat}%0A`+
+          `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
+          `Acabei de baixar o PDF. Agora é só anexar aqui no WhatsApp.`;
+          window.open('https://wa.me/?text='+msg, '_blank');
+        }, 800);
+      }
     });
   }).catch(err=>{
     console.error(err);
