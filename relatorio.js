@@ -479,73 +479,57 @@ function enviarZapPDF(){
     carregarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
     carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
   ]).then(()=>{
-    var elemento = document.getElementById('certPrint');
-    if(!elemento){ alert('Certificado não encontrado'); return; }
+    var original = document.getElementById('certPrint');
+    if(!original){ alert('Certificado não encontrado'); return; }
 
-    // Garante que o certificado ocupe 100% igual boletim
-    elemento.style.width = '100%';
-    elemento.style.maxWidth = 'none';
-    elemento.style.margin = '0';
+    // CLONA ESCONDIDO COM LARGURA FIXA PAISAGEM - não mexe na tela
+    var wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '-9999px';
+    wrapper.style.top = '0';
+    wrapper.style.width = '1123px';
+    wrapper.style.background = '#fff';
+    var clone = original.cloneNode(true);
+    clone.style.width = '1123px';
+    clone.style.maxWidth = '1123px';
+    clone.style.margin = '0';
+    clone.style.transform = 'none';
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
 
-    var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    var escala = isMobile? 3 : 4;
+    var escala = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)? 2 : 3;
 
-    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false}).then(canvas=>{
+    return html2canvas(clone, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, width:1123}).then(canvas=>{
+      document.body.removeChild(wrapper);
+
       var imgData = canvas.toDataURL('image/jpeg', 1.0);
       var { jsPDF } = window.jspdf;
+      var pdf = new jsPDF('landscape', 'mm', 'a4');
+      var pdfW = pdf.internal.pageSize.getWidth();
+      var pdfH = pdf.internal.pageSize.getHeight();
+      var imgW = pdfW;
+      var imgH = canvas.height * imgW / canvas.width;
+      var y = (pdfH - imgH)/2;
+      if(y<0) y=0;
 
-      // CORREÇÃO BOLETIM x CERTIFICADO: escolhe orientação pela proporção
-      var isRetrato = canvas.height > canvas.width;
-      var orientacao = isRetrato? 'portrait' : 'landscape';
-      var pdf = new jsPDF(orientacao, 'mm', 'a4');
-      var pdfWidth = pdf.internal.pageSize.getWidth();
-      var pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // PREENCHE TODO ESPAÇO BRANCO igual boletim - sem deixar faixa
-      var imgWidth = pdfWidth;
-      var imgHeight = canvas.height * imgWidth / canvas.width;
-
-      // Se ainda ficar faixa branca em cima/baixo, estica pra cobrir tudo
-      if(imgHeight < pdfHeight){
-        imgHeight = pdfHeight;
-        imgWidth = canvas.width * imgHeight / canvas.height;
-      }
-
-      var x = (pdfWidth - imgWidth)/2;
-      var y = (pdfHeight - imgHeight)/2;
-      if(x < 0) x = 0;
-      if(y < 0) y = 0;
-      if(imgWidth > pdfWidth) imgWidth = pdfWidth;
-      if(imgHeight > pdfHeight) imgHeight = pdfHeight;
-
-      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'SLOW');
+      pdf.addImage(imgData, 'JPEG', 0, y, imgW, imgH, undefined, 'SLOW');
 
       var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
       var pdfBlob = pdf.output('blob');
       var pdfFile = new File([pdfBlob], nomeArquivo, {type:'application/pdf'});
 
       if(navigator.canShare && navigator.canShare({files:[pdfFile]})){
-        return navigator.share({
-          files: [pdfFile],
-          title: 'Certificado IEADMI',
-          text: `Certificado de ${a.nome} - Curso de Discipulado IEADMI`
-        }).catch(()=>{});
+        return navigator.share({files:[pdfFile], title:'Certificado IEADMI', text:`Certificado de ${a.nome}`}).catch(()=>{});
       } else {
         pdf.save(nomeArquivo);
-        setTimeout(()=>{
-          var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
-          `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
-          `*Matrícula:* ${a.mat}%0A`+
-          `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
-          `Acabei de baixar o PDF. Agora é só anexar aqui no WhatsApp.`;
-          window.open('https://wa.me/?text='+msg, '_blank');
-        }, 800);
       }
+    }).catch(e=>{
+      try{ document.body.removeChild(wrapper); }catch(e2){}
+      throw e;
     });
   }).catch(err=>{
     console.error(err);
-    alert('Erro ao gerar PDF. Tente clicar em IMPRIMIR e salvar como PDF.');
-    window.print();
+    alert('Erro ao gerar PDF.');
   }).finally(()=>{
     if(btn){ btn.innerHTML = textoOriginal || '📲 ENVIAR ZAP'; btn.disabled = false; }
   });
