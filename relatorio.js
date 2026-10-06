@@ -482,25 +482,42 @@ function enviarZapPDF(){
     var elemento = document.getElementById('certPrint');
     if(!elemento){ alert('Certificado não encontrado'); return; }
 
-    // CORREÇÃO: escala que não estoura no celular mas fica igual do PC
+    // Garante que o certificado ocupe 100% igual boletim
+    elemento.style.width = '100%';
+    elemento.style.maxWidth = 'none';
+    elemento.style.margin = '0';
+
     var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     var escala = isMobile? 3 : 4;
 
-    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, letterRendering:true}).then(canvas=>{
+    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false}).then(canvas=>{
       var imgData = canvas.toDataURL('image/jpeg', 1.0);
       var { jsPDF } = window.jspdf;
-      var pdf = new jsPDF('landscape', 'mm', 'a4');
+
+      // CORREÇÃO BOLETIM x CERTIFICADO: escolhe orientação pela proporção
+      var isRetrato = canvas.height > canvas.width;
+      var orientacao = isRetrato? 'portrait' : 'landscape';
+      var pdf = new jsPDF(orientacao, 'mm', 'a4');
       var pdfWidth = pdf.internal.pageSize.getWidth();
       var pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // PREENCHE TODO ESPAÇO BRANCO igual boletim - sem deixar faixa
       var imgWidth = pdfWidth;
       var imgHeight = canvas.height * imgWidth / canvas.width;
-      var x = 0;
-      var y = 0;
-      if(imgHeight > pdfHeight){
+
+      // Se ainda ficar faixa branca em cima/baixo, estica pra cobrir tudo
+      if(imgHeight < pdfHeight){
         imgHeight = pdfHeight;
         imgWidth = canvas.width * imgHeight / canvas.height;
-        x = (pdfWidth - imgWidth)/2;
       }
+
+      var x = (pdfWidth - imgWidth)/2;
+      var y = (pdfHeight - imgHeight)/2;
+      if(x < 0) x = 0;
+      if(y < 0) y = 0;
+      if(imgWidth > pdfWidth) imgWidth = pdfWidth;
+      if(imgHeight > pdfHeight) imgHeight = pdfHeight;
+
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'SLOW');
 
       var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
@@ -518,7 +535,6 @@ function enviarZapPDF(){
         setTimeout(()=>{
           var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
           `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
-          `Seu Certificado foi gerado em PDF!%0A`+
           `*Matrícula:* ${a.mat}%0A`+
           `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
           `Acabei de baixar o PDF. Agora é só anexar aqui no WhatsApp.`;
