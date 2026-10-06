@@ -460,17 +460,12 @@ function gerarCertificado(){
   document.getElementById('boletim').scrollIntoView({behavior:'smooth'});
 }
 
-
-
-
 function enviarZapPDF(){
   var a=DETALHE; if(!a) return;
-
   var btn = document.querySelector('button[onclick="enviarZapPDF()"]');
   var textoOriginal = btn? btn.innerHTML : '';
   if(btn){ btn.innerHTML = '⏳ GERANDO PDF...'; btn.disabled = true; }
 
-  // Carrega biblioteca de PDF se ainda não tiver
   function carregarScript(src){
     return new Promise((res, rej)=>{
       if(document.querySelector('script[src="'+src+'"]')) return res();
@@ -479,30 +474,30 @@ function enviarZapPDF(){
       document.head.appendChild(s);
     });
   }
-
   Promise.all([
     carregarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
     carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
   ]).then(()=>{
     var elemento = document.getElementById('certPrint');
     if(!elemento){ alert('Certificado não encontrado'); return; }
-
-    return html2canvas(elemento, {scale:2, useCORS:true, backgroundColor:'#ffffff'}).then(canvas=>{
+    return html2canvas(elemento, {scale:4, useCORS:true, backgroundColor:'#ffffff', logging:false, letterRendering:true}).then(canvas=>{
       var imgData = canvas.toDataURL('image/png');
       var { jsPDF } = window.jspdf;
       var pdf = new jsPDF('landscape', 'mm', 'a4');
       var pdfWidth = pdf.internal.pageSize.getWidth();
       var pdfHeight = pdf.internal.pageSize.getHeight();
-      var imgWidth = pdfWidth - 10;
+      var imgWidth = pdfWidth;
       var imgHeight = canvas.height * imgWidth / canvas.width;
-      if(imgHeight > pdfHeight - 10) imgHeight = pdfHeight - 10;
-      var x = (pdfWidth - imgWidth)/2;
-      var y = (pdfHeight - imgHeight)/2;
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      var x = 0;
+      var y = 0;
+      if(imgHeight > pdfHeight){
+        imgHeight = pdfHeight;
+        imgWidth = canvas.width * imgHeight / canvas.height;
+        x = (pdfWidth - imgWidth)/2;
+      }
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight, undefined, 'FAST');
 
       var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
-
-      // Tenta compartilhar o arquivo direto (Android/iPhone)
       var pdfBlob = pdf.output('blob');
       var pdfFile = new File([pdfBlob], nomeArquivo, {type:'application/pdf'});
 
@@ -513,7 +508,6 @@ function enviarZapPDF(){
           text: `Certificado de ${a.nome} - Curso de Discipulado IEADMI`
         }).catch(()=>{});
       } else {
-        // Fallback: baixa o PDF e abre o Zap com mensagem
         pdf.save(nomeArquivo);
         setTimeout(()=>{
           var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
@@ -534,7 +528,6 @@ function enviarZapPDF(){
     if(btn){ btn.innerHTML = textoOriginal || '📲 ENVIAR ZAP'; btn.disabled = false; }
   });
 }
-
 
 function carregarIgrejas(){ google.script.run.withSuccessHandler(function(lista){ LISTA_IGREJAS_CACHE=lista; }).getListaIgrejas(); }
 function filtrarIgrejas(){ var termo=semAcentoJS(document.getElementById('cadIgreja').value); var lista=LISTA_IGREJAS_CACHE.filter(function(n){ return!termo || semAcentoJS(n).indexOf(termo)!=-1; }); renderDropdownIgrejas(lista); mostrarIgrejas(); }
