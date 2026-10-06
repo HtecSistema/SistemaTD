@@ -415,18 +415,48 @@ function renderTestes(lista){
   });
 }
 
-function abrirTeste(linkOriginal, codUnico){
-  let w = window.open(linkOriginal, '_blank', 'noopener,noreferrer');
-  if(!w){
-    let a=document.createElement('a'); a.href=linkOriginal; a.target='_blank'; a.rel='noopener noreferrer';
-    document.body.appendChild(a); a.click(); a.remove();
-  }
-}
-
 async function abrirTeste(linkOriginal, codUnico, rowId){
   let agora = Date.now();
-  if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
-  _travaTeste = {cod: codUnico, tempo: agora};
+  if(typeof _travaTeste!== 'undefined' && _travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
+  if(typeof _travaTeste!== 'undefined') _travaTeste = {cod: codUnico, tempo: agora};
+
+  // ====== VALIDAÇÃO DOS 12 CAMPOS OBRIGATÓRIOS ======
+  const dCheck = (typeof coletarDados === 'function')? coletarDados() : {};
+
+  const obrigatorios = [
+    {chave: ['Matricula','MATRICULA','matricula'], label: 'MATRÍCULA'},
+    {chave: ['CPF','Cpf','cpf','PesquisaCPF'], label: 'PESQUISE CPF'},
+    {chave: ['Nome','NOME','nome','NomeCompleto'], label: 'NOME COMPLETO'},
+    {chave: ['Sexo','SEXO','sexo'], label: 'SEXO'},
+    {chave: ['WhatsApp','WHATSAPP','whatsapp','Whatsapp'], label: 'WHATSAPP'},
+    {chave: ['Nascimento','NASCIMENTO','DataNascimento','Nasc'], label: 'NASCIMENTO'},
+    {chave: ['Congregacao','CONGREGACAO','NomeCongregacao','Congregação'], label: 'NOME DA CONGREGAÇÃO'},
+    {chave: ['Membro','MEMBRO','membro'], label: 'MEMBRO'},
+    {chave: ['BatizadoAgua','BatismoEspirito','BtEspirito','BATISMO','BT ESPIRITO SANTO'], label: 'BT ESPÍRITO SANTO'},
+    {chave: ['Funcao','FuncaoEclesiastica','FUNCAO ECLESIASTICA'], label: 'FUNÇÃO ECLESIÁSTICA'},
+    {chave: ['QualFuncao','QUAL FUNCAO','Qualfuncao'], label: 'QUAL FUNÇÃO'},
+    {chave: ['Fcongregacao','FuncaoCongregacao','FUNCAO NA CONGREGACAO','Fcongregação'], label: 'FUNÇÃO NA CONGREGAÇÃO'}
+  ];
+
+  let faltando = [];
+  obrigatorios.forEach(item=>{
+    let valor = '';
+    for(let k of item.chave){
+      if(dCheck[k]!== undefined && String(dCheck[k]).trim()!== ''){
+        valor = String(dCheck[k]).trim();
+        break;
+      }
+    }
+    if(!valor) faltando.push(item.label);
+  });
+
+  if(faltando.length){
+    let msg = 'Preencha os campos obrigatórios antes de abrir o teste:\n\n• ' + faltando.join('\n• ');
+    alert(msg);
+    try{ if(typeof toast === 'function') toast('Preencha: '+faltando.join(', '), 'err'); }catch(e){}
+    return; // NÃO ABRE
+  }
+  // ====== FIM VALIDAÇÃO ======
 
   try{
     let item = listaTestes.find(t=>String(t.Cod)===String(codUnico));
@@ -435,7 +465,7 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
     let m = String(codUnico).match(/-(\d+)/);
     let testeNumBotao = m? m[1].replace(/^0+/,'') || '0' : '';
 
-    let listaCheck = listaLiberacao.length? listaLiberacao : [];
+    let listaCheck = (typeof listaLiberacao!== 'undefined' && listaLiberacao.length)? listaLiberacao : [];
     if(!listaCheck.length){
       try{
         let rLib = await apiGet('getliberacao',{});
@@ -455,7 +485,7 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
       });
       if(bloqueado){
         alert('Teste aberto a reedição. Por gentileza, aguarde');
-        toast('Teste aberto a reedição. Por gentileza, aguarde','err');
+        try{ toast('Teste aberto a reedição. Por gentileza, aguarde','err'); }catch(e){}
         return;
       }
     }
@@ -475,6 +505,8 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
   let a = document.createElement('a'); a.href = base; a.target = '_blank'; a.rel = 'noopener noreferrer'; document.body.appendChild(a); a.click(); setTimeout(()=>{ try{a.remove()}catch(e){} }, 800);
   apiGet('salvarNaResposta',{dados:JSON.stringify({...d, CodigoTeste: codUnico, Ciclo: ciclo}), cod:codUnico, ciclo:ciclo}).catch(()=>{});
 }
+
+
 (function(){
   function ativarArraste(){
     const container = document.getElementById('listViewContainer'); if(!container) return;
