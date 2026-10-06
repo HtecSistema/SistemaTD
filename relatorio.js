@@ -479,61 +479,61 @@ function enviarZapPDF(){
     carregarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
     carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
   ]).then(()=>{
-    var original = document.getElementById('certPrint');
-    if(!original){ alert('Certificado não encontrado'); return; }
+    var elemento = document.getElementById('certPrint');
+    if(!elemento){ alert('Certificado não encontrado'); return; }
 
-    // CLONA ESCONDIDO COM LARGURA FIXA PAISAGEM - não mexe na tela
-    var wrapper = document.createElement('div');
-    wrapper.style.position = 'fixed';
-    wrapper.style.left = '-9999px';
-    wrapper.style.top = '0';
-    wrapper.style.width = '1123px';
-    wrapper.style.background = '#fff';
-    var clone = original.cloneNode(true);
-    clone.style.width = '1123px';
-    clone.style.maxWidth = '1123px';
-    clone.style.margin = '0';
-    clone.style.transform = 'none';
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
+    // ÚNICA CORREÇÃO: no celular usa 2.5 em vez de 4 pra não borrar
+    var escala = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)? 2.5 : 4;
 
-    var escala = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)? 2 : 3;
-
-    return html2canvas(clone, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, width:1123}).then(canvas=>{
-      document.body.removeChild(wrapper);
-
-      var imgData = canvas.toDataURL('image/jpeg', 1.0);
+    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, letterRendering:true}).then(canvas=>{
+      var imgData = canvas.toDataURL('image/jpeg', 0.95);
       var { jsPDF } = window.jspdf;
       var pdf = new jsPDF('landscape', 'mm', 'a4');
-      var pdfW = pdf.internal.pageSize.getWidth();
-      var pdfH = pdf.internal.pageSize.getHeight();
-      var imgW = pdfW;
-      var imgH = canvas.height * imgW / canvas.width;
-      var y = (pdfH - imgH)/2;
-      if(y<0) y=0;
-
-      pdf.addImage(imgData, 'JPEG', 0, y, imgW, imgH, undefined, 'SLOW');
+      var pdfWidth = pdf.internal.pageSize.getWidth();
+      var pdfHeight = pdf.internal.pageSize.getHeight();
+      var imgWidth = pdfWidth;
+      var imgHeight = canvas.height * imgWidth / canvas.width;
+      var x = 0;
+      var y = 0;
+      if(imgHeight > pdfHeight){
+        imgHeight = pdfHeight;
+        imgWidth = canvas.width * imgHeight / canvas.height;
+        x = (pdfWidth - imgWidth)/2;
+      }
+      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'SLOW');
 
       var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
       var pdfBlob = pdf.output('blob');
       var pdfFile = new File([pdfBlob], nomeArquivo, {type:'application/pdf'});
 
       if(navigator.canShare && navigator.canShare({files:[pdfFile]})){
-        return navigator.share({files:[pdfFile], title:'Certificado IEADMI', text:`Certificado de ${a.nome}`}).catch(()=>{});
+        return navigator.share({
+          files: [pdfFile],
+          title: 'Certificado IEADMI',
+          text: `Certificado de ${a.nome} - Curso de Discipulado IEADMI`
+        }).catch(()=>{});
       } else {
         pdf.save(nomeArquivo);
+        setTimeout(()=>{
+          var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
+          `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
+          `Seu Certificado foi gerado em PDF!%0A`+
+          `*Matrícula:* ${a.mat}%0A`+
+          `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
+          `Acabei de baixar o PDF. Agora é só anexar aqui no WhatsApp.`;
+          window.open('https://wa.me/?text='+msg, '_blank');
+        }, 800);
       }
-    }).catch(e=>{
-      try{ document.body.removeChild(wrapper); }catch(e2){}
-      throw e;
     });
   }).catch(err=>{
     console.error(err);
-    alert('Erro ao gerar PDF.');
+    alert('Erro ao gerar PDF. Tente clicar em IMPRIMIR e salvar como PDF.');
+    window.print();
   }).finally(()=>{
     if(btn){ btn.innerHTML = textoOriginal || '📲 ENVIAR ZAP'; btn.disabled = false; }
   });
 }
+
 
 function carregarIgrejas(){ google.script.run.withSuccessHandler(function(lista){ LISTA_IGREJAS_CACHE=lista; }).getListaIgrejas(); }
 function filtrarIgrejas(){ var termo=semAcentoJS(document.getElementById('cadIgreja').value); var lista=LISTA_IGREJAS_CACHE.filter(function(n){ return!termo || semAcentoJS(n).indexOf(termo)!=-1; }); renderDropdownIgrejas(lista); mostrarIgrejas(); }
