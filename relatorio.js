@@ -534,7 +534,6 @@ function enviarZapPDF(){
   });
 }
 
-
 function carregarIgrejas(){ google.script.run.withSuccessHandler(function(lista){ LISTA_IGREJAS_CACHE=lista; }).getListaIgrejas(); }
 function filtrarIgrejas(){ var termo=semAcentoJS(document.getElementById('cadIgreja').value); var lista=LISTA_IGREJAS_CACHE.filter(function(n){ return!termo || semAcentoJS(n).indexOf(termo)!=-1; }); renderDropdownIgrejas(lista); mostrarIgrejas(); }
 function renderDropdownIgrejas(lista){ var drop=document.getElementById('dropdownIgrejas'); if(!drop) return; drop.innerHTML=''; lista.slice(0,50).forEach(function(nome){ var div=document.createElement('div'); div.className='dropdown-item'; div.innerHTML='<b>'+nome+'</b>'; div.onclick=function(){ document.getElementById('cadIgreja').value=nome; esconderIgrejas(); }; drop.appendChild(div); }); }
