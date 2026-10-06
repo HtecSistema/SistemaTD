@@ -354,10 +354,12 @@ function tornarMovel(modalId, handleId){
   }
   if(document.readyState==='complete') ativarArrasteLista(); else window.addEventListener('load', ativarArrasteLista);
 })();
+
+
 async function abrirTeste52(){
   let m = document.getElementById('modalTestes'); if(m){ m.remove(); return; }
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
-  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - TESTES - CARREGANDO...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>`;
+  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 TESTES CARREGANDO, AGUARDE...</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando...</div></div>`;
   document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
   try{
     let r = await apiGet('testeLink',{});
@@ -366,7 +368,7 @@ async function abrirTeste52(){
       let rLib = await apiGet('getliberacao',{});
       listaLiberacao = rLib.data || rLib || [];
     }catch(e){ listaLiberacao = []; }
-    document.getElementById('tituloTeste').innerText = '📝 ARRASTE AQUI - TESTES - '+listaTestes.length;
+    document.getElementById('tituloTeste').innerText = '📝 TESTES - '+listaTestes.length;
     renderTestes(listaTestes);
   }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
@@ -414,6 +416,7 @@ function renderTestes(lista){
     div.appendChild(card);
   });
 }
+
 
 async function abrirTeste(linkOriginal, codUnico, rowId){
   let agora = Date.now();
@@ -507,6 +510,7 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
 }
 
 
+
 (function(){
   function ativarArraste(){
     const container = document.getElementById('listViewContainer'); if(!container) return;
@@ -547,6 +551,8 @@ window.addEventListener('load', function(){
     if(mat||sen){ aplicarRegraTrava(); }
   }, 700);
 });
+
+
 async function recuperar(){
   let m = document.getElementById('modalRecuperar'); if(m){ m.remove(); return; }
   let matAtual = getMatriculaLogin();
@@ -557,7 +563,7 @@ async function recuperar(){
   let modal = document.createElement('div');
   modal.id = 'modalRecuperar';
   modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
-  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleRecup" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalRecuperar').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloRecup" style="margin:0;font-size:13px;font-weight:900;flex:1;cursor:move">📝 ARRASTE AQUI - RECUPERAÇÃO - ${matAtual}</h3></div><div id="listaRecup" style="overflow-y:auto;padding:10px;background:#f8f9fa">Buscando ${matAtual}...</div></div>`;
+  modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleRecup" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalRecuperar').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloRecup" style="margin:0;font-size:13px;font-weight:900;flex:1;cursor:move">📝 RECUPERAÇÃO - ${matAtual}</h3></div><div id="listaRecup" style="overflow-y:auto;padding:10px;background:#f8f9fa">Buscando ${matAtual}...</div></div>`;
   document.body.appendChild(modal);
   tornarMovel('modalRecuperar','handleRecup');
   try{
@@ -578,7 +584,7 @@ async function recuperar(){
       div.innerHTML = `<div style="text-align:center;padding:20px">Nenhuma recuperação liberada para<br><b>${matAtual} - ${nomeAtual}</b><br><br>Só aparece se a matrícula estiver na guia LIBERACAO.</div>`;
       return;
     }
-    tit.innerText = `📝 ARRASTE AQUI - RECUPERAÇÃO - ${matAtual} - ${filtrados.length}`;
+    tit.innerText = `📝 RECUPERAÇÃO - ${matAtual} - ${filtrados.length}`;
     div.innerHTML = filtrados.map(it=>{
       let ciclo = String(it.CICLO||it.E||'').toUpperCase();
       let teste = String(it.TESTE||it.F||'').toUpperCase();
