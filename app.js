@@ -3,7 +3,7 @@ async function apiGet(a,p={}){p.t=Date.now();const u=API_URL+'?action='+a+'&'+ne
 async function apiPost(pl){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(pl)});const t=await r.text();try{return JSON.parse(t)}catch{return{result:'ok',message:t}}}
 function dataParaBR(v){if(!v)return'';v=String(v).trim();if(v.includes('/'))return v.toUpperCase();if(v.includes('-')){let p=v.split('-');if(p.length==3)return p[2]+'/'+p[1]+'/'+p[0]}return v.toUpperCase()}
 function dataParaISO(v){if(!v)return'';v=String(v).trim();if(v.includes('-'))return v;if(v.includes('/')){let p=v.split('/');if(p.length==3)return p[2]+'-'+p[1]+'-'+p[0]}return''}
-const LISTAS={"Sexo":["MASCULINO","FEMININO"],"FaixaEtaria":["LACTANTE (BEBE DE COLO)","CRIANCA (03 A 11 ANOS)","ADOLESCENTE (12 A 17 ANOS)","ADULTO JOVEM (18 A 39 ANOS)","ADULTO DE MEIA-IDADE (40 A 59 ANOS)","TERCEIRA IDADE (60 ANOS ACIMA)","LONGEVO (80 ANOS OU MAIS)"],"SitConjugal":["SOLTEIRO","CASADO","DIVORCIADO","VIUVO"],"Cteologico":["SIM","NAO"],"GrauCurso":["BACHAREL","AVANCADO","MEDIO","BASICO"],"Andamento":["EM ANDAMENTO","CONCLUIDO"],"BatizadoAgua":["SIM","NAO"],"EspSanto":["SIM","NAO"],"TFunEclesiastica":["SIM","NAO"],"QualFuncao":["MEMBRO","AUXILIAR","DIACONO","PRESBITERO","EVANGELISTA","PASTOR","MISSIONARIO"],"Fcongregacao":["NENHUMA OPÇAO","AGENTE DE MISSOES","ASSISTENTE SOCIAL","COORDENADOR DE DEPARTAMENTO","COORDENADOR DE PATRIMONIO","DIRIGENTE","LIDER DA TARDE DA VITORIA","LIDER DE ADOLESCENTES","LIDER DE BANDA","LIDER DE CRIANCAS","LIDER DE DIACONOS","LIDER DE DISCIPULADO","LIDER DE JOVENS","LIDER DE MIDIA","LIDER DE MISSOES","LIDER DE SENHORAS","LIDER DE SENHORES","NENHUMA OPCAO","PORTEIRO","SECRETARIO","SONOPLASTA","SUPERINTENDENTE"],"Departamentoinserido":["NENHUMA OPCAO","BRASA VIVA","HEROINAS","HEROIS","JARDIM DE DEUS","NOVO DISCIPULO","SHALOM","MISSOES","EBD","TARDE DA VITORIA"],"FuncaoDepartamento":["NENHUMA OPCAO","COMPONENTE","CONSELHEIRO","COORDENADOR","LIDER","REGENTE","SECRETARIO","SOLISTA","TESOUREIRO"],"OFuncoes":["NENHUMA OPÇAO","AGENTE DE MISSOES","LIDER DA ASSISTENTE SOCIAL","LIDER DA BANDA","LIDER DA TARDE DA VITORIA","LIDER DE DIACONOS","LIDER DE MIDIA","LIDER DE MISSOES","LIDER DO PATRIMONIO","OBREIRO","PORTEIRO","SECRETARIO","SONOPLASTA","SUPERINTENDENTE","TESOUREIRO"],"Estado":["ACRE","ALAGOAS","AMAPA","AMAZONAS","BAHIA","CEARA","DISTRITO FEDERAL","ESPIRITO SANTO","GOIAS","MARANHAO","MATO GROSSO","MATO GROSSO DO SUL","MINAS GERAIS","PARA","PARAIBA","PARANA","PERNAMBUCO","PIAUI","RIO DE JANEIRO","RIO GRANDE DO NORTE","RIO GRANDE DO SUL","RONDONIA","RORAIMA","SANTA CATARINA","SAO PAULO","SERGIPE","TOCANTINS"],"CidadeNascimento":[],"UfEndereco":["ACRE","ALAGOAS","AMAPA","AMAZONAS","BAHIA","CEARA","DISTRITO FEDERAL","ESPIRITO SANTO","GOIAS","MARANHAO","MATO GROSSO","MATO GROSSO DO SUL","MINAS GERAIS","PARA","PARAIBA","PARANA","PERNAMBUCO","PIAUI","RIO DE JANEIRO","RIO GRANDE DO NORTE","RIO GRANDE DO SUL","RONDONIA","RORAIMA","SANTA CATARINA","SAO PAULO","SERGIPE","TOCANTINS"],"CidadeEndereco":[],"Congregacao":[]};
+const LISTAS={"Sexo":["MASCULINO","FEMININO"],"FaixaEtaria":["LACTANTE (BEBE DE COLO)","CRIANCA (03 A 11 ANOS)","ADOLESCENTE (12 A 17 ANOS)","ADULTO JOVEM (18 A 39 ANOS)","ADULTO DE MEIA-IDADE (40 A 59 ANOS)","TERCEIRA IDADE (60 ANOS ACIMA)","LONGEVO (80 ANOS OU MAIS)"],"SitConjugal":["SOLTEIRO","CASADO","DIVORCIADO","VIUVO"],"Cteologico":["SIM","NAO"],"GrauCurso":["BACHAREL","AVANCADO","MEDIO","BASICO"],"Andamento":["EM ANDAMENTO","CONCLUIDO"],"BatizadoAgua":["SIM","NAO"],"EspSanto":["SIM","NAO"],"TFunEclesiastica":["SIM","NAO"],"QualFuncao":["AUXILIAR","DIACONO","PRESBITERO","EVANGELISTA","PASTOR","MISSIONARIO"],"Fcongregacao":["NENHUMA OPÇAO","AGENTE DE MISSOES","ASSISTENTE SOCIAL","COORDENADOR DE DEPARTAMENTO","COORDENADOR DE PATRIMONIO","DIRIGENTE","LIDER DA TARDE DA VITORIA","LIDER DE ADOLESCENTES","LIDER DE BANDA","LIDER DE CRIANCAS","LIDER DE DIACONOS","LIDER DE DISCIPULADO","LIDER DE JOVENS","LIDER DE MIDIA","LIDER DE MISSOES","LIDER DE SENHORAS","LIDER DE SENHORES","NENHUMA OPCAO","PORTEIRO","SECRETARIO","SONOPLASTA","SUPERINTENDENTE"],"Departamentoinserido":["NENHUMA OPCAO","BRASA VIVA","HEROINAS","HEROIS","JARDIM DE DEUS","NOVO DISCIPULO","SHALOM","MISSOES","EBD","TARDE DA VITORIA"],"FuncaoDepartamento":["NENHUMA OPCAO","COMPONENTE","CONSELHEIRO","COORDENADOR","LIDER","REGENTE","SECRETARIO","SOLISTA","TESOUREIRO"],"OFuncoes":["NENHUMA OPÇAO","AGENTE DE MISSOES","LIDER DA ASSISTENTE SOCIAL","LIDER DA BANDA","LIDER DA TARDE DA VITORIA","LIDER DE DIACONOS","LIDER DE MIDIA","LIDER DE MISSOES","LIDER DO PATRIMONIO","OBREIRO","PORTEIRO","SECRETARIO","SONOPLASTA","SUPERINTENDENTE","TESOUREIRO"],"Estado":["ACRE","ALAGOAS","AMAPA","AMAZONAS","BAHIA","CEARA","DISTRITO FEDERAL","ESPIRITO SANTO","GOIAS","MARANHAO","MATO GROSSO","MATO GROSSO DO SUL","MINAS GERAIS","PARA","PARAIBA","PARANA","PERNAMBUCO","PIAUI","RIO DE JANEIRO","RIO GRANDE DO NORTE","RIO GRANDE DO SUL","RONDONIA","RORAIMA","SANTA CATARINA","SAO PAULO","SERGIPE","TOCANTINS"],"CidadeNascimento":[],"UfEndereco":["ACRE","ALAGOAS","AMAPA","AMAZONAS","BAHIA","CEARA","DISTRITO FEDERAL","ESPIRITO SANTO","GOIAS","MARANHAO","MATO GROSSO","MATO GROSSO DO SUL","MINAS GERAIS","PARA","PARAIBA","PARANA","PERNAMBUCO","PIAUI","RIO DE JANEIRO","RIO GRANDE DO NORTE","RIO GRANDE DO SUL","RONDONIA","RORAIMA","SANTA CATARINA","SAO PAULO","SERGIPE","TOCANTINS"],"CidadeEndereco":[],"Congregacao":[]};
 let dadosListView=[],dadosFiltrados=[],indiceSelecionado=-1,modoEdicao=false,tipoListaAtual='NOVO',debounceTimer=null;
 let cacheTodos=[];
 let matriculaOriginal='', codigoOriginal='';
@@ -57,7 +57,12 @@ function renderLista(dados,titulo){let vistos=new Set();let unicos=[];dados.forE
 function organizarLayout(){['DataCasamento','Conjuge','DataTermino'].forEach(id=>{const el=document.getElementById(id);if(!el) return;el.value='';el.disabled=true;el.style.background='rgba(255,255,255,0.3)';el.style.border='1px dashed #aaa';el.style.color='#666';el.style.opacity='0.5';el.style.pointerEvents='none';});}
 async function buscar(){tipoListaAtual='ALTERAR';modoEdicao=true;document.getElementById('listViewContainer').style.display='flex';document.getElementById('listViewBody').innerHTML='<tr><td colspan=3 style="text-align:center;padding:20px">Buscando...</td></tr>';try{const res=await apiGet('todos');cacheTodos=res.data||[];renderLista(cacheTodos,'BUSCA - ALTERAR');}catch(e){document.getElementById('listViewBody').innerHTML='<tr><td colspan=3>Erro: '+e.message+'</td></tr>'}}
 async function listar(){tipoListaAtual='NOVO';modoEdicao=false;document.getElementById('listViewContainer').style.display='flex';document.getElementById('listViewBody').innerHTML='<tr><td colspan=3 style="text-align:center;padding:20px">Buscando Pré...</td></tr>';try{const res=await apiGet('ciclo');renderLista(res.data||[],'PRÉ-CADASTRO - NOVO');const todos=await apiGet('todos');cacheTodos=todos.data||[];}catch(e){document.getElementById('listViewBody').innerHTML='<tr><td colspan=3>Erro: '+e.message+'</td></tr>'}}
-function coletarDados(){var g=id=>{var el=document.getElementById(id);return el?el.value.trim().toUpperCase():''};return{Codigo:g('Codigo'),Matricula:g('Matricula'),Congregacao:g('Congregacao'),Fcongregacao:g('Fcongregacao'),Nome:g('Nome'),Nascimento:dataParaBR(document.getElementById('Nascimento').value),Mae:g('Mae'),CidadeNascimento:g('CidadeNascimento'),Estado:g('Estado'),Sexo:g('Sexo'),RG:g('RG'),CPF:g('CPF'),WhatsApp:g('WhatsApp'),FaixaEtaria:g('FaixaEtaria'),SitConjugal:g('SitConjugal'),DtCasamento:dataParaBR(document.getElementById('DataCasamento').value),Conjuge:g('Conjuge'),Cteologico:g('Cteologico'),GrauCurso:g('GrauCurso'),Andamento:g('Andamento'),DataTermino:dataParaBR(document.getElementById('DataTermino').value),BatizadoAgua:g('BatizadoAgua'),BEspSanto:g('EspSanto'),EspSanto:g('EspSanto'),TFunEclesiastica:g('TFunEclesiastica'),QualFuncao:g('QualFuncao'),Departamentoinserido:g('Departamentoinserido'),FuncaoDepartamento:g('FuncaoDepartamento'),OFuncoes:g('OFuncoes'),CEP:g('CEP'),end:g('end'),Numero:g('Numero'),Bairro:g('Bairro'),Complemento:g('Complemento'),Observacao:g('Observacao'),uff:g('UfEndereco'),yCid:g('CidadeEndereco'),Senha:g('Senha')}}
+function coletarDados(){
+  var g=id=>{var el=document.getElementById(id);return el?el.value.trim().toUpperCase():''};
+  var dBR=id=>{ try{ var el=document.getElementById(id); return el&&el.value?dataParaBR(el.value):'' }catch(e){return ''} };
+  return{Codigo:g('Codigo'),Matricula:g('Matricula'),Congregacao:g('Congregacao'),Fcongregacao:g('Fcongregacao'),Nome:g('Nome'),Nascimento:dBR('Nascimento'),Mae:g('Mae'),CidadeNascimento:g('CidadeNascimento'),Estado:g('Estado'),Sexo:g('Sexo'),RG:g('RG'),CPF:g('CPF'),WhatsApp:g('WhatsApp'),FaixaEtaria:g('FaixaEtaria'),SitConjugal:g('SitConjugal'),DtCasamento:dBR('DataCasamento'),Conjuge:g('Conjuge'),Cteologico:g('Cteologico'),GrauCurso:g('GrauCurso'),Andamento:g('Andamento'),DataTermino:dBR('DataTermino'),BatizadoAgua:g('BatizadoAgua'),BEspSanto:g('EspSanto'),EspSanto:g('EspSanto'),TFunEclesiastica:g('TFunEclesiastica'),QualFuncao:g('QualFuncao'),Departamentoinserido:g('Departamentoinserido'),FuncaoDepartamento:g('FuncaoDepartamento'),OFuncoes:g('OFuncoes'),CEP:g('CEP'),end:g('end'),Numero:g('Numero'),Bairro:g('Bairro'),Complemento:g('Complemento'),Observacao:g('Observacao'),uff:g('UfEndereco'),yCid:g('CidadeEndereco'),Senha:g('Senha')}
+}
+
 function validaCPF(cpf){cpf=String(cpf||'').replace(/\D/g,'');if(cpf.length!==11||/^(\d)\1+$/.test(cpf))return false;let s=0;for(let i=0;i<9;i++)s+=parseInt(cpf[i])*(10-i);let r=(s*10)%11;if(r===10)r=0;if(r!==parseInt(cpf[9]))return false;s=0;for(let i=0;i<10;i++)s+=parseInt(cpf[i])*(11-i);r=(s*10)%11;if(r===10)r=0;return r===parseInt(cpf[10]);}
 async function salvar(){
   let dados=coletarDados();
@@ -355,12 +360,13 @@ function tornarMovel(modalId, handleId){
   if(document.readyState==='complete') ativarArrasteLista(); else window.addEventListener('load', ativarArrasteLista);
 })();
 
-
+// JANELA DE TESTES - COM PROTEÇÃO PARA NÃO QUEBRAR
 async function abrirTeste52(){
   let m = document.getElementById('modalTestes'); if(m){ m.remove(); return; }
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
   modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 BEM VINDO AOS TESTES</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando, Aguarde...</div></div>`;
-  document.body.appendChild(modal); tornarMovel('modalTestes','handleTestes');
+  document.body.appendChild(modal);
+  try{ tornarMovel('modalTestes','handleTestes'); }catch(e){}
   try{
     let r = await apiGet('testeLink',{});
     listaTestes = r.data || r || [];
@@ -372,6 +378,7 @@ async function abrirTeste52(){
     renderTestes(listaTestes);
   }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
+
 function renderTestes(lista){
   listaTestes = lista;
   let div = document.getElementById('listaTestes'); if(!div) return;
@@ -386,7 +393,6 @@ function renderTestes(lista){
     let cod=t.Cod||(ciclo+'-'+nf);
     let tema=t.Tema||'Conhecendo Jesus e o Seu Reino';
     let ja=!!abertos[cod];
-
     let cicloNumBotao = (ciclo.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
     let testeNumBotao = nf.replace(/^0+/,'') || '0';
     let emReedicao = listaLiberacao.some(it=>{
@@ -397,7 +403,6 @@ function renderTestes(lista){
       let tNum = (tt.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
       return cNum===cicloNumBotao && tNum===testeNumBotao;
     });
-
     let cor = cores[ciclo] || '#111827';
     let card = document.createElement('div');
     card.style = `background:${emReedicao?'#fef3c7':(ja?'#ecfdf5':'white')};border-left:6px solid ${emReedicao?'#f59e0b':cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;opacity:${emReedicao?'0.9':''}`;
@@ -417,35 +422,54 @@ function renderTestes(lista){
   });
 }
 
+// AVISO ANTES DE ABRIR FORMULÁRIO
+function mostrarAvisoAntesAbrir(linkFinal){
+  let old=document.getElementById('modalAvisoCabecalho'); if(old) old.remove();
+  let f=document.createElement('div'); f.id='modalAvisoCabecalho';
+  f.style='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;justify-content:center;align-items:center;padding:20px';
+f.innerHTML=`<div style="background:white;max-width:430px;width:100%;border-radius:16px;padding:24px;text-align:center;font-family:sans-serif"><div style="font-size:40px">📝</div><h3 style="margin:10px 0;font-weight:900;font-size:18px">ATENÇÃO</h3><p style="font-size:14px;line-height:1.6;margin:0 0 20px;text-align:left">Você <b>não precisa mais PREENCHER os seus Dados no Formulário de Teste</b><br><br>Por favor, não ALTERE seus Dados.<br><br>Clique em <b>SEGUINTE ou AVANÇAR</b> para acessar as perguntas.<br><br>Se de repente surgir essa mensagem ao abrir o teste:<br><b>Quer continuar o rascunho atual?</b><br>É so clicar em Continuar<br><br><b>Boa prova!</b></p><button id="btnOkAviso" style="background:#0f766e;color:white;border:0;padding:12px;width:100%;border-radius:10px;font-weight:900;cursor:pointer">OK - ABRIR TESTE</button></div>`;
+  document.body.appendChild(f);
+  document.getElementById('btnOkAviso').onclick=()=>{
+    f.remove();
+    let a=document.createElement('a'); a.href=linkFinal; a.target='_blank'; a.rel='noopener noreferrer';
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ try{a.remove()}catch(e){} }, 800);
+  };
+}
+// Certifique-se que no seu teste os campos: Congregação, Nome, WhatsApp, Matricula, Sexo, Batizado em Águas, Função Eclesiástica, Função na Congregação. Ja estejam preenchidos.<br><br>Clique em <b>SEGUINTE</b> para // acessar as perguntas.</p><button id="btnOkAviso" style="background:#0f766e;color:white;border:0;padding:12px;width:100%;border-radius:10px;font-weight:900;cursor:poin
 
 async function abrirTeste(linkOriginal, codUnico, rowId){
   let agora = Date.now();
-  if(typeof _travaTeste!== 'undefined' && _travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
-  if(typeof _travaTeste!== 'undefined') _travaTeste = {cod: codUnico, tempo: agora};
+  if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
+  _travaTeste = {cod: codUnico, tempo: agora};
 
-  // ====== VALIDAÇÃO DOS 12 CAMPOS OBRIGATÓRIOS ======
-  const dCheck = (typeof coletarDados === 'function')? coletarDados() : {};
+  const dCheck = coletarDados();
 
-  const obrigatorios = [
-    {chave: ['Matricula','MATRICULA','matricula'], label: 'MATRÍCULA'},
-    {chave: ['CPF','Cpf','cpf','PesquisaCPF'], label: 'PESQUISE CPF'},
-    {chave: ['Nome','NOME','nome','NomeCompleto'], label: 'NOME COMPLETO'},
-    {chave: ['Sexo','SEXO','sexo'], label: 'SEXO'},
-    {chave: ['WhatsApp','WHATSAPP','whatsapp','Whatsapp'], label: 'WHATSAPP'},
-    {chave: ['Nascimento','NASCIMENTO','DataNascimento','Nasc'], label: 'NASCIMENTO'},
-    {chave: ['Congregacao','CONGREGACAO','NomeCongregacao','Congregação'], label: 'NOME DA CONGREGAÇÃO'},
-    {chave: ['Membro','MEMBRO','membro'], label: 'MEMBRO'},
-    {chave: ['BatizadoAgua','BatismoEspirito','BtEspirito','BATISMO','BT ESPIRITO SANTO'], label: 'BT ESPÍRITO SANTO'},
-    {chave: ['Funcao','FuncaoEclesiastica','FUNCAO ECLESIASTICA'], label: 'FUNÇÃO ECLESIÁSTICA'},
-    {chave: ['QualFuncao','QUAL FUNCAO','Qualfuncao'], label: 'QUAL FUNÇÃO'},
-    {chave: ['Fcongregacao','FuncaoCongregacao','FUNCAO NA CONGREGACAO','Fcongregação'], label: 'FUNÇÃO NA CONGREGAÇÃO'}
+  // CORRIGIDO: MEMBRO É LABEL DE BatizadoAgua E FUNÇÃO É TFunEclesiastica
+const obrigatorios = [
+    {chave: ['Matricula'], label: 'MATRÍCULA'},
+    {chave: ['CPF'], label: 'PESQUISE CPF'},
+    {chave: ['Nome'], label: 'NOME COMPLETO'},
+    {chave: ['Sexo'], label: 'SEXO'},
+    {chave: ['WhatsApp'], label: 'WHATSAPP'},
+    {chave: ['Nascimento'], label: 'NASCIMENTO'},
+    {chave: ['Congregacao'], label: 'NOME DA CONGREGAÇÃO'},
+    {chave: ['BatizadoAgua'], label: 'MEMBRO'},
+    {chave: ['EspSanto','BEspSanto'], label: 'BT ESPÍRITO SANTO'},
+    {chave: ['TFunEclesiastica'], label: 'FUNÇÃO ECLESIÁSTICA'},
+    {chave: ['Fcongregacao'], label: 'FUNÇÃO NA CONGREGAÇÃO'}
   ];
+
+  // SE FUNÇÃO ECLESIÁSTICA FOR SIM, AI SIM PEDE QUAL FUNÇÃO
+  let funcaoEcle = String(dCheck.TFunEclesiastica||'').toUpperCase().trim();
+  if(funcaoEcle === 'SIM'){
+    obrigatorios.push({chave: ['QualFuncao'], label: 'QUAL FUNÇÃO'});
+  }
 
   let faltando = [];
   obrigatorios.forEach(item=>{
     let valor = '';
     for(let k of item.chave){
-      if(dCheck[k]!== undefined && String(dCheck[k]).trim()!== ''){
+      if(dCheck[k]!==undefined && String(dCheck[k]).trim()!==''){
         valor = String(dCheck[k]).trim();
         break;
       }
@@ -454,12 +478,10 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
   });
 
   if(faltando.length){
-    let msg = 'Por gentileza, preencha os campos pendentes:\n\n• ' + faltando.join('\n• ');
-    alert(msg);
-    try{ if(typeof toast === 'function') toast('Preencha: '+faltando.join(', '), 'err'); }catch(e){}
-    return; // NÃO ABRE
+    alert('Por gentileza, preencha os campos pendentes:\n\n• ' + faltando.join('\n• '));
+    try{ toast('Preencha: '+faltando.join(', '), 'err'); }catch(e){}
+    return;
   }
-  // ====== FIM VALIDAÇÃO ======
 
   try{
     let item = listaTestes.find(t=>String(t.Cod)===String(codUnico));
@@ -467,8 +489,7 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
     let cicloNumBotao = (cicloStr.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
     let m = String(codUnico).match(/-(\d+)/);
     let testeNumBotao = m? m[1].replace(/^0+/,'') || '0' : '';
-
-    let listaCheck = (typeof listaLiberacao!== 'undefined' && listaLiberacao.length)? listaLiberacao : [];
+    let listaCheck = listaLiberacao.length?listaLiberacao:[];
     if(!listaCheck.length){
       try{
         let rLib = await apiGet('getliberacao',{});
@@ -476,7 +497,6 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
         listaLiberacao = listaCheck;
       }catch(e){}
     }
-
     if(cicloNumBotao && testeNumBotao && listaCheck.length){
       let bloqueado = listaCheck.some(it=>{
         let c = String(it.CICLO || it.E || it.e || '').toUpperCase().trim();
@@ -492,11 +512,11 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
         return;
       }
     }
-  }catch(e){ console.log('erro lib', e); }
+  }catch(e){}
 
   const d = coletarDados();
-  let ciclo='4'; let testeNum2='1';
-  try{ let item=listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo=String(item.Ciclo).replace(/\D/g,''); let m2=String(codUnico).match(/-(\d+)/); if(m2) testeNum2=m2[1]; }catch(e){}
+  let ciclo='4';
+  try{ let item=listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo=String(item.Ciclo).replace(/\D/g,''); }catch(e){}
   let base = linkOriginal;
   try{
     base = linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
@@ -505,11 +525,11 @@ async function abrirTeste(linkOriginal, codUnico, rowId){
     let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
     if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
   }catch(e){ base = linkOriginal; }
-  let a = document.createElement('a'); a.href = base; a.target = '_blank'; a.rel = 'noopener noreferrer'; document.body.appendChild(a); a.click(); setTimeout(()=>{ try{a.remove()}catch(e){} }, 800);
+
   apiGet('salvarNaResposta',{dados:JSON.stringify({...d, CodigoTeste: codUnico, Ciclo: ciclo}), cod:codUnico, ciclo:ciclo}).catch(()=>{});
+
+  mostrarAvisoAntesAbrir(base);
 }
-
-
 
 (function(){
   function ativarArraste(){
@@ -551,8 +571,6 @@ window.addEventListener('load', function(){
     if(mat||sen){ aplicarRegraTrava(); }
   }, 700);
 });
-
-
 async function recuperar(){
   let m = document.getElementById('modalRecuperar'); if(m){ m.remove(); return; }
   let matAtual = getMatriculaLogin();
@@ -612,3 +630,65 @@ function abrirLinkRecuperacao(link){
     apiGet('salvarNaResposta',{dados:JSON.stringify({...d, tipo:'RECUPERACAO'}), cod:'RECUP-'+Date.now(), ciclo:'RECUP'}).catch(()=>{});
   }catch(e){}
 }
+
+
+
+// TRAVA CAMPOS - VAZIO E TRAVADO QUANDO NAO
+(function(){
+  function norm(v){ return (v||'').toString().trim().toUpperCase(); }
+
+  function travarCampos(){
+    let curso = norm(document.getElementById('Cteologico')?.value);
+    let temFuncao = norm(document.getElementById('TFunEclesiastica')?.value);
+
+    let grau = document.getElementById('GrauCurso');
+    let andam = document.getElementById('Andamento');
+    let funcaoEcle = document.getElementById('QualFuncao'); // esse é o FUNCAO ECLESIASTICA
+
+    // SE CURSO TEOLOGICO = NAO -> VAZIO E TRAVADO
+    let ehNaoCurso = (curso === 'NAO' || curso === 'NÃO');
+    if(ehNaoCurso){
+      if(grau){ grau.value=''; grau.disabled=true; grau.readOnly=true; }
+      if(andam){ andam.value=''; andam.disabled=true; andam.readOnly=true; }
+      document.getElementById('wrap_GrauCurso').style.pointerEvents='none';
+      document.getElementById('wrap_GrauCurso').style.opacity='0.4';
+      document.getElementById('wrap_Andamento').style.pointerEvents='none';
+      document.getElementById('wrap_Andamento').style.opacity='0.4';
+    } else {
+      if(grau){ grau.disabled=false; grau.readOnly=false; }
+      if(andam){ andam.disabled=false; andam.readOnly=false; }
+      document.getElementById('wrap_GrauCurso').style.pointerEvents='';
+      document.getElementById('wrap_GrauCurso').style.opacity='';
+      document.getElementById('wrap_Andamento').style.pointerEvents='';
+      document.getElementById('wrap_Andamento').style.opacity='';
+    }
+
+    // SE TEM FUNCAO = NAO -> FUNCAO ECLESIASTICA VAZIO E TRAVADO
+    let ehNaoFuncao = (temFuncao === 'NAO' || temFuncao === 'NÃO');
+    if(ehNaoFuncao){
+      if(funcaoEcle){ 
+        funcaoEcle.value=''; // VAZIO como você pediu
+        funcaoEcle.disabled=true; 
+        funcaoEcle.readOnly=true; 
+      }
+      document.getElementById('wrap_QualFuncao').style.pointerEvents='none';
+      document.getElementById('wrap_QualFuncao').style.opacity='0.4';
+    } else {
+      if(funcaoEcle){ funcaoEcle.disabled=false; funcaoEcle.readOnly=false; }
+      document.getElementById('wrap_QualFuncao').style.pointerEvents='';
+      document.getElementById('wrap_QualFuncao').style.opacity='';
+    }
+  }
+
+  ['Cteologico','TFunEclesiastica'].forEach(id=>{
+    let el=document.getElementById(id);
+    if(el){
+      el.addEventListener('change', travarCampos);
+      el.addEventListener('input', travarCampos);
+    }
+  });
+
+  setInterval(travarCampos, 700);
+  window.addEventListener('load', ()=>setTimeout(travarCampos, 1200));
+})();
+
