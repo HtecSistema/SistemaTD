@@ -468,78 +468,46 @@ function gerarCertificado(){
   document.getElementById('boletim').scrollIntoView({behavior:'smooth'});
 }
 
+async function enviarZapPDF(){
+  if(!DETALHE){ alert('Clique em CERTIFICADO primeiro'); return; }
+  var el = document.getElementById('certPrint');
+  if(!el){ alert('Gere o certificado primeiro'); return; }
+  var nomeArquivo = 'CERTIFICADO_'+(DETALHE.nome||'aluno').replace(/\s+/g,'_')+'.pdf';
 
-function enviarZapPDF(){
-  var a=DETALHE; if(!a) return;
-  var btn = document.querySelector('button[onclick="enviarZapPDF()"]');
-  var textoOriginal = btn? btn.innerHTML : '';
-  if(btn){ btn.innerHTML = '⏳ GERANDO PDF...'; btn.disabled = true; }
+  ensureHtml2pdf(async function(){
+    try{
+      // CLONA E FORÇA TAMANHO DE A4 DEITADO PRA NÃO CORTAR
+      var clone = el.cloneNode(true);
+      clone.style.width = '1050px';
+      clone.style.maxWidth = '1050px';
+      clone.style.position = 'fixed';
+      clone.style.left = '-10000px';
+      clone.style.top = '0';
+      document.body.appendChild(clone);
 
-  function carregarScript(src){
-    return new Promise((res, rej)=>{
-      if(document.querySelector('script[src="'+src+'"]')) return res();
-      var s=document.createElement('script');
-      s.src=src; s.onload=res; s.onerror=rej;
-      document.head.appendChild(s);
-    });
-  }
+      var opt = {
+        margin: 0,
+        filename: nomeArquivo,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1122, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: 'avoid-all' }
+      };
 
-  Promise.all([
-    carregarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-    carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-  ]).then(()=>{
-    var elemento = document.getElementById('certPrint');
-    if(!elemento){ alert('Certificado não encontrado'); return; }
+      var blob = await html2pdf().set(opt).from(clone).outputPdf('blob');
+      document.body.removeChild(clone);
 
-    // ÚNICA CORREÇÃO: no celular usa 2.5 em vez de 4 pra não borrar
-    var escala = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)? 2.5 : 4;
-
-    return html2canvas(elemento, {scale:escala, useCORS:true, backgroundColor:'#ffffff', logging:false, letterRendering:true}).then(canvas=>{
-      var imgData = canvas.toDataURL('image/jpeg', 0.95);
-      var { jsPDF } = window.jspdf;
-      var pdf = new jsPDF('landscape', 'mm', 'a4');
-      var pdfWidth = pdf.internal.pageSize.getWidth();
-      var pdfHeight = pdf.internal.pageSize.getHeight();
-      var imgWidth = pdfWidth;
-      var imgHeight = canvas.height * imgWidth / canvas.width;
-      var x = 0;
-      var y = 0;
-      if(imgHeight > pdfHeight){
-        imgHeight = pdfHeight;
-        imgWidth = canvas.width * imgHeight / canvas.height;
-        x = (pdfWidth - imgWidth)/2;
+      var file = new File([blob], nomeArquivo, {type:'application/pdf'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({ files:[file], title: nomeArquivo, text: 'Certificado '+DETALHE.nome });
+      }else{
+        await html2pdf().set(opt).from(el).save();
       }
-      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'SLOW');
-
-      var nomeArquivo = 'Certificado-'+a.nome.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
-      var pdfBlob = pdf.output('blob');
-      var pdfFile = new File([pdfBlob], nomeArquivo, {type:'application/pdf'});
-
-      if(navigator.canShare && navigator.canShare({files:[pdfFile]})){
-        return navigator.share({
-          files: [pdfFile],
-          title: 'Certificado IEADMI',
-          text: `Certificado de ${a.nome} - Curso de Discipulado IEADMI`
-        }).catch(()=>{});
-      } else {
-        pdf.save(nomeArquivo);
-        setTimeout(()=>{
-          var msg = `*IEADMI - CERTIFICADO*%0A%0A`+
-          `Parabéns *${encodeURIComponent(a.nome.toUpperCase())}*! 🎓%0A`+
-          `Seu Certificado foi gerado em PDF!%0A`+
-          `*Matrícula:* ${a.mat}%0A`+
-          `*Média:* ${a.mediaGeral.toFixed(2)}%0A%0A`+
-          `Acabei de baixar o PDF. Agora é só anexar aqui no WhatsApp.`;
-          window.open('https://wa.me/?text='+msg, '_blank');
-        }, 800);
-      }
-    });
-  }).catch(err=>{
-    console.error(err);
-    alert('Erro ao gerar PDF. Tente clicar em IMPRIMIR e salvar como PDF.');
-    window.print();
-  }).finally(()=>{
-    if(btn){ btn.innerHTML = textoOriginal || '📲 ENVIAR ZAP'; btn.disabled = false; }
+    }catch(e){
+      console.error(e);
+      alert('Erro, tentando imprimir');
+      window.print();
+    }
   });
 }
 
