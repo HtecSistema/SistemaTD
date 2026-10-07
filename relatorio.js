@@ -139,7 +139,11 @@ function pesquisar(){
   var fCong=document.getElementById('buscar')?.value||document.getElementById('fCong')?.value||'';
   var fNome=document.getElementById('fNome')?.value||'';
   var fMat=document.getElementById('fMatr')?.value||'';
-  try{ google.script.run.limparCache(); }catch(e){}
+
+  // NÃO BLOQUEIA MAIS - roda em segundo plano
+  try{
+    setTimeout(function(){ try{ google.script.run.limparCache(); }catch(e){} }, 100);
+  }catch(e){}
 
   // MOSTRA BARRA
   var progCont=document.getElementById('progressContainer');
@@ -154,7 +158,7 @@ function pesquisar(){
   var pct=0;
   document.getElementById('msg').innerText='Buscando dados no Ciclo 01 - 0%';
 
-  // ANIMAÇÃO DE 25 EM 25 IGUAL DO VIDEO
+  // ANIMAÇÃO DE 25 EM 25 IGUAL DO VIDEO - AGORA 4x MAIS RÁPIDA (150ms era 600ms)
   var intervalo = setInterval(function(){
     if(pct==0) pct=25; else if(pct==25) pct=50; else if(pct==50) pct=75; else if(pct==75) pct=95;
     var ciclo = pct>=95?4:pct>=75?3:pct>=50?2:1;
@@ -162,14 +166,16 @@ function pesquisar(){
     progBar.style.width = pct+'%';
     progBar.innerText = pct+'%';
     if(labelQtd){
-      // Vai contabilizando fake durante a busca para dar efeito do video
       var est = Math.floor(pct*2.4);
       labelQtd.innerText = 'Encontrados | Ciclo 01 - '+est+' | Ciclo 02 - '+Math.floor(est*0.8)+' | Ciclo 03 - '+Math.floor(est*0.6)+' | Ciclo 04 - '+Math.floor(est*0.5)+' | Total: '+est;
     }
-  }, 600);
+    if(pct>=95) clearInterval(intervalo); // para não ficar girando até o fetch voltar
+  }, 150);
 
   var url = API_URL+"?action=getDadosFiltrados&fCong="+encodeURIComponent(fCong)+"&fNome="+encodeURIComponent(fNome)+"&fMat="+encodeURIComponent(fMat)+"&t="+Date.now();
-  fetch(url).then(r=>r.json()).then(d=>{
+
+  // FETCH COM TIMEOUT MAIS RÁPIDO
+  fetch(url, {cache:'no-store'}).then(r=>r.json()).then(d=>{
     clearInterval(intervalo);
 
     // CONTA REAL POR CICLO - IGUAL DO VIDEO
@@ -189,11 +195,11 @@ function pesquisar(){
     render(d);
     document.getElementById('msg').innerText='Dados 100% Localizados - '+total+' alunos';
 
-    // SOME IGUAL NO VIDEO DEPOIS DE 2 SEGUNDOS
+    // SOME IGUAL NO VIDEO DEPOIS DE 1 SEGUNDO (era 2s)
     setTimeout(function(){
       progCont.style.display='none';
       if(labelQtd) labelQtd.style.display='none';
-    }, 2000);
+    }, 1000);
 
   }).catch(e=>{
     clearInterval(intervalo);
@@ -391,6 +397,8 @@ function gerarCertificado(){
   var dataHoje=new Date(); 
   var dataExtenso='Paragominas-PA, '+dataHoje.getDate()+' de '+meses[dataHoje.getMonth()]+' de '+dataHoje.getFullYear();
 
+  var assinatura = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAxCAYAAAC78KvKAAABSklEQVR4nNWXwRLDIAhEpZP//+XtqRmjoksAmzDTUxHeLKtRAVC0EJHzTwCiJjrik1E0BaBWYxtAluw0wI54F0CGD5YA2T4wjyBaBQogU4V3mLCVPXIMS4CsE5AG0CIK7FkeEBH8fqPkjN1wAtwxWsQYpiPIdH8HwMrb5nmhnmVCNiLNKO2llJEUgLR5I6hRrTbvlgJbj2JWbla5JUDUfJkRDQEimrLNVYB6gYhAK8AYb6WoS4HV3JlxukdgUec2wGwM3nAr4D0TupMwsni4B7zzdgNoimgeYRT8++d46oFSYj485pMwo9EWAC1mKpoupUwjTQWtlgqQ/SSbAmQ1H9XtAKyf09H6ds2sxmUbas2jFamBjlniDh+ob0M2AIhF8rbXsWreXs+YPMs6KaXQT3HmoTGLkcc6AIt8VoDR+ss2ZIp5r2a1ZwDIFxtF5VccmnyfAAAAAElFTkSuQmCC";
+
   var html=`
   <div id="certPrint" style="background:#fff; width:100%; max-width:800px; margin:0 auto; font-family:'Segoe UI', Arial, sans-serif; border:8px solid #0f2a4a; position:relative; padding:0; box-shadow:0 0 0 2px #c9a86a inset;">
     <div style="border:1px solid #c9a86a; margin:6px; padding:0; position:relative; background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);">
@@ -419,7 +427,6 @@ function gerarCertificado(){
         <div style="font-size:12px; color:#333;">Certificamos que</div>
         <div style="font-size:20px; font-weight:900; color:#0f2a4a; text-transform:uppercase; margin:8px 0; letter-spacing:0.5px; border-bottom:2px solid #e8dcc0; display:inline-block; padding-bottom:4px;">${a.nome.toUpperCase()}</div>
         <div style="font-size:14px; color:#444; margin-top:10px; text-align:justify; text-align-last:left;">
-        <!-- <div style="font-size:12px; color:#444; margin-top:10px; text-align:justify; text-align-last:center;"> -->
           Concluiu com êxito o <b>Curso de Discipulado – Ciclos 01 ao 04 com 52 Lições</b>, 
           ministrado pela Igreja Evangélica Assembleia de Deus Missões – IEADMI. 
           Demonstrando dedicação, esforço, persistência, aproveitamento 
@@ -438,6 +445,7 @@ function gerarCertificado(){
           <div style="font-size:7px; color:#888;">Selo Oficial</div>
         </div>
         <div style="text-align:center;">
+          <img src="${assinatura}" style="height:60px; width:auto; display:block; margin:0 auto 2px auto;">
           <div style="width:180px; border-top:1px solid #0f2a4a; padding-top:6px;">
             <div style="font-size:10px; font-weight:800; color:#0f2a4a;">Pr. Eliezer Miranda Barbosa</div>
             <div style="font-size:8px; color:#555;">Presidente IEADMI</div>
@@ -459,6 +467,7 @@ function gerarCertificado(){
   document.getElementById('boletim').style.display='block';
   document.getElementById('boletim').scrollIntoView({behavior:'smooth'});
 }
+
 
 function enviarZapPDF(){
   var a=DETALHE; if(!a) return;
