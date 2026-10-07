@@ -397,63 +397,76 @@ function gerarCertificado(){
   var dataHoje=new Date(); 
   var dataExtenso='Paragominas-PA, '+dataHoje.getDate()+' de '+meses[dataHoje.getMonth()]+' de '+dataHoje.getFullYear();
 
-  var assinatura = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAxCAYAAAC78KvKAAABSklEQVR4nNWXwRLDIAhEpZP//+XtqRmjoksAmzDTUxHeLKtRAVC0EJHzTwCiJjrik1E0BaBWYxtAluw0wI54F0CGD5YA2T4wjyBaBQogU4V3mLCVPXIMS4CsE5AG0CIK7FkeEBH8fqPkjN1wAtwxWsQYpiPIdH8HwMrb5nmhnmVCNiLNKO2llJEUgLR5I6hRrTbvlgJbj2JWbla5JUDUfJkRDQEimrLNVYB6gYhAK8AYb6WoS4HV3JlxukdgUec2wGwM3nAr4D0TupMwsni4B7zzdgNoimgeYRT8++d46oFSYj485pMwo9EWAC1mKpoupUwjTQWtlgqQ/SSbAmQ1H9XtAKyf09H6ds2sxmUbas2jFamBjlniDh+ob0M2AIhF8rbXsWreXs+YPMs6KaXQT3HmoTGLkcc6AIt8VoDR+ss2ZIp5r2a1ZwDIFxtF5VccmnyfAAAAAElFTkSuQmCC";
+  var assinatura = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAxCAYAAAC78KvKAAABSklEQVR4nNWXwRLDIAhEpZP//+XtqRmjoksAmzDTUxHeLKtRAVC0EJHzTwCiJjA2zDTUxHeLKtRAVC0EJHzTwCiJjrik1E0BaBWYxtAluw0wI54F0CGD5YA2T4wjyBaBQogU4V3mLCVPXIMS4CsE5AG0CIK7FkeEBH8fqPkjN1wAtwxWsQYpiPIdH8HwMrb5nmhnmVCNiLNKO2llJEUgLR5I6hRrTbvlgJbj2JWbla5JUDUfJkRDQEimrLNVYB6gYhAK8AYb6WoS4HV3JlxukdgUec2wGwM3nAr4D0TupMwsni4B7zzdgNoimgeYRT8++d46oFSYj485pMwo9EWAC1mKpoupUwjTQWtlgqQ/SSbAmQ1H9XtAKyf09H6ds2sxmUbas2jFamBjlniDh+ob0M2AIhF8rbXsWreXs+YPMs6KaXQT3HmoTGLkcc6AIt8VoDR+ss2ZIp5r2a1ZwDIFxtF5VccmnyfAAAAAElFTkSuQmCC";
 
   var html=`
-  <div id="certPrint" style="background:#fff; width:100%; max-width:800px; margin:0 auto; font-family:'Segoe UI', Arial, sans-serif; border:8px solid #0f2a4a; position:relative; padding:0; box-shadow:0 0 0 2px #c9a86a inset;">
-    <div style="border:1px solid #c9a86a; margin:6px; padding:0; position:relative; background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);">
-      <div style="height:8px; background: linear-gradient(90deg, #0f2a4a 0%, #1e4a7a 50%, #c9a86a 100%);"></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 28px 10px 28px;">
-        <div style="display:flex; align-items:center; gap:12px;">
-  <img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:auto; height:58px; object-fit:contain; display:block; object-fit:contain">
-                  <div style="line-height:1.2;">
-            <div style="font-size:11px; font-weight:900; color:#0f2a4a; letter-spacing:1px;">IEADMI</div>
-            <div style="font-size:8px; color:#555; max-width:180px;">Igreja Evangélica Assembleia de Deus Missões</div>
-            <div style="font-size:8px; color:#0f2a4a; font-weight:700;">Pr. Eliezer Miranda Barbosa – Presidente</div>
+  <style>
+    @media print{
+      @page{ size:A4 landscape; margin:0; }
+      body *{ visibility:hidden; }
+      #boletim, #boletim *{ visibility:visible; }
+      #boletim{ position:absolute; left:0; top:0; width:100%; margin:0; padding:0; }
+      .no-print{ display:none !important; }
+      #certWrap{ overflow:visible !important; }
+      #certPrint{ transform:none !important; width:100% !important; max-width:100% !important; }
+    }
+  </style>
+  <div id="certWrap" style="width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; display:flex; justify-content:center; background:#e5e7eb; padding:8px 0;">
+    <div id="certPrint" style="background:#fff; width:800px; min-width:800px; font-family:'Segoe UI', Arial, sans-serif; border:8px solid #0f2a4a; position:relative; padding:0; box-shadow:0 0 0 2px #c9a86a inset;">
+      <div style="border:1px solid #c9a86a; margin:6px; padding:0; position:relative; background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);">
+        <div style="height:8px; background: linear-gradient(90deg, #0f2a4a 0%, #1e4a7a 50%, #c9a86a 100%);"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 28px 10px 28px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <img src="https://i.ibb.co/7hxL8x1/802853790-2155322575864895-5004929784006915147-n.png" style="width:auto; height:58px; object-fit:contain; display:block;">
+            <div style="line-height:1.2;">
+              <div style="font-size:11px; font-weight:900; color:#0f2a4a; letter-spacing:1px;">IEADMI</div>
+              <div style="font-size:8px; color:#555; max-width:180px;">Igreja Evangélica Assembleia de Deus Missões</div>
+              <div style="font-size:8px; color:#0f2a4a; font-weight:700;">Pr. Eliezer Miranda Barbosa – Presidente</div>
+            </div>
+          </div>
+          <div style="text-align:right; font-size:9px; color:#666;">
+            <div>Matrícula: <b style="color:#0f2a4a;">${a.mat}</b></div>
+            <div>Média: <b style="color:#198754;">${a.mediaGeral.toFixed(2)}</b></div>
+            <div style="font-size:7px; margin-top:2px; background:#f1f5f9; padding:2px 6px; border-radius:4px; display:inline-block;">${a.totalFeitos||52}/52 Testes Concluídos</div>
           </div>
         </div>
-        <div style="text-align:right; font-size:9px; color:#666;">
-          <div>Matrícula: <b style="color:#0f2a4a;">${a.mat}</b></div>
-          <div>Média: <b style="color:#198754;">${a.mediaGeral.toFixed(2)}</b></div>
-          <div style="font-size:7px; margin-top:2px; background:#f1f5f9; padding:2px 6px; border-radius:4px; display:inline-block;">${a.totalFeitos||52}/52 Testes Concluídos</div>
+        <div style="text-align:center; padding:8px 20px 0 20px;">
+          <div style="font-size:9px; letter-spacing:4px; color:#c9a86a; font-weight:800;">CERTIFICADO DE CONCLUSÃO</div>
+          <div style="font-family:Georgia, serif; font-size:42px; font-weight:900; color:#0f2a4a; letter-spacing:2px; margin:4px 0; line-height:1;">CERTIFICADO</div>
+          <div style="width:80px; height:3px; background: linear-gradient(90deg, #c9a86a, #0f2a4a); margin:0 auto 10px auto; border-radius:2px;"></div>
         </div>
-      </div>
-      <div style="text-align:center; padding:8px 20px 0 20px;">
-        <div style="font-size:9px; letter-spacing:4px; color:#c9a86a; font-weight:800;">CERTIFICADO DE CONCLUSÃO</div>
-        <div style="font-family:Georgia, serif; font-size:42px; font-weight:900; color:#0f2a4a; letter-spacing:2px; margin:4px 0; line-height:1;">CERTIFICADO</div>
-        <div style="width:80px; height:3px; background: linear-gradient(90deg, #c9a86a, #0f2a4a); margin:0 auto 10px auto; border-radius:2px;"></div>
-      </div>
-      <div style="text-align:center; padding:10px 50px 10px 50px; line-height:1.6;">
-        <div style="font-size:12px; color:#333;">Certificamos que</div>
-        <div style="font-size:20px; font-weight:900; color:#0f2a4a; text-transform:uppercase; margin:8px 0; letter-spacing:0.5px; border-bottom:2px solid #e8dcc0; display:inline-block; padding-bottom:4px;">${a.nome.toUpperCase()}</div>
-        <div style="font-size:14px; color:#444; margin-top:10px; text-align:justify; text-align-last:left;">
-          Concluiu com êxito o <b>Curso de Discipulado – Ciclos 01 ao 04 com 52 Lições</b>, 
-          ministrado pela Igreja Evangélica Assembleia de Deus Missões – IEADMI. 
-          Demonstrando dedicação, esforço, persistência, aproveitamento 
-          e aptidão no exercício da Fé Cristã.
-        </div>
-        <div style="display:flex; justify-content:center; gap:20px; margin-top:14px;">
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 14px; font-size:10px;"><b>Congregação:</b> ${a.congOrig||a.cong||''}</div>
-          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:6px 14px; font-size:10px;"><b>Status:</b> <span style="color:#16a34a; font-weight:900;">APROVADO</span></div>
-        </div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:18px 40px 22px 40px;">
-        <div style="text-align:center;">
-          <div style="width:80px; height:80px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #f9e7a0, #c9a86a); border:2px solid #a88b4a; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-            <div style="font-size:10px; font-weight:900; color:#0f2a4a; line-height:1;">IEADMI<br><span style="font-size:14px;">★</span><br>2026</div>
+        <div style="text-align:center; padding:10px 50px 10px 50px; line-height:1.6;">
+          <div style="font-size:12px; color:#333;">Certificamos que</div>
+          <div style="font-size:20px; font-weight:900; color:#0f2a4a; text-transform:uppercase; margin:8px 0; letter-spacing:0.5px; border-bottom:2px solid #e8dcc0; display:inline-block; padding-bottom:4px;">${a.nome.toUpperCase()}</div>
+          <div style="font-size:14px; color:#444; margin-top:10px; text-align:justify; text-align-last:left;">
+            Concluiu com êxito o <b>Curso de Discipulado – Ciclos 01 ao 04 com 52 Lições</b>, 
+            ministrado pela Igreja Evangélica Assembleia de Deus Missões – IEADMI. 
+            Demonstrando dedicação, esforço, persistência, aproveitamento 
+            e aptidão no exercício da Fé Cristã.
           </div>
-          <div style="font-size:7px; color:#888;">Selo Oficial</div>
-        </div>
-        <div style="text-align:center;">
-          <img src="${assinatura}" style="height:60px; width:auto; display:block; margin:0 auto 2px auto;">
-          <div style="width:180px; border-top:1px solid #0f2a4a; padding-top:6px;">
-            <div style="font-size:10px; font-weight:800; color:#0f2a4a;">Pr. Eliezer Miranda Barbosa</div>
-            <div style="font-size:8px; color:#555;">Presidente IEADMI</div>
+          <div style="display:flex; justify-content:center; gap:20px; margin-top:14px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 14px; font-size:10px;"><b>Congregação:</b> ${a.congOrig||a.cong||''}</div>
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:6px 14px; font-size:10px;"><b>Status:</b> <span style="color:#16a34a; font-weight:900;">APROVADO</span></div>
           </div>
         </div>
-      </div>
-      <div style="background:#0f2a4a; color:#c9a86a; text-align:center; padding:8px; font-size:8px; letter-spacing:0.5px;">
-        ${dataExtenso} • IEADMI Paragominas-PA • Documento válido com média ${a.mediaGeral.toFixed(2)}
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:18px 40px 22px 40px;">
+          <div style="text-align:center;">
+            <div style="width:80px; height:80px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #f9e7a0, #c9a86a); border:2px solid #a88b4a; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+              <div style="font-size:10px; font-weight:900; color:#0f2a4a; line-height:1;">IEADMI<br><span style="font-size:14px;">★</span><br>2026</div>
+            </div>
+            <div style="font-size:7px; color:#888;">Selo Oficial</div>
+          </div>
+          <div style="text-align:center;">
+            <img src="${assinatura}" style="height:36px; width:auto; display:block; margin:0 auto 2px auto;">
+            <div style="width:180px; border-top:1px solid #0f2a4a; padding-top:6px;">
+              <div style="font-size:10px; font-weight:800; color:#0f2a4a;">Pr. Eliezer Miranda Barbosa</div>
+              <div style="font-size:8px; color:#555;">Presidente IEADMI</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#0f2a4a; color:#c9a86a; text-align:center; padding:8px; font-size:8px; letter-spacing:0.5px;">
+          ${dataExtenso} • IEADMI Paragominas-PA • Documento válido com média ${a.mediaGeral.toFixed(2)}
+        </div>
       </div>
     </div>
   </div>
