@@ -7,13 +7,17 @@
 <style>
 *{box-sizing:border-box;}
 body{margin:0; font-family:'Segoe UI', Inter, sans-serif; background:#f5f7ff; padding:0; display:flex; justify-content:flex-start; align-items:flex-start; min-height:100vh;}
-.card{background:#fff; max-width:620px; width:100%; margin:0; border-radius:0 16px 16px 0; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,0.06); border:1px solid #eef0f6; border-left:0;}
+.card{background:#fff; max-width:720px; width:100%; margin:0; border-radius:0 16px 16px 0; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,0.06); border:1px solid #eef0f6; border-left:0;}
 .card h2{margin:0 0 12px 0; font-size:15px; font-weight:800; color:#111827;}
 .busca{width:100%; padding:10px 12px; border-radius:10px; border:2px solid #111; font-weight:700; font-size:12px; outline:none; margin-bottom:8px; text-transform:uppercase;}
 .filtros-data{display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; align-items:center; background:#f9fafb; padding:8px; border-radius:8px; border:1px solid #e5e7eb;}
 .filtros-data label{font-size:10px; font-weight:700;}
 .filtros-data input[type="date"]{padding:6px 8px; border-radius:6px; border:1px solid #d1d5db; font-size:11px; flex:1;}
 .filtros-data button{padding:6px 10px; border-radius:6px; border:none; font-weight:700; font-size:10px; cursor:pointer;}
+
+.tabela{width:100%; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; overflow-x:hidden;}
+#lista{max-height:70vh; height:420px; overflow-y:auto; overflow-x:hidden;}
+
 .tabela{width:100%; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; display:flex; flex-direction:column;}
 .tabela-header{display:flex; background:#111827; color:#fff; padding:6px 8px; font-size:10px; font-weight:700; text-transform:uppercase;}
 #lista{max-height:70vh; height:420px; overflow-y:auto;}
@@ -26,22 +30,36 @@ body{margin:0; font-family:'Segoe UI', Inter, sans-serif; background:#f5f7ff; pa
 .col-data{width:14%; text-align:center;}
 .col-hora{width:10%; text-align:center;}
 .col-senha{width:10%; text-align:center;}
-.top-actions{display:flex; gap:6px; margin-bottom:10px;}
-.top-actions button{padding:6px 10px; border-radius:8px; border:none; font-weight:700; font-size:10px; cursor:pointer;}
+/* === ALTERADO SÓ AQUI - BOTÕES MESMO TAMANHO LADO A LADO === */
+.top-actions{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px;}
+.top-actions button{width:100%; padding:10px 4px; border-radius:10px; border:none; font-weight:800; font-size:10px; cursor:pointer; white-space:nowrap; display:flex; justify-content:center; align-items:center; line-height:1;}
 .btn-black{background:#111; color:#fff;}
 .btn-white{background:#fff; border:1px solid #e5e7eb!important;}
 .btn-blue{background:#2563eb; color:#fff;}
 .btn-gray{background:#e5e7eb;}
+.btn-aba-active{background:#111!important; color:#fff!important; border:1px solid #111!important;}
+.btn-excluir{background:#fee2e2; color:#dc2626; border:1px solid #fecaca; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:800; cursor:pointer; margin-left:auto;}
+.btn-excluir:hover{background:#fecaca;}
+.col-pend-mat{width:12%; text-align:center; font-weight:800;}
+.col-pend-cong{width:22%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.col-pend-nome{width:30%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;}
+.col-pend-extra{width:26%; font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#6b7280;}
+.total-line{font-size:11px; background:#f3f4f6; padding:6px 10px; border-radius:20px; display:inline-block; margin-bottom:8px;}
+.tabela{overflow-x:hidden;}
+#lista{overflow-x:hidden;}
+
 </style>
 </head>
 <body>
 <div class="card">
   <h2>Acesso de Usuários</h2>
   <div class="top-actions">
-    <button class="btn-black" onclick="carregar()">🔄 ATUALIZAR</button>
+    <button id="btnAbaAcesso" class="btn-black btn-aba-active" onclick="mostrarAcessos()">👥 ACESSOS</button>
+    <button id="btnAbaPend" class="btn-white" onclick="mostrarPendentes()">📋 PENDENTES B-H</button>
+    <button class="btn-black" onclick="carregarAtual()">🔄 ATUALIZAR</button>
     <button class="btn-white" onclick="exportarCSV()">📥 CSV</button>
-    <span style="margin-left:auto; font-size:11px; background:#f3f4f6; padding:5px 10px; border-radius:20px;">Total: <b id="total">0</b></span>
   </div>
+  <div class="total-line">Total: <b id="total">0</b></div>
   <input type="text" id="buscar" class="busca" placeholder="BUSCAR NOME OU MAT..." oninput="filtrar()">
   <div class="filtros-data">
     <label>De:</label><input type="date" id="dataInicio">
@@ -50,7 +68,7 @@ body{margin:0; font-family:'Segoe UI', Inter, sans-serif; background:#f5f7ff; pa
     <button class="btn-gray" onclick="limparDatas()">LIMPAR</button>
   </div>
   <div class="tabela">
-    <div class="tabela-header"><div class="col-cod">Cod</div><div class="col-mat">Mat</div><div class="col-nome">Nome</div><div class="col-data">Data</div><div class="col-hora">hora</div><div class="col-senha">SENHA</div></div>
+    <div class="tabela-header" id="headerTabela"><div class="col-cod">Cod</div><div class="col-mat">Mat</div><div class="col-nome">Nome</div><div class="col-data">Data</div><div class="col-hora">hora</div><div class="col-senha">SENHA</div></div>
     <div id="lista"><div style="padding:20px; text-align:center; color:#6b7280;">Clique em ATUALIZAR para carregar</div></div>
   </div>
 </div>
@@ -58,12 +76,46 @@ body{margin:0; font-family:'Segoe UI', Inter, sans-serif; background:#f5f7ff; pa
 const API_LOG = 'https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec';
 const API_DADOS = 'https://script.google.com/macros/s/AKfycbxLXw-nu5oXXtjE8HKik_W_bbT9CGjTNJWw-dUm4wWYv-hjcz1dOhMHLxoUTRHGJA3D0A/exec';
 let dados = []; let dadosFiltrados = []; let mapaSenhas = {};
+let dadosPendentes = []; let dadosPendentesFiltrados = [];
+let abaAtual = 'acessos';
+
 function normaliza5Dig(v){ return String(v||'').replace(/\D/g,'').padStart(5,'0').slice(-5); }
 function soData(v){ if(!v) return ''; let s=String(v).trim(); if(s.includes('T')){ let d=s.split('T')[0]; let p=d.split('-'); if(p.length==3) return p[2]+'/'+p[1]+'/'+p[0]; return d; } if(s.includes('/') && s.length>=10) return s.substring(0,10); if(s.includes('-') && s.length>=10){ let p=s.substring(0,10).split('-'); if(p.length==3) return p[2]+'/'+p[1]+'/'+p[0]; } return s.substring(0,10); }
 function soHora(v){ if(!v) return ''; let s=String(v).trim(); if(s.includes('T')){ let t=s.split('T')[1]; return t.substring(0,5); } if(s.includes(':')){ let partes = s.split(' '); let h = partes[partes.length-1]; return h.substring(0,5); } return s; }
 function dataParaComparar(dataStr){ let s=soData(dataStr); if(!s) return null; let p=s.split('/'); if(p.length!=3) return null; return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
+
+// === CONTROLE ABAS ===
+function mostrarAcessos(){
+  abaAtual='acessos';
+  document.getElementById('btnAbaAcesso').classList.add('btn-aba-active');
+  document.getElementById('btnAbaAcesso').classList.remove('btn-white');
+  document.getElementById('btnAbaAcesso').classList.add('btn-black');
+  document.getElementById('btnAbaPend').classList.remove('btn-aba-active');
+  document.getElementById('btnAbaPend').classList.add('btn-white');
+  document.getElementById('btnAbaPend').classList.remove('btn-black');
+  document.getElementById('headerTabela').innerHTML='<div class="col-cod">Cod</div><div class="col-mat">Mat</div><div class="col-nome">Nome</div><div class="col-data">Data</div><div class="col-hora">hora</div><div class="col-senha">SENHA</div>';
+  document.getElementById('buscar').placeholder='BUSCAR NOME OU MAT...';
+  if(dados.length) render(dados);
+  else document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">Clique em ATUALIZAR</div>';
+}
+function mostrarPendentes(){
+  abaAtual='pendentes';
+  document.getElementById('btnAbaPend').classList.add('btn-aba-active');
+  document.getElementById('btnAbaPend').classList.remove('btn-white');
+  document.getElementById('btnAbaPend').classList.add('btn-black');
+  document.getElementById('btnAbaAcesso').classList.remove('btn-aba-active');
+  document.getElementById('btnAbaAcesso').classList.add('btn-white');
+  document.getElementById('btnAbaAcesso').classList.remove('btn-black');
+  document.getElementById('headerTabela').innerHTML='<div class="col-pend-mat">MAT</div><div class="col-pend-cong">CONGREGACAO</div><div class="col-pend-nome">NOME</div><div class="col-pend-extra">SEXO | RG | CPF | WHATS</div><div style="width:10%"></div>';
+  document.getElementById('buscar').placeholder='BUSCAR EM PENDENTES B-H...';
+  carregarPendentes();
+}
+function carregarAtual(){ if(abaAtual==='pendentes') carregarPendentes(); else carregar(); }
+
+// === ORIGINAL - ACESSOS ===
 async function carregar(){
-  document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">⏳ Carregando...</div>';
+  abaAtual='acessos';
+  document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">⏳ Carregando acessos...</div>';
   try{
     let [rLog, rDados] = await Promise.all([ fetch(API_LOG+'?action=todosAcessos&t='+Date.now()), fetch(API_DADOS+'?action=todos&t='+Date.now()) ]);
     let jLog = await rLog.json(); let jDados = await rDados.json();
@@ -80,10 +132,70 @@ function render(lista){
   if(!lista.length){ document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">Nenhum acesso</div>'; return; }
   document.getElementById('lista').innerHTML=lista.map(l=>{
     let d=l.Data||''; let h=l.Horario||''; let mat=normaliza5Dig(String(l.Matricula||'')); let s=mapaSenhas[mat]||'';
-    return `<div class="linha" title="${mat} - ${s}"><div class="col-cod">${l.Cod||''}</div><div class="col-mat">${mat}</div><div class="col-nome">${l.Nome||''}</div><div class="col-data">${soData(d)}</div><div class="col-hora">${soHora(h)}</div><div class="col-senha">${s}</div></div>`;
+    return `<div class="linha"><div class="col-cod">${l.Cod||''}</div><div class="col-mat">${mat}</div><div class="col-nome">${l.Nome||''}</div><div class="col-data">${soData(d)}</div><div class="col-hora">${soHora(h)}</div><div class="col-senha">${s}</div></div>`;
   }).join('');
 }
-function filtrar(){ if(!dados.length){ carregar().then(()=>filtrarInterno()); return; } filtrarInterno(); }
+
+// === NOVO - PENDENTES B-H ===
+async function carregarPendentes(){
+  document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">⏳ Carregando Pendentes B-H...</div>';
+  try{
+    let r = await fetch(API_DADOS+'?action=todospendentes&t='+Date.now());
+    let j = await r.json();
+    dadosPendentes = j.data||[];
+    renderPendentes(dadosPendentes);
+  }catch(e){ document.getElementById('lista').innerHTML='<div style="padding:20px;color:red;text-align:center">Erro pendentes: '+e.message+'</div>'; }
+}
+function renderPendentes(lista){
+  dadosPendentesFiltrados=lista;
+  document.getElementById('total').innerText=lista.length;
+  if(!lista.length){ document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">Nenhum pendente (B-H)</div>'; return; }
+  let matLogada = (localStorage.getItem('mat_logada')||localStorage.getItem('matricula')||'').replace(/\D/g,'').padStart(5,'0');
+  let podeExcluir = (matLogada==='00425');
+  if(!localStorage.getItem('mat_logada') &&!localStorage.getItem('matricula')) podeExcluir = true;
+
+  document.getElementById('lista').innerHTML=lista.map(p=>{
+    let mat = normaliza5Dig(String(p.Matricula||p.B||''));
+    let cong = p.Congregacao||'';
+    let nome = p.Nome||p.C||'';
+    let sexo = p.Sexo||'';
+    let rg = p.RG||'';
+    let cpf = p.CPF||'';
+    let whats = p.WhatsApp||'';
+    let extra = [sexo, rg, cpf, whats].filter(x=>x).join(' | ');
+    return `<div class="linha" id="pend-${mat}">
+      <div class="col-pend-mat">${mat}</div>
+      <div class="col-pend-cong" title="${cong}">${cong}</div>
+      <div class="col-pend-nome" title="${nome}">${nome}</div>
+      <div class="col-pend-extra" title="${extra}">${extra}</div>
+      ${podeExcluir?`<button class="btn-excluir" onclick="excluirPendente('${mat}')">🗑️</button>`:`<span style="width:10%"></span>`}
+    </div>`;
+  }).join('');
+}
+async function excluirPendente(mat){
+  if(!confirm('Excluir matrícula '+mat+' dos PENDENTES B-H?')) return;
+  let btn = document.querySelector(`#pend-${mat}.btn-excluir`);
+  if(btn){ btn.innerText='...'; btn.disabled=true; }
+  try{
+    let r = await fetch(API_DADOS+'?action=excluirpendente&matricula='+mat+'&t='+Date.now());
+    let j = await r.json();
+    if(j.result==='ok'){
+      dadosPendentes = dadosPendentes.filter(x=> normaliza5Dig(String(x.Matricula||x.B||''))!== mat);
+      let el = document.getElementById('pend-'+mat);
+      if(el) el.remove();
+      document.getElementById('total').innerText=dadosPendentes.length;
+    }else{
+      alert('Erro: '+(j.msg||'não excluiu'));
+      if(btn){ btn.innerText='🗑️'; btn.disabled=false; }
+    }
+  }catch(e){
+    alert('Erro rede: '+e.message);
+    if(btn){ btn.innerText='🗑️'; btn.disabled=false; }
+  }
+}
+
+// === FILTRO UNIFICADO ===
+function filtrar(){ if(abaAtual==='pendentes') filtrarPendentes(); else filtrarInterno(); }
 function filtrarInterno(){
   let termo=document.getElementById('buscar').value.toUpperCase().trim(); let inicio=document.getElementById('dataInicio').value; let fim=document.getElementById('dataFim').value; let f=[...dados];
   if(termo){ f=f.filter(x=>{ let mat=normaliza5Dig(String(x.Matricula||'')); let sen=mapaSenhas[mat]||''; return mat.includes(termo)||String(x.Nome||'').toUpperCase().includes(termo)||sen.includes(termo); }); }
@@ -91,14 +203,36 @@ function filtrarInterno(){
   if(fim){ f=f.filter(x=>{let d=dataParaComparar(x.Data||x.data);return d&&d<=fim;}); }
   render(f);
 }
+function filtrarPendentes(){
+  let termo=document.getElementById('buscar').value.toUpperCase().trim();
+  if(!termo){ renderPendentes(dadosPendentes); return; }
+  let f = dadosPendentes.filter(p=>{
+    let mat = normaliza5Dig(String(p.Matricula||p.B||''));
+    let cong = String(p.Congregacao||'').toUpperCase();
+    let nome = String(p.Nome||p.C||'').toUpperCase();
+    let sexo = String(p.Sexo||'').toUpperCase();
+    let rg = String(p.RG||'').toUpperCase();
+    let cpf = String(p.CPF||'').toUpperCase();
+    let whats = String(p.WhatsApp||'').toUpperCase();
+    return mat.includes(termo)||cong.includes(termo)||nome.includes(termo)||sexo.includes(termo)||rg.includes(termo)||cpf.includes(termo)||whats.includes(termo);
+  });
+  renderPendentes(f);
+}
 function limparDatas(){
   document.getElementById('dataInicio').value=''; document.getElementById('dataFim').value=''; document.getElementById('buscar').value='';
-  dadosFiltrados=[]; document.getElementById('total').innerText='0'; document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">Lista limpa - clique em ATUALIZAR</div>';
+  if(abaAtual==='pendentes'){ renderPendentes(dadosPendentes); }
+  else { dadosFiltrados=[]; document.getElementById('total').innerText='0'; document.getElementById('lista').innerHTML='<div style="padding:20px;text-align:center">Lista limpa - clique em ATUALIZAR</div>'; }
 }
 function exportarCSV(){
-  let csv="Cod;Matricula;Nome;Data;horario;Senha\n";
-  dadosFiltrados.forEach(l=>{ let mat=normaliza5Dig(String(l.Matricula||'')); let d=l.Data||''; let h=l.Horario||''; let s=mapaSenhas[mat]||''; csv+=`${l.Cod||''};${mat};${l.Nome||''};${soData(d)};${soHora(h)};${s}\n`; });
-  let blob=new Blob([csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AcessoUsuario.csv';a.click();
+  if(abaAtual==='pendentes'){
+    let csv="Matricula;Congregacao;Nome;Sexo;RG;CPF;WhatsApp\n";
+    dadosPendentesFiltrados.forEach(p=>{ let mat=normaliza5Dig(String(p.Matricula||p.B||'')); csv+=`${mat};${p.Congregacao||''};${p.Nome||p.C||''};${p.Sexo||''};${p.RG||''};${p.CPF||''};${p.WhatsApp||''}\n`; });
+    let blob=new Blob([csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Pendentes_B-H.csv';a.click();
+  }else{
+    let csv="Cod;Matricula;Nome;Data;horario;Senha\n";
+    dadosFiltrados.forEach(l=>{ let mat=normaliza5Dig(String(l.Matricula||'')); let d=l.Data||''; let h=l.Horario||''; let s=mapaSenhas[mat]||''; csv+=`${l.Cod||''};${mat};${l.Nome||''};${soData(d)};${soHora(h)};${s}\n`; });
+    let blob=new Blob([csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AcessoUsuario.csv';a.click();
+  }
 }
 </script>
 </body>
