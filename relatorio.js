@@ -382,12 +382,14 @@ function gerarCertificado(){
     if(mat){ pesquisar(); return; } 
     alert("Selecione aluno"); return; 
   } 
-  var a=DETALHE; 
+    var a=DETALHE; 
   if(a.totalNA>0 || a.totalFeitos<52 || a.mediaGeral<70){ 
-    var motivo=''; 
-    if(a.totalNA>0) motivo=a.totalNA+' nota(s) <70'; 
-    else if(a.totalFeitos<52) motivo='Faltam '+(52-a.totalFeitos)+' testes'; 
-    else motivo='Média '+a.mediaGeral.toFixed(2)+' <70'; 
+    var motivo='';
+    var partes=[];
+    if(a.totalNA>0) partes.push(a.totalNA+' nota(s) <70');
+    if(a.totalFeitos<52) partes.push((52-a.totalFeitos)+' teste(s) faltando');
+    if(partes.length>0) motivo = partes.join(' e ');
+    else motivo='Média '+a.mediaGeral.toFixed(2)+' <70';
     var htmlBloq='<div style="background:#fff;padding:20px;border-radius:12px;border:3px solid #dc3545;text-align:center"><h2 style="color:#dc3545">⛔ CERTIFICADO BLOQUEADO</h2><div><b>'+a.nome.toUpperCase()+'</b><br>Motivo: <b>'+motivo+'</b></div><div style="margin-top:12px"><button onclick="gerarBoletim()" style="background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:10px 16px">VER BOLETIM</button></div></div>'; 
     document.getElementById('boletim').innerHTML=htmlBloq; 
     document.getElementById('boletim').style.display='block'; return; 
