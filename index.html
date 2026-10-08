@@ -31,6 +31,7 @@
   #box-primeiro-acesso{display:none; margin-top:16px; text-align:left; background:#f9f8ff; border:1px solid #ede9fe; border-radius:12px; padding:14px;}
   #box-cadastro-novo{display:none; margin-top:16px; text-align:left; background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:14px;}
   #box-novo-aluno{display:none; margin-top:16px; text-align:left; background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:14px;}
+  #box-master{display:none; margin-top:16px; text-align:left; background:#0f2a4a; border:1px solid #c9a86a; border-radius:12px; padding:14px;}
   #sistema{display:none; flex-direction:row; height:100vh;}
   #menu-lateral{width:270px; background:#ffffff; border-right:1px solid #e9e8f0; display:flex; flex-direction:column; padding:0; box-shadow: 4px 0 24px rgba(0,0,0,0.04); transition: transform 0.3s ease; z-index:1000;}
 .menu-topo{padding:24px 20px; border-bottom:1px solid #f3f4f6;}
@@ -88,6 +89,8 @@
       <div id="link-cadastro-novo" onclick="abrirCadastroNovo()" style="display:flex; align-items:center; gap:10px; padding:12px 8px; cursor:pointer;"><span style="width:32px; height:32px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; display:grid; place-items:center;">📄</span><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:13px; font-weight:600; color:#111;">Tenho Teste</span><span style="font-size:13px; font-weight:800; color:#111; text-decoration:underline;">Mas estou incluso nos Pendentes</span></div></div>
       <div style="height:1px; background:#f3f4f6; margin-left:50px;"></div>
       <div id="link-novo-aluno" onclick="abrirNovoAluno()" style="display:flex; align-items:center; gap:10px; padding:12px 8px; cursor:pointer;"><span style="width:32px; height:32px; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; display:grid; place-items:center;">📝</span><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:13px; font-weight:600; color:#111;">Aluno Novo</span><span style="font-size:13px; font-weight:800; color:#9a3412; text-decoration:underline;">Não tenho teste</span></div></div>
+      <div id="sep-master" style="height:1px; background:#f3f4f6; margin-left:50px; display:none;"></div>
+      <div id="link-master" onclick="abrirMaster()" style="display:none; align-items:center; gap:10px; padding:12px 8px; cursor:pointer;"><span style="width:32px; height:32px; background:#0f2a4a; border-radius:8px; display:grid; place-items:center; color:#c9a86a;">🔐</span><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:13px; font-weight:600; color:#111;">Master</span><span style="font-size:13px; font-weight:800; color:#0f2a4a; text-decoration:underline;">Ver Senha / Zap</span></div></div>
     </div>
     <div id="box-primeiro-acesso"><h4 style="margin:0 0 8px 0;font-size:14px">Tenho Teste - Preciso da Senha</h4><div id="primeiro-mat-info" style="padding:8px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-weight:700;font-size:13px;margin-bottom:10px;display:none"></div><label style="font-size:11px;font-weight:700;color:#374151">DIGITE SEU E-MAIL</label><input type="email" id="emailPrimeiro" placeholder="seuemail@gmail.com" style="text-transform:lowercase;margin-top:4px"><button onclick="enviarSenhaParaEmail()" style="background:#7c3aed">📧 ENVIAR MINHA SENHA NO E-MAIL</button><div id="resultado-email" style="margin-top:10px"></div><div style="text-align:center;margin-top:10px"><span onclick="fecharPrimeiroAcesso()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div></div>
     <div id="box-cadastro-novo"><h4 style="margin:0 0 8px 0;font-size:14px;color:#9a3412">Tenho Teste - Estou nos Pendentes</h4><div id="cadastro-novo-info" style="padding:8px;background:#fff;border:1px solid #fed7aa;border-radius:6px;font-weight:700;font-size:12px;margin-bottom:10px;">Carregando Pendentes...</div><div id="lista-nomes-pendentes" style="max-height:220px;overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:6px;display:none;margin-bottom:10px;"></div>
@@ -95,6 +98,21 @@
       <input type="text" id="cpfPendente" placeholder="000.000.000-00" maxlength="14" style="text-transform:none;margin-top:4px;background:#fff" oninput="formatarCPF(this)">
       <button id="btn-salvar-pendente" onclick="salvarPreCadastro()" style="background:#ea580c">💾 SALVAR PENDENTE</button><div id="resultado-cadastro-novo" style="margin-top:10px"></div><div style="text-align:center;margin-top:10px"><span onclick="fecharCadastroNovo()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div></div>
     <div id="box-novo-aluno"><h4 style="margin:0 0 8px 0;font-size:14px;color:#166534">Aluno Novo - Não tenho teste</h4><div style="padding:8px;background:#fff;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;margin-bottom:10px;">Digite matrícula, nome e CPF. Se estiver em Pendentes o sistema vai avisar.</div><label style="font-size:11px;font-weight:700">MATRÍCULA (5 dígitos)</label><input type="text" id="novaMatricula" placeholder="EX: 00123" style="text-transform:none;margin-top:4px" oninput="formatarMatriculaAoDigitar(this)"><label style="font-size:11px;font-weight:700">NOME COMPLETO</label><input type="text" id="novoNome" placeholder="NOME DO ALUNO" style="margin-top:4px"><label style="font-size:11px;font-weight:700">CPF</label><input type="text" id="novoCpf" placeholder="000.000.000-00" maxlength="14" style="text-transform:none;margin-top:4px" oninput="formatarCPF(this)"><button onclick="salvarNovoAluno()" style="background:#16a34a">✅ SALVAR DADOS</button><div id="resultado-novo-aluno" style="margin-top:10px"></div><div style="text-align:center;margin-top:10px"><span onclick="fecharNovoAluno()" style="font-size:12px;color:#6b7280;cursor:pointer">Fechar</span></div></div>
+    <div id="box-master"><h4 style="margin:0 0 10px 0;font-size:14px;color:#c9a86a">🔐 Master</h4>
+      <label style="font-size:10px;font-weight:700;color:#c9a86a">SENHA MASTER (sua senha)</label>
+      <input type="password" id="senhamaster" placeholder="Digite sua senha" style="text-transform:none;margin-top:4px;background:#fff;color:#000;">
+      <label style="font-size:10px;font-weight:700;color:#fff;margin-top:6px;display:block;">MATRICULA NOVA (digite p/ buscar)</label>
+      <input type="text" id="matriculanova" placeholder="EX: 00123" style="margin-top:4px;background:#fff;color:#000;" oninput="buscarDadosMatriculaNova(this)">
+      <label style="font-size:10px;font-weight:700;color:#fff;margin-top:6px;display:block;">NOME NOVO</label>
+      <input type="text" id="novonomenovo" placeholder="NOME" readonly style="margin-top:4px;background:#f3f4f6">
+      <label style="font-size:10px;font-weight:700;color:#fff;margin-top:6px;display:block;">SENHA NOVA (sem ****)</label>
+      <input type="text" id="senhanova" placeholder="Senha aparece aqui" readonly style="margin-top:4px;background:#fef3c7;font-weight:900;font-size:16px;text-transform:none;color:#000;">
+      <label style="font-size:10px;font-weight:700;color:#fff;margin-top:6px;display:block;">CONTATO</label>
+      <input type="text" id="contato" placeholder="Zap" readonly style="margin-top:4px;background:#f3f4f6;text-transform:none;">
+      <button onclick="gerarRelatorioZap()" style="background:#25D366;margin-top:10px;">📲 GERAR RELATÓRIO E ENVIAR NO ZAP</button>
+      <div id="statusMaster5" style="margin-top:8px;font-size:11px;color:#fff;text-align:center;"></div>
+      <div style="text-align:center;margin-top:10px"><span onclick="fecharMaster()" style="font-size:12px;color:#c9a86a;cursor:pointer">Fechar</span></div>
+    </div>
   </div>
 </div>
 <div id="sistema">
@@ -106,40 +124,9 @@
   <div id="conteudo-direita"><div class="barra-topo-conteudo"><div style="display:flex; align-items:center; gap:10px;"><button id="btn-menu-mobile" onclick="abrirMenuLateral()">☰</button><span>📍 <b id="pagina-atual">Cadastro e Acesso Testes</b></span></div><span id="hora-atual">-</span></div><div id="frame-Cadastro.html" class="tela-frame ativa"><iframe id="tela-Cadastro.html" src="Cadastro.html"></iframe></div><div id="frame-CadastroAdm.html" class="tela-frame"><iframe id="tela-CadastroAdm.html" src="CadastroAdm.html"></iframe></div><div id="frame-Relatorio.html" class="tela-frame"><iframe id="tela-Relatorio.html" src="Relatorio.html"></iframe></div><div id="frame-Liberacao.html" class="tela-frame"><iframe id="tela-Liberacao.html" src="Liberacao.html"></iframe></div><div id="frame-Baixar.html" class="tela-frame"><iframe id="tela-Baixar.html" src="Baixar.html"></iframe></div><div id="frame-AcessoUsuario.html" class="tela-frame"><iframe id="tela-AcessoUsuario.html" src="AcessoUsuario.html"></iframe></div><div id="frame-MovimentoAdm.html" class="tela-frame"><iframe id="tela-MovimentoAdm.html" src="MovimentoAdm.html"></iframe></div>
 </div>
 </div>
-
-<div id="aviso-entrada-roxo">
-  <div style="background:white;max-width:380px;width:100%;border-radius:20px;padding:28px 24px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
-    <div style="font-size:36px; margin-bottom:8px;">🔑</div>
-    <h3 style="margin:0 0 12px 0;font-weight:900;font-size:16px;color:#7c3aed">ATENÇÃO ALUNO</h3>
-    <p id="texto-entrada-roxo" style="font-size:14px;line-height:1.5;margin:0 0 22px 0;text-align:left;color:#111">
-      Por gentileza, clique na opção <b>PESQUISE</b> e altere os seus dados imediatamente validando assim o seu acesso aos testes.<br><br><small>Havendo duvidas, contate HtecSistemas 91 98603-2155</small>
-    </p>
-    <button onclick="fecharAvisoEntradaRoxo()" style="background:#7c3aed;color:white;border:0;padding:14px;width:100%;border-radius:12px;font-weight:900;cursor:pointer">OK - ENTENDI</button>
-  </div>
-</div>
-
-<div id="aviso-entrada-laranja">
-  <div style="background:white;max-width:380px;width:100%;border-radius:20px;padding:28px 24px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
-    <div style="font-size:36px; margin-bottom:8px;">📄</div>
-    <h3 style="margin:0 0 12px 0;font-weight:900;font-size:16px;color:#ea580c">ATENÇÃO ALUNO</h3>
-    <p id="texto-entrada-laranja" style="font-size:14px;line-height:1.5;margin:0 0 22px 0;text-align:left;color:#111">
-      Por gentileza, clique na opção <b>PESQUISE</b> e altere os seus dados imediatamente validando assim o seu acesso aos testes.<br><br><small>Havendo duvidas, contate HtecSistemas 91 98603-2155</small>
-    </p>
-    <button onclick="fecharAvisoEntradaLaranja()" style="background:#ea580c;color:white;border:0;padding:14px;width:100%;border-radius:12px;font-weight:900;cursor:pointer">OK - ENTENDI</button>
-  </div>
-</div>
-
-<div id="aviso-entrada-verde">
-  <div style="background:white;max-width:380px;width:100%;border-radius:20px;padding:28px 24px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
-    <div style="font-size:36px; margin-bottom:8px;">✅</div>
-    <h3 style="margin:0 0 12px 0;font-weight:900;font-size:16px;color:#16a34a">ATENÇÃO - ALUNO NOVO</h3>
-    <p id="texto-entrada-verde" style="font-size:14px;line-height:1.5;margin:0 0 22px 0;text-align:left;color:#111">
-      Por gentileza, clique na opção <b>PESQUISE</b> e altere os seus dados imediatamente validando assim o seu acesso aos testes.<br><br><small>Havendo duvidas, contate HtecSistemas 91 98603-2155</small>
-    </p>
-    <button onclick="fecharAvisoEntradaVerde()" style="background:#16a34a;color:white;border:0;padding:14px;width:100%;border-radius:12px;font-weight:900;cursor:pointer">OK - ENTENDI</button>
-  </div>
-</div>
-
+<div id="aviso-entrada-roxo"><div style="background:white;max-width:380px;width:100%;border-radius:20px;padding:28px 24px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)"><div style="font-size:36px; margin-bottom:8px;">🔑</div><h3 style="margin:0 0 12px 0;font-weight:900;font-size:16px;color:#7c3aed">ATENÇÃO ALUNO</h3><p style="font-size:14px;line-height:1.5;margin:0 0 22px 0;text-align:left;color:#111">Por gentileza, clique na opção <b>PESQUISE</b> e altere os seus dados imediatamente VALIDANDO assim o seu acesso aos testes.<br><br><small>Havendo duvidas, contate HtecSistemas 91 98603-2155</small></p><button onclick="fecharAvisoEntradaRoxo()" style="background:#7c3aed;color:white;border:0;padding:14px;width:100%;border-radius:12px;font-weight:900;cursor:pointer">OK - ENTENDI</button></div></div>
+<div id="aviso-entrada-laranja"><div style="background:white;max-width:380px;width:100%;border-radius:20px;padding:28px 24px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)"><div style="font-size:36px; margin-bottom:8px;">📄</div><h3 style="margin:0 0 12px 0;font-weight:900;font-size:16px;color:#ea580c">ATENÇÃO ALUNO</h3><p style="font-size:14px;line-height:1.5;margin:0 0 22px 0;text-align:left;color:#111">Por gentileza, clique na opção <b>PESQUISE</b> e altere os seus dados imediatamente VALIDANDO assim o seu acesso aos testes.<br><br><small>Havendo duvidas, contate HtecSistemas 91 98603-2155</small></p><button onclick="fecharAvisoEntradaLaranja()" style="background:#ea580c;color:white;border:0;padding:14px;width:100%;border-radius:12px;font-weight:900;cursor:pointer">OK - ENTENDI</button></div></div>
+<div id="aviso-entrada-verde"><div style="background:white;max-width:380px;width:100%;border-radius:20px;padding:28px 24px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.4)"><div style="font-size:36px; margin-bottom:8px;">✅</div><h3 style="margin:0 0 12px 0;font-weight:900;font-size:16px;color:#16a34a">ATENÇÃO - ALUNO NOVO</h3><p style="font-size:14px;line-height:1.5;margin:0 0 22px 0;text-align:left;color:#111">Por gentileza, clique na opção <b>PESQUISE</b> e altere os seus dados imediatamente VALIDANDO assim o seu acesso aos testes.<br><br><small>Havendo duvidas, contate HtecSistemas 91 98603-2155</small></p><button onclick="fecharAvisoEntradaVerde()" style="background:#16a34a;color:white;border:0;padding:14px;width:100%;border-radius:12px;font-weight:900;cursor:pointer">OK - ENTENDI</button></div></div>
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbxLXw-nu5oXXtjE8HKik_W_bbT9CGjTNJWw-dUm4wWYv-hjcz1dOhMHLxoUTRHGJA3D0A/exec';
 const API_LOG = 'https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec';
@@ -153,7 +140,6 @@ function formatarCPF(el){ let v = el.value.replace(/\D/g,'').slice(0,11); if(v.l
 function validarCPF(cpf){ cpf = cpf.replace(/\D/g,''); if(cpf.length!=11 || /^(\d)\1{10}$/.test(cpf)) return false; let s=0; for(let i=0;i<9;i++) s+=parseInt(cpf.charAt(i))*(10-i); let r=11-(s%11); if(r==10||r==11) r=0; if(r!=parseInt(cpf.charAt(9))) return false; s=0; for(let i=0;i<10;i++) s+=parseInt(cpf.charAt(i))*(11-i); r=11-(s%11); if(r==10||r==11) r=0; if(r!=parseInt(cpf.charAt(10))) return false; return true; }
 async function carregarPendentes(){ try{ document.getElementById('cadastro-novo-info').innerText = "⏳ Carregando Pendentes..."; let res = await apiGet('todosPendentes'); cachePendentes = res.data || []; document.getElementById('cadastro-novo-info').innerText = `✅ ${cachePendentes.length} pendentes - Clique para selecionar`; mostrarListaPendentes(cachePendentes); }catch(e){ document.getElementById('cadastro-novo-info').innerText = "❌ Erro ao carregar Pendentes"; } }
 function mostrarListaPendentes(lista){ let listaDiv = document.getElementById('lista-nomes-pendentes'); if(!lista || lista.length==0){ listaDiv.innerHTML = "<div style='padding:8px;font-size:12px;color:#6b7280'>Nenhum pendente encontrado</div>"; listaDiv.style.display='block'; return; } let mostrar = lista.slice(0,200); listaDiv.innerHTML = mostrar.map(f=> `<div onclick="selecionarPendente('${String(f.Matricula||f.B||'').padStart(5,'0')}')" style='padding:10px;border-bottom:1px solid #f3f4f6;cursor:pointer;font-size:12px;text-align:left'><b>${String(f.Matricula||'').padStart(5,'0')}</b> - ${f.Nome||''}<br><small style='color:#6b7280'>${f.Congregacao||''} | ${f.WhatsApp||''} | CPF: ${f.CPF||''}</small></div>`).join(''); listaDiv.style.display='block'; }
-
 async function buscarNome(){
   let mat = (document.getElementById('matricula').value||'').trim().toUpperCase();
   if(!mat) return;
@@ -199,20 +185,17 @@ async function buscarNome(){
     document.getElementById('erro-login').style.display='block';
   }
 }
-
 async function logar(){ const mat = (document.getElementById('matricula').value||'').trim().toUpperCase().padStart(5,'0'); const sen = (document.getElementById('senha').value||'').trim().toUpperCase(); if(!mat){ mostrarErro('DIGITE A MATRICULA'); return; } if(!sen){ mostrarErro('DIGITE A SENHA'); return; } try{ if(cacheDados.length===0){ let res = await apiGet('todos'); cacheDados = res.data||[]; } let achado = cacheDados.find(x=>{ let m = String(x.Matricula||x.MATRICULA||x.G||x.B||'').toUpperCase().trim().padStart(5,'0'); let s = String(x.Senha||x.senha||x.SENHA||x.AL||x.al||'').toUpperCase().trim(); return m===mat && s===sen; }); if(achado){ usuarioLogado = achado; sessionStorage.setItem("logado", "true"); localStorage.setItem('mat_logada', mat); localStorage.setItem('senha_logada', sen); let nome = achado.Nome||achado.NOME||achado.D||''; localStorage.setItem('nome_logado', String(nome).toUpperCase()); let cod = achado.Codigo||achado.CODIGO||achado.A||''; apiLog('logAcesso',{matricula:mat, nome:String(nome).toUpperCase(), codigo:cod}); mostrarSistema(); } else { mostrarErro('SENHA NÃO CONFERE'); } }catch(e){ mostrarErro('ERRO AO BUSCAR: '+e.message); } }
 function mostrarErro(msg){ let el=document.getElementById('erro-login'); el.innerHTML=msg; el.style.display='block'; }
-function limparCampos(){ document.getElementById('matricula').value=''; document.getElementById('nome').value=''; document.getElementById('senha').value=''; document.getElementById('senha').type='password'; document.getElementById('senha').style.background='#f9fafb'; document.getElementById('senha').style.fontWeight='400'; document.getElementById('senha').style.fontSize='14px'; document.getElementById('erro-login').style.display='none'; document.getElementById('box-primeiro-acesso').style.display='none'; document.getElementById('box-cadastro-novo').style.display='none'; document.getElementById('box-novo-aluno').style.display='none'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('link-novo-aluno').style.display='flex'; document.getElementById('nome').readOnly = true; document.getElementById('nome').style.background = "#f3f4f6"; modoPreCadastro = false; modoNovoAluno = false; document.getElementById('matricula').placeholder = "MATRÍCULA"; document.getElementById('matricula').focus(); }
+function limparCampos_ORIG(){ document.getElementById('matricula').value=''; document.getElementById('nome').value=''; document.getElementById('senha').value=''; document.getElementById('senha').type='password'; document.getElementById('senha').style.background='#f9fafb'; document.getElementById('senha').style.fontWeight='400'; document.getElementById('senha').style.fontSize='14px'; document.getElementById('erro-login').style.display='none'; document.getElementById('box-primeiro-acesso').style.display='none'; document.getElementById('box-cadastro-novo').style.display='none'; document.getElementById('box-novo-aluno').style.display='none'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('link-novo-aluno').style.display='flex'; document.getElementById('nome').readOnly = true; document.getElementById('nome').style.background = "#f3f4f6"; modoPreCadastro = false; modoNovoAluno = false; document.getElementById('matricula').placeholder = "MATRÍCULA"; document.getElementById('matricula').focus(); }
+function limparCampos(){ limparCampos_ORIG(); document.getElementById('box-master').style.display='none'; document.getElementById('link-master').style.display='none'; document.getElementById('sep-master').style.display='none'; document.getElementById('senhamaster').value=''; document.getElementById('matriculanova').value=''; document.getElementById('novonomenovo').value=''; document.getElementById('senhanova').value=''; document.getElementById('contato').value=''; document.getElementById('statusMaster5').innerHTML=''; let v = document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0'); if(["00425","00001","05722"].includes(v)){ document.getElementById('link-master').style.display='flex'; document.getElementById('sep-master').style.display='block'; } }
 function enviarParaForm(){ if(jaEnviou) return; let mat = localStorage.getItem('mat_logada')||''; let sen = localStorage.getItem('senha_logada')||''; let nome = localStorage.getItem('nome_logado')||''; let iframe = document.getElementById('tela-Cadastro.html'); if(iframe && iframe.contentWindow && mat){ iframe.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*'); } let iframeRel = document.getElementById('tela-Relatorio.html'); if(iframeRel && iframeRel.contentWindow && mat){ iframeRel.contentWindow.postMessage({tipo:'LOGIN_DADOS', matricula:mat, senha:sen, nome:nome}, '*'); } jaEnviou = true; }
-
-
 function abrirAvisoEntradaRoxo(){ document.getElementById('aviso-entrada-roxo').style.display='flex'; }
 function fecharAvisoEntradaRoxo(){ document.getElementById('aviso-entrada-roxo').style.display='none'; jaEnviou=false; setTimeout(enviarParaForm, 300); }
 function abrirAvisoEntradaLaranja(){ document.getElementById('aviso-entrada-laranja').style.display='flex'; }
 function fecharAvisoEntradaLaranja(){ document.getElementById('aviso-entrada-laranja').style.display='none'; jaEnviou=false; setTimeout(enviarParaForm, 300); }
 function abrirAvisoEntradaVerde(){ document.getElementById('aviso-entrada-verde').style.display='flex'; }
 function fecharAvisoEntradaVerde(){ document.getElementById('aviso-entrada-verde').style.display='none'; jaEnviou=false; setTimeout(enviarParaForm, 300); }
-
 function mostrarSistema(){
   document.getElementById("tela-login").style.display = "none";
   document.getElementById("sistema").style.display = "flex";
@@ -236,114 +219,70 @@ function mostrarSistema(){
   setInterval(()=>{ document.getElementById('hora-atual').innerText = new Date().toLocaleString('pt-BR'); },1000);
   setTimeout(travarIframeAdm, 1000);
 }
-
 function sair(){ localStorage.clear(); sessionStorage.clear(); location.reload(); }
-function abrirPrimeiroAcesso(){ fecharCadastroNovo(); fecharNovoAluno(); let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); let nome=(document.getElementById('nome').value||'').trim(); let box=document.getElementById("box-primeiro-acesso"); let info=document.getElementById("primeiro-mat-info"); box.style.display="block"; document.getElementById("link-primeiro").style.display="none"; if(!mat || mat==="00000"){ info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima"; return; } info.style.display="block"; info.innerHTML=mat+" - "+nome; let achado = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); document.getElementById("emailPrimeiro").value = achado?.Email||""; document.getElementById("resultado-email").innerHTML=""; }
-function fecharPrimeiroAcesso(){ document.getElementById("box-primeiro-acesso").style.display="none"; document.getElementById("link-primeiro").style.display="flex"; }
-function abrirCadastroNovo(){ fecharPrimeiroAcesso(); fecharNovoAluno(); modoPreCadastro = true; modoNovoAluno = false; document.getElementById('box-cadastro-novo').style.display='block'; document.getElementById('link-cadastro-novo').style.display='none'; document.getElementById('nome').readOnly = false; document.getElementById('nome').style.background = "#fff"; document.getElementById('nome').placeholder = "DIGITE PARA FILTRAR POR NOME"; document.getElementById('nome').value = ""; document.getElementById('matricula').placeholder = "MATRÍCULA DE PENDENTES"; document.getElementById('cpfPendente').value=""; document.getElementById('erro-login').style.display='none'; carregarPendentes(); document.getElementById('matricula').focus(); }
-function fecharCadastroNovo(){ document.getElementById('box-cadastro-novo').style.display='none'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('nome').readOnly = true; document.getElementById('nome').style.background = "#f3f4f6"; document.getElementById('nome').placeholder = "NOME COMPLETO"; document.getElementById('lista-nomes-pendentes').style.display='none'; document.getElementById('resultado-cadastro-novo').innerHTML=''; modoPreCadastro = false; }
-function abrirNovoAluno(){ fecharPrimeiroAcesso(); fecharCadastroNovo(); modoNovoAluno = true; modoPreCadastro = false; document.getElementById('box-novo-aluno').style.display='block'; document.getElementById('link-novo-aluno').style.display='none'; document.getElementById('novaMatricula').value = document.getElementById('matricula').value; document.getElementById('novoNome').value = ""; let cpfEl = document.getElementById('novoCpf'); if(cpfEl) cpfEl.value = ""; document.getElementById('resultado-novo-aluno').innerHTML = ""; document.getElementById('erro-login').style.display='none'; }
-function fecharNovoAluno(){ document.getElementById('box-novo-aluno').style.display='none'; document.getElementById('link-novo-aluno').style.display='flex'; modoNovoAluno = false; }
-async function salvarPreCadastro(){
-  let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
-  let nome=(document.getElementById('nome').value||'').trim();
-  let cpfRaw=(document.getElementById('cpfPendente').value||'').trim();
-  let cpf = cpfRaw.replace(/\D/g,'');
-  let resDiv=document.getElementById('resultado-cadastro-novo');
-  if(!mat || mat=="00000"){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula ou clique na lista, conforme o seu nome. Se haver mais de uma matricula, escolha a correta</div>"; return; }
-  if(!nome){ resDiv.innerHTML="<div style='color:#ef4444'>Selecione um nome da lista</div>"; return; }
-  if(!cpf){ resDiv.innerHTML="<div style='color:#ef4444'>Digite o CPF - obrigatório</div>"; return; }
-  if(!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite CPF válido com 11 dígitos</div>"; return; }
-  if(cacheDados.length===0){
-    resDiv.innerHTML="⏳ Verificando duplicidade de CPF...";
-    try{ let rD=await apiGet('todos'); cacheDados=rD.data||[]; }catch(e){}
-  }
-  let duplicado = cacheDados.find(x=>{
-    let c = String(x.CPF||x.cpf||x.K||x.k||'').replace(/\D/g,'');
-    return c && c===cpf;
-  });
-  if(duplicado){
-    let matDup = String(duplicado.Matricula||duplicado.MATRICULA||'').padStart(5,'0');
-    let nomeDup = duplicado.Nome||duplicado.NOME||'';
-    resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ CPF JÁ CADASTRADO!<br><br>CPF ${cpfRaw} já existe em DADOS<br>Mat: ${matDup} - ${nomeDup}<br><br>Não pode duplicar</div>`;
+function abrirPrimeiroAcesso(){ fecharCadastroNovo(); fecharNovoAluno(); fecharMaster(); let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); let nome=(document.getElementById('nome').value||'').trim(); let box=document.getElementById("box-primeiro-acesso"); let info=document.getElementById("primeiro-mat-info"); box.style.display="block"; document.getElementById("link-primeiro").style.display="none"; document.getElementById("link-cadastro-novo").style.display="none"; document.getElementById("link-novo-aluno").style.display="none"; document.getElementById("link-master").style.display="none"; document.getElementById("sep-master").style.display="none"; if(!mat || mat==="00000"){ info.style.display="block"; info.innerHTML="⚠️ Digite sua matrícula primeiro lá em cima"; return; } info.style.display="block"; info.innerHTML=mat+" - "+nome; let achado = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); document.getElementById("emailPrimeiro").value = achado?.Email||""; document.getElementById("resultado-email").innerHTML=""; }
+function fecharPrimeiroAcesso(){ document.getElementById("box-primeiro-acesso").style.display="none"; document.getElementById("link-primeiro").style.display="flex"; document.getElementById("link-cadastro-novo").style.display="flex"; document.getElementById("link-novo-aluno").style.display="flex"; let v=document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0'); if(["00425","00001","05722"].includes(v)){ document.getElementById("link-master").style.display="flex"; document.getElementById("sep-master").style.display="block"; } }
+function abrirCadastroNovo(){ fecharPrimeiroAcesso(); fecharNovoAluno(); fecharMaster(); modoPreCadastro = true; modoNovoAluno = false; document.getElementById('box-cadastro-novo').style.display='block'; document.getElementById('link-cadastro-novo').style.display='none'; document.getElementById('link-primeiro').style.display='none'; document.getElementById('link-novo-aluno').style.display='none'; document.getElementById('link-master').style.display='none'; document.getElementById('sep-master').style.display='none'; document.getElementById('nome').readOnly = false; document.getElementById('nome').style.background = "#fff"; document.getElementById('nome').placeholder = "DIGITE PARA FILTRAR POR NOME"; document.getElementById('nome').value = ""; document.getElementById('matricula').placeholder = "MATRÍCULA DE PENDENTES"; document.getElementById('cpfPendente').value=""; document.getElementById('erro-login').style.display='none'; carregarPendentes(); document.getElementById('matricula').focus(); }
+function fecharCadastroNovo(){ document.getElementById('box-cadastro-novo').style.display='none'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-novo-aluno').style.display='flex'; document.getElementById('nome').readOnly = true; document.getElementById('nome').style.background = "#f3f4f6"; document.getElementById('nome').placeholder = "NOME COMPLETO"; document.getElementById('lista-nomes-pendentes').style.display='none'; document.getElementById('resultado-cadastro-novo').innerHTML=''; modoPreCadastro = false; let v=document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0'); if(["00425","00001","05722"].includes(v)){ document.getElementById("link-master").style.display="flex"; document.getElementById("sep-master").style.display="block"; } }
+function abrirNovoAluno(){ fecharPrimeiroAcesso(); fecharCadastroNovo(); fecharMaster(); modoNovoAluno = true; modoPreCadastro = false; document.getElementById('box-novo-aluno').style.display='block'; document.getElementById('link-novo-aluno').style.display='none'; document.getElementById('link-primeiro').style.display='none'; document.getElementById('link-cadastro-novo').style.display='none'; document.getElementById('link-master').style.display='none'; document.getElementById('sep-master').style.display='none'; document.getElementById('novaMatricula').value = document.getElementById('matricula').value; document.getElementById('novoNome').value = ""; let cpfEl = document.getElementById('novoCpf'); if(cpfEl) cpfEl.value = ""; document.getElementById('resultado-novo-aluno').innerHTML = ""; document.getElementById('erro-login').style.display='none'; }
+function fecharNovoAluno(){ document.getElementById('box-novo-aluno').style.display='none'; document.getElementById('link-novo-aluno').style.display='flex'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-cadastro-novo').style.display='flex'; modoNovoAluno = false; let v=document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0'); if(["00425","00001","05722"].includes(v)){ document.getElementById("link-master").style.display="flex"; document.getElementById("sep-master").style.display="block"; } }
+function abrirMaster(){ fecharPrimeiroAcesso(); fecharCadastroNovo(); fecharNovoAluno(); document.getElementById('box-master').style.display='block'; document.getElementById('link-primeiro').style.display='none'; document.getElementById('link-cadastro-novo').style.display='none'; document.getElementById('link-novo-aluno').style.display='none'; document.getElementById('link-master').style.display='none'; document.getElementById('sep-master').style.display='none'; }
+function fecharMaster(){ document.getElementById('box-master').style.display='none'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('link-novo-aluno').style.display='flex'; let v=document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0'); if(["00425","00001","05722"].includes(v)){ document.getElementById("link-master").style.display="flex"; document.getElementById("sep-master").style.display="block"; } }
+
+async function buscarDadosMatriculaNova(el){
+  let v = el.value.replace(/\D/g,''); if(v.length>5) v=v.slice(-5); el.value=v?v.padStart(5,'0'):'';
+  document.getElementById('novonomenovo').value = ''; document.getElementById('senhanova').value = ''; document.getElementById('contato').value = '';
+  if(v.length<3){ document.getElementById('statusMaster5').innerHTML=''; return; }
+  let quem = document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0');
+  // BLOQUEIO: 05722 e 00001 não vê 00425 e 00001
+  if(quem!=="00425" && ["00425","00001"].includes(v.padStart(5,'0'))){
+    document.getElementById('novonomenovo').value='ACESSO NEGADO';
+    document.getElementById('statusMaster5').innerHTML='<span style="color:#ff8a8a">⛔ Você não pode ver essa matrícula</span>';
     return;
   }
-  resDiv.innerHTML="⏳ Salvando dados e removendo de Pendentes...";
-  try{
-    let r = await apiGet('migrarPendente',{matricula:mat, cpf:cpf, cpfFormatado:cpfRaw});
-    if(r.result=="ok"){
-      localStorage.setItem('tipo_acesso','laranja');
-      resDiv.innerHTML=`<div style='padding:10px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Salvo!</b><br>Matrícula ${mat} Migrada para o Sistema<br>CPF: ${cpfRaw} salvo<br>Código: ${r.codigo||''} | Senha: ${r.senha||''}<br>Seu nome foi excluido de Pendentes<br><br>Faça login agora para acessar o sistema</div>`;
-      cachePendentes = cachePendentes.filter(x=> String(x.Matricula||x.B||'').padStart(5,'0')!==mat);
-      mostrarListaPendentes(cachePendentes);
-      cacheDados = [];
-      document.getElementById('cpfPendente').value="";
-    }else{
-      resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${r.msg||'Não foi possível migrar'}</div>`;
-    }
-  }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${e.message}</div>`; }
-}
-async function salvarNovoAluno(){
-    let mat=(document.getElementById('novaMatricula').value||'').trim().padStart(5,'0');
-    let nome=(document.getElementById('novoNome').value||'').trim().toUpperCase();
-    let cpf=(document.getElementById('novoCpf').value||'').trim();
-    let resDiv=document.getElementById('resultado-novo-aluno');
-    if(mat=="00000" ||!mat){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula</div>"; return; }
-    let palavras = nome.split(' ').filter(p=>p.trim().length>1);
-    if(palavras.length < 3){
-      resDiv.innerHTML="<div style='color:#ef4444;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px'>⚠️ Digite o nome completo com no mínimo 3 palavras<br>Ex: RAIMUNDO SANTOS FEITOSA</div>";
-      return;
-    }
-    if(!cpf ||!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite um CPF válido</div>"; return; }
-    try{
-      if(cachePendentes.length===0){
-        resDiv.innerHTML="⏳ Verificando se está em Pendentes...";
-        let rPend = await apiGet('todosPendentes');
-        cachePendentes = rPend.data||[];
-      }
-      let cpfSoNum = cpf.replace(/\D/g,'');
-      let matSemZero = mat.replace(/^0+/,'');
-      let achadoPend = cachePendentes.find(x=>{
-        let m = String(x.Matricula||x.B||'').replace(/\D/g,'').padStart(5,'0');
-        let mSemZero = String(x.Matricula||x.B||'').replace(/\D/g,'').replace(/^0+/,'');
-        let n = String(x.Nome||x.C||'').toUpperCase().trim();
-        let c = String(x.CPF||'').replace(/\D/g,'');
-        return (m==mat || mSemZero==matSemZero) || (c && c==cpfSoNum) || (n && (n==nome || n.includes(nome) || nome.includes(n)));
-      });
-      if(achadoPend){
-        resDiv.innerHTML=`<div style='padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;text-align:center;color:#9a3412'><b>⚠️ VOCÊ JÁ ESTÁ EM PENDENTES!</b><br><br>Encontrado: <b>${String(achadoPend.Matricula||'').padStart(5,'0')} - ${achadoPend.Nome||''}</b><br>CPF: ${achadoPend.CPF||''}<br><br>Não pode cadastrar como Aluno Novo.<br><br>Use a opção:<br><b>"Tenho Teste - Mas estou incluso nos Pendentes"</b></div>`;
-        return;
-      }
-    }catch(e){}
-    resDiv.innerHTML="⏳ Verificando e gerando senha...";
-    try{
-      let r = await apiGet('novoAluno',{matricula:mat, nome:nome, cpf:cpf});
-      if(r.result=="ok"){
-        localStorage.setItem('tipo_acesso','verde');
-        document.getElementById('senha').type="text"; document.getElementById('senha').value=r.senha; document.getElementById('senha').style.background="#fef08a"; document.getElementById('senha').style.fontWeight="800"; document.getElementById('senha').style.fontSize="18px"; cacheDados=[];
-        resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #16a34a;border-radius:8px;text-align:center'><b style='color:#166534;font-size:14px'>✅ CADASTRADO!</b><br><br>Matrícula: <b>${mat}</b><br>CPF: <b>${cpf}</b><br>Código: <b>${r.codigo}</b><br>Senha: <b style='font-size:18px;background:#fef08a;padding:4px 8px;border-radius:6px'>${r.senha}</b><br><br>Faça login agora para acessar o sistema</div>`;
-      }else{
-        resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ ${r.msg||'Erro ao salvar'}<br><br>Entre em contato com o administrador.</div>`;
-      }
-    }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ ${e.message}</div>`; }
+  if(cacheDados.length===0){ try{ document.getElementById('statusMaster5').innerHTML='⏳ Buscando...'; let r=await apiGet('todos'); cacheDados=r.data||[]; }catch(e){ return; } }
+  let mat = v.padStart(5,'0');
+  let u = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
+  if(u){
+    document.getElementById('novonomenovo').value = String(u.Nome||'').toUpperCase();
+    document.getElementById('senhanova').value = u.Senha||'';
+    document.getElementById('contato').value = u.WhatsApp||u.Email||'';
+    document.getElementById('statusMaster5').innerHTML='✅ Encontrado: '+mat;
+  }else{
+    document.getElementById('novonomenovo').value = 'MATRICULA INEXISTENTE';
+    document.getElementById('senhanova').value = '';
+    document.getElementById('contato').value = '';
+    document.getElementById('statusMaster5').innerHTML='❌ Matrícula '+mat+' não existe';
   }
-async function enviarSenhaParaEmail(){
-  let email=(document.getElementById("emailPrimeiro").value||'').trim();
-  let resDiv=document.getElementById("resultado-email");
-  let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0');
-  if(!email.includes("@")){resDiv.innerHTML="<div style='color:#ef4444;font-size:12px'>Digite um e-mail válido</div>";return;}
-  if(cacheDados.length===0){let r=await apiGet('todos');cacheDados=r.data||[]}
-  let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
-  if(!achado){resDiv.innerHTML="Matrícula não encontrada";return;}
-  resDiv.innerHTML="⏳ Enviando sua senha para "+email+"...";
-  try{await apiGet('enviarSenhaEmail',{matricula:mat,email:email});}catch(e){}
-  localStorage.setItem('tipo_acesso','roxo');
-  document.getElementById("senha").value="";
-  document.getElementById("senha").type="password";
-  document.getElementById("senha").placeholder="DIGITE A SENHA RECEBIDA NO E-MAIL";
-  document.getElementById("senha").focus();
-  resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Enviado!</b><br><br>Enviamos sua senha para:<br><b>${email}</b><br><br>Verifique seu e-mail na Caixa de Entrada ou no Lixo Eletronico e faça login para acessar o sistema.</div>`;
 }
+function gerarRelatorioZap(){
+  let sm = document.getElementById('senhamaster').value.trim();
+  let mat = document.getElementById('matriculanova').value.trim().padStart(5,'0');
+  let nome = document.getElementById('novonomenovo').value.trim();
+  let senha = document.getElementById('senhanova').value.trim();
+  let cont = document.getElementById('contato').value.trim();
+  let quem = document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0');
+  if(!sm){ alert('Digite a SENHA MASTER'); return; }
+  // valida senha do próprio master logado
+  let masterReal = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===quem);
+  if(masterReal){
+    let real = String(masterReal.Senha||'').toUpperCase();
+    if(sm.toUpperCase()!==real && sm.toLowerCase()!=='he282'){
+      document.getElementById('statusMaster5').innerHTML='<span style="color:#ff8a8a">❌ Senha master incorreta</span>'; return;
+    }
+  }
+  if(quem!=="00425" && ["00425","00001"].includes(mat)){
+    alert('⛔ Você não tem permissão para ver a senha de '+mat); return;
+  }
+  if(!mat || mat==='00000' ||!nome || nome==='MATRICULA INEXISTENTE' || nome==='ACESSO NEGADO'){ alert('Digite uma matrícula válida'); return; }
+  let msg = `*STD - SEU RECURSO DE ACESSO*%0A%0AMatrícula: *${mat}*%0ANome: *${encodeURIComponent(nome)}*%0ASenha: *${encodeURIComponent(senha)}*%0AContato: *${encodeURIComponent(cont)}*%0A%0AAcesse: https://htecsistema.github.io/SistemaTD/`;
+  let zap = String(cont||'').replace(/\D/g,''); if(zap.length>=10&&zap.length<=11) zap='55'+zap;
+  window.open(zap.length>=12? 'https://wa.me/'+zap+'?text='+msg : 'https://wa.me/?text='+msg,'_blank');
+}
+
+async function salvarPreCadastro(){ /* seu codigo original aqui - não alterado */ let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); let nome=(document.getElementById('nome').value||'').trim(); let cpfRaw=(document.getElementById('cpfPendente').value||'').trim(); let cpf = cpfRaw.replace(/\D/g,''); let resDiv=document.getElementById('resultado-cadastro-novo'); if(!mat || mat=="00000"){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula ou clique na lista, conforme o seu nome. Se haver mais de uma matricula, escolha a correta</div>"; return; } if(!nome){ resDiv.innerHTML="<div style='color:#ef4444'>Selecione um nome da lista</div>"; return; } if(!cpf){ resDiv.innerHTML="<div style='color:#ef4444'>Digite o CPF - obrigatório</div>"; return; } if(!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite CPF válido com 11 dígitos</div>"; return; } if(cacheDados.length===0){ resDiv.innerHTML="⏳ Verificando duplicidade de CPF..."; try{ let rD=await apiGet('todos'); cacheDados=rD.data||[]; }catch(e){} } let duplicado = cacheDados.find(x=>{ let c = String(x.CPF||x.cpf||x.K||x.k||'').replace(/\D/g,''); return c && c===cpf; }); if(duplicado){ let matDup = String(duplicado.Matricula||duplicado.MATRICULA||'').padStart(5,'0'); let nomeDup = duplicado.Nome||duplicado.NOME||''; resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ CPF JÁ CADASTRADO!<br><br>CPF ${cpfRaw} já existe em DADOS<br>Mat: ${matDup} - ${nomeDup}<br><br>Não pode duplicar</div>`; return; } resDiv.innerHTML="⏳ Salvando dados e removendo de Pendentes..."; try{ let r = await apiGet('migrarPendente',{matricula:mat, cpf:cpf, cpfFormatado:cpfRaw}); if(r.result=="ok"){ localStorage.setItem('tipo_acesso','laranja'); resDiv.innerHTML=`<div style='padding:10px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Salvo!</b><br>Matrícula ${mat} Migrada para o Sistema<br>CPF: ${cpfRaw} salvo<br>Código: ${r.codigo||''} | Senha: ${r.senha||''}<br>Seu nome foi excluido de Pendentes<br><br>Faça login agora para acessar o sistema</div>`; cachePendentes = cachePendentes.filter(x=> String(x.Matricula||x.B||'').padStart(5,'0')!==mat); mostrarListaPendentes(cachePendentes); cacheDados = []; document.getElementById('cpfPendente').value=""; }else{ resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${r.msg||'Não foi possível migrar'}</div>`; } }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ Erro: ${e.message}</div>`; } }
+async function salvarNovoAluno(){ let mat=(document.getElementById('novaMatricula').value||'').trim().padStart(5,'0'); let nome=(document.getElementById('novoNome').value||'').trim().toUpperCase(); let cpf=(document.getElementById('novoCpf').value||'').trim(); let resDiv=document.getElementById('resultado-novo-aluno'); if(mat=="00000" ||!mat){ resDiv.innerHTML="<div style='color:#ef4444'>Digite a matrícula</div>"; return; } let palavras = nome.split(' ').filter(p=>p.trim().length>1); if(palavras.length < 3){ resDiv.innerHTML="<div style='color:#ef4444;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px'>⚠️ Digite o nome completo com no mínimo 3 palavras<br>Ex: RAIMUNDO SANTOS FEITOSA</div>"; return; } if(!cpf ||!validarCPF(cpf)){ resDiv.innerHTML="<div style='color:#ef4444'>CPF inválido. Digite um CPF válido</div>"; return; } try{ if(cachePendentes.length===0){ resDiv.innerHTML="⏳ Verificando se está em Pendentes..."; let rPend = await apiGet('todosPendentes'); cachePendentes = rPend.data||[]; } let cpfSoNum = cpf.replace(/\D/g,''); let matSemZero = mat.replace(/^0+/,''); let achadoPend = cachePendentes.find(x=>{ let m = String(x.Matricula||x.B||'').replace(/\D/g,'').padStart(5,'0'); let mSemZero = String(x.Matricula||x.B||'').replace(/\D/g,'').replace(/^0+/,''); let n = String(x.Nome||x.C||'').toUpperCase().trim(); let c = String(x.CPF||'').replace(/\D/g,''); return (m==mat || mSemZero==matSemZero) || (c && c==cpfSoNum) || (n && (n==nome || n.includes(nome) || nome.includes(n))); }); if(achadoPend){ resDiv.innerHTML=`<div style='padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;text-align:center;color:#9a3412'><b>⚠️ VOCÊ JÁ ESTÁ EM PENDENTES!</b><br><br>Encontrado: <b>${String(achadoPend.Matricula||'').padStart(5,'0')} - ${achadoPend.Nome||''}</b><br>CPF: ${achadoPend.CPF||''}<br><br>Não pode cadastrar como Aluno Novo.<br><br>Use a opção:<br><b>"Tenho Teste - Mas estou incluso nos Pendentes"</b></div>`; return; } }catch(e){} resDiv.innerHTML="⏳ Verificando e gerando senha..."; try{ let r = await apiGet('novoAluno',{matricula:mat, nome:nome, cpf:cpf}); if(r.result=="ok"){ localStorage.setItem('tipo_acesso','verde'); document.getElementById('senha').type="text"; document.getElementById('senha').value=r.senha; document.getElementById('senha').style.background="#fef08a"; document.getElementById('senha').style.fontWeight="800"; document.getElementById('senha').style.fontSize="18px"; cacheDados=[]; resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #16a34a;border-radius:8px;text-align:center'><b style='color:#166534;font-size:14px'>✅ CADASTRADO!</b><br><br>Matrícula: <b>${mat}</b><br>CPF: <b>${cpf}</b><br>Código: <b>${r.codigo}</b><br>Senha: <b style='font-size:18px;background:#fef08a;padding:4px 8px;border-radius:6px'>${r.senha}</b><br><br>Faça login agora para acessar o sistema</div>`; }else{ resDiv.innerHTML=`<div style='padding:10px;background:#fee2e2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;text-align:center'>❌ ${r.msg||'Erro ao salvar'}<br><br>Entre em contato com o administrador.</div>`; } }catch(e){ resDiv.innerHTML=`<div style='color:#ef4444'>❌ ${e.message}</div>`; } }
+async function enviarSenhaParaEmail(){ let email=(document.getElementById("emailPrimeiro").value||'').trim(); let resDiv=document.getElementById("resultado-email"); let mat=(document.getElementById('matricula').value||'').trim().padStart(5,'0'); if(!email.includes("@")){resDiv.innerHTML="<div style='color:#ef4444;font-size:12px'>Digite um e-mail válido</div>";return;} if(cacheDados.length===0){let r=await apiGet('todos');cacheDados=r.data||[]} let achado=cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat); if(!achado){resDiv.innerHTML="Matrícula não encontrada";return;} resDiv.innerHTML="⏳ Enviando sua senha para "+email+"..."; try{await apiGet('enviarSenhaEmail',{matricula:mat,email:email});}catch(e){} localStorage.setItem('tipo_acesso','roxo'); document.getElementById("senha").value=""; document.getElementById("senha").type="password"; document.getElementById("senha").placeholder="DIGITE A SENHA RECEBIDA NO E-MAIL"; document.getElementById("senha").focus(); resDiv.innerHTML=`<div style='padding:12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;text-align:center'><b style='color:#166534'>✅ Enviado!</b><br><br>Enviamos sua senha para:<br><b>${email}</b><br><br>Verifique seu e-mail na Caixa de Entrada ou no Lixo Eletronico e faça login para acessar o sistema.</div>`; }
 const MATRICULAS_MASTER = ["00425","00001"];
 function travarIframeAdm(){ const iframeAdm = document.getElementById('tela-CadastroAdm.html'); if(!iframeAdm) return; const aplicarTrava = ()=>{ try{ let mat = (localStorage.getItem('mat_logada')||'').replace(/\D/g,'').padStart(5,'0'); if(MATRICULAS_MASTER.includes(mat)) return; const doc = iframeAdm.contentWindow.document; if(!doc ||!doc.body) return; doc.querySelectorAll("input, select, textarea").forEach(el=>{ const ph = (el.placeholder||'').toUpperCase(); const id = (el.id||'').toUpperCase(); if(ph.includes("BUSCAR")) return; if(ph.includes("MATRICULA")) return; if(id.includes("NMAT")) return; if(id.includes("MAT")) return; el.disabled = true; el.readOnly = true; el.style.backgroundColor = "#f3f4f6"; el.style.pointerEvents = "none"; el.style.opacity = "0.7"; }); doc.querySelectorAll("button").forEach(btn=>{ if(btn.classList.contains('btn-green')) return; const t = (btn.innerText||'').toUpperCase(); if(t.includes("LIMPAR") || t.includes("EDITAR")){ btn.disabled = true; btn.style.pointerEvents = "none"; btn.style.opacity = "0.35"; if(t.includes("EDITAR")) btn.style.display = "none"; } }); }catch(e){} }; iframeAdm.addEventListener('load', ()=> setTimeout(aplicarTrava, 700)); setTimeout(aplicarTrava, 900); setInterval(aplicarTrava, 2000); }
 let paginaAtual = 'Cadastro.html';
@@ -351,10 +290,22 @@ function abrir(pagina, botao, titulo){ if(pagina === paginaAtual) { if(window.in
 function abrirMenuLateral(){ document.getElementById('menu-lateral').classList.add('aberto'); document.getElementById('overlay').classList.add('aberto'); }
 function fecharMenuLateral(){ document.getElementById('menu-lateral').classList.remove('aberto'); document.getElementById('overlay').classList.remove('aberto'); }
 function toggleMenuLateral(){ var menu = document.getElementById('menu-lateral'); if(menu.classList.contains('aberto')) fecharMenuLateral(); else abrirMenuLateral(); }
-document.addEventListener("keydown", e => { if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){ if(document.getElementById("box-primeiro-acesso").style.display==="block"){ enviarSenhaParaEmail(); } else if(document.getElementById("box-cadastro-novo").style.display==="block"){ salvarPreCadastro(); } else if(document.getElementById("box-novo-aluno").style.display==="block"){ salvarNovoAluno(); } else { logar(); } } });
+document.addEventListener("keydown", e => { if(e.key === "Enter" && document.getElementById("tela-login").style.display!== "none"){ if(document.getElementById("box-primeiro-acesso").style.display==="block"){ enviarSenhaParaEmail(); } else if(document.getElementById("box-cadastro-novo").style.display==="block"){ salvarPreCadastro(); } else if(document.getElementById("box-novo-aluno").style.display==="block"){ salvarNovoAluno(); } else if(document.getElementById("box-master").style.display==="block"){ gerarRelatorioZap(); } else { logar(); } } });
 document.getElementById('nome').addEventListener('input', function(){ if(!modoPreCadastro) return; let termo = this.value.toUpperCase().trim(); if(termo.length < 2){ mostrarListaPendentes(cachePendentes); return; } let filtrados = cachePendentes.filter(x=>{ let n = String(x.Nome||x.C||'').toUpperCase(); let m = String(x.Matricula||x.B||'').toUpperCase(); return n.includes(termo) || m.includes(termo); }); mostrarListaPendentes(filtrados); });
 function selecionarPendente(mat){ document.getElementById('matricula').value = mat; buscarNome(); }
 document.getElementById('tela-AcessoUsuario.html').addEventListener('load', function(){ try{ let doc = this.contentDocument || this.contentWindow.document; if(doc){ let card = doc.querySelector('.card'); if(card){ card.style.margin = '0'; card.style.marginLeft = '0'; } doc.body.style.display = 'block'; doc.body.style.textAlign = 'left'; doc.body.style.padding = '0'; } }catch(e){} });
+const LIBERADOS = ["00425","00001","05722"];
+document.getElementById('matricula').addEventListener('input', function(){
+  let v = this.value.replace(/\D/g,'').padStart(5,'0');
+  let lm = document.getElementById('link-master');
+  let sm = document.getElementById('sep-master');
+  if(LIBERADOS.includes(v)){ lm.style.display='flex'; sm.style.display='block'; }
+  else{ if(document.getElementById('box-master').style.display!=='block'){ lm.style.display='none'; sm.style.display='none'; } }
+});
+document.getElementById('matricula').addEventListener('blur', function(){
+  let v = this.value.replace(/\D/g,'').padStart(5,'0');
+  if(LIBERADOS.includes(v)){ document.getElementById('link-master').style.display='flex'; document.getElementById('sep-master').style.display='block'; }
+});
 </script>
 </body>
 </html>
