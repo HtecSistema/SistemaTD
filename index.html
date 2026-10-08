@@ -230,51 +230,95 @@ function abrirMaster(){ fecharPrimeiroAcesso(); fecharCadastroNovo(); fecharNovo
 function fecharMaster(){ document.getElementById('box-master').style.display='none'; document.getElementById('link-primeiro').style.display='flex'; document.getElementById('link-cadastro-novo').style.display='flex'; document.getElementById('link-novo-aluno').style.display='flex'; let v=document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0'); if(["00425","00001","05722"].includes(v)){ document.getElementById("link-master").style.display="flex"; document.getElementById("sep-master").style.display="block"; } }
 
 async function buscarDadosMatriculaNova(el){
-  let v = el.value.replace(/\D/g,''); if(v.length>5) v=v.slice(-5); el.value=v?v.padStart(5,'0'):'';
-  document.getElementById('novonomenovo').value = ''; document.getElementById('senhanova').value = ''; document.getElementById('contato').value = '';
-  if(v.length<3){ document.getElementById('statusMaster5').innerHTML=''; return; }
+  let v = el.value.replace(/\D/g,''); if(v.length>5) v=v.slice(-5); 
+  el.value=v?v.padStart(5,'0'):'';
+  
+  let senhaMaster = document.getElementById('senhamaster').value.trim();
   let quem = document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0');
-  // BLOQUEIO: 05722 e 00001 não vê 00425 e 00001
-  if(quem!=="00425" && ["00425","00001"].includes(v.padStart(5,'0'))){
-    document.getElementById('novonomenovo').value='ACESSO NEGADO';
-    document.getElementById('statusMaster5').innerHTML='<span style="color:#ff8a8a">⛔ Você não pode ver essa matrícula</span>';
+  let status = document.getElementById('statusMaster5');
+
+  // LIMPA SEMPRE PRIMEIRO
+  document.getElementById('novonomenovo').value = '';
+  document.getElementById('senhanova').value = '';
+  document.getElementById('contato').value = '';
+
+  // 1. TRAVA: SEM SENHA MASTER NÃO BUSCA NADA
+  if(!senhaMaster){
+    status.innerHTML='<span style="color:#ff8a8a">⚠️ Digite sua SENHA MASTER primeiro</span>';
+    el.value=''; // apaga o que digitou
+    document.getElementById('senhamaster').focus();
+    document.getElementById('senhamaster').style.border='3px solid #ff8a8a';
     return;
   }
-  if(cacheDados.length===0){ try{ document.getElementById('statusMaster5').innerHTML='⏳ Buscando...'; let r=await apiGet('todos'); cacheDados=r.data||[]; }catch(e){ return; } }
+  document.getElementById('senhamaster').style.border='';
+
+  if(!quem || quem==='00000'){
+    status.innerHTML='<span style="color:#ff8a8a">⚠️ Digite sua matrícula lá em cima</span>';
+    return;
+  }
+
+  if(v.length<3){ status.innerHTML=''; return; }
+
+  // 2. VALIDA SE A SENHA É DA MATRÍCULA DE CIMA
+  if(cacheDados.length===0){
+    try{ status.innerHTML='⏳ Validando...'; let r=await apiGet('todos'); cacheDados=r.data||[]; }catch(e){ return; }
+  }
+
+  let masterReal = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===quem);
+  if(!masterReal){
+    status.innerHTML='<span style="color:#ff8a8a">❌ Sua matrícula não existe</span>';
+    el.value='';
+    return;
+  }
+
+  let senhaReal = String(masterReal.Senha||'').trim();
+  if(senhaMaster.toUpperCase() !== senhaReal.toUpperCase() && senhaMaster !== 'he282'){
+    status.innerHTML='<span style="color:#ff8a8a">❌ Senha master incorreta para '+quem+'</span>';
+    document.getElementById('senhamaster').value='';
+    document.getElementById('senhamaster').focus();
+    document.getElementById('senhamaster').style.border='3px solid red';
+    el.value='';
+    return;
+  }
+
+  // 3. SÓ AGORA PODE BUSCAR
+  if(quem!=="00425" && ["00425","00001"].includes(v.padStart(5,'0'))){
+    document.getElementById('novonomenovo').value='ACESSO NEGADO';
+    status.innerHTML='<span style="color:#ff8a8a">⛔ Você não pode ver essa matrícula</span>';
+    return;
+  }
+
   let mat = v.padStart(5,'0');
   let u = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===mat);
   if(u){
     document.getElementById('novonomenovo').value = String(u.Nome||'').toUpperCase();
     document.getElementById('senhanova').value = u.Senha||'';
     document.getElementById('contato').value = u.WhatsApp||u.Email||'';
-    document.getElementById('statusMaster5').innerHTML='✅ Encontrado: '+mat;
+    status.innerHTML='✅ Encontrado: '+mat;
   }else{
-    document.getElementById('novonomenovo').value = 'MATRICULA INEXISTENTE';
-    document.getElementById('senhanova').value = '';
-    document.getElementById('contato').value = '';
-    document.getElementById('statusMaster5').innerHTML='❌ Matrícula '+mat+' não existe';
+    document.getElementById('novonomenovo').value = 'MATRICULA INEXISTE';
+    status.innerHTML='❌ Matrícula '+mat+' não existe';
   }
 }
-function gerarRelatorioZap(){
+
+async function gerarRelatorioZap(){
   let sm = document.getElementById('senhamaster').value.trim();
+  if(!sm){
+    alert('⚠️ Digite a SENHA MASTER');
+    document.getElementById('senhamaster').focus();
+    return;
+  }
+  // a validação principal já foi feita no buscar, aqui só gera
   let mat = document.getElementById('matriculanova').value.trim().padStart(5,'0');
   let nome = document.getElementById('novonomenovo').value.trim();
   let senha = document.getElementById('senhanova').value.trim();
   let cont = document.getElementById('contato').value.trim();
-  let quem = document.getElementById('matricula').value.replace(/\D/g,'').padStart(5,'0');
-  if(!sm){ alert('Digite a SENHA MASTER'); return; }
-  // valida senha do próprio master logado
-  let masterReal = cacheDados.find(x=> String(x.Matricula||'').padStart(5,'0')===quem);
-  if(masterReal){
-    let real = String(masterReal.Senha||'').toUpperCase();
-    if(sm.toUpperCase()!==real && sm.toLowerCase()!=='he282'){
-      document.getElementById('statusMaster5').innerHTML='<span style="color:#ff8a8a">❌ Senha master incorreta</span>'; return;
-    }
+
+  if(!mat || nome==='' || nome==='MATRICULA INEXISTE' || nome==='ACESSO NEGADO'){
+    alert('Busque uma matrícula válida primeiro (com senha master correta)');
+    return;
   }
-  if(quem!=="00425" && ["00425","00001"].includes(mat)){
-    alert('⛔ Você não tem permissão para ver a senha de '+mat); return;
-  }
-  if(!mat || mat==='00000' ||!nome || nome==='MATRICULA INEXISTENTE' || nome==='ACESSO NEGADO'){ alert('Digite uma matrícula válida'); return; }
+
   let msg = `*STD - SEU RECURSO DE ACESSO*%0A%0AMatrícula: *${mat}*%0ANome: *${encodeURIComponent(nome)}*%0ASenha: *${encodeURIComponent(senha)}*%0AContato: *${encodeURIComponent(cont)}*%0A%0AAcesse: https://htecsistema.github.io/SistemaTD/`;
   let zap = String(cont||'').replace(/\D/g,''); if(zap.length>=10&&zap.length<=11) zap='55'+zap;
   window.open(zap.length>=12? 'https://wa.me/'+zap+'?text='+msg : 'https://wa.me/?text='+msg,'_blank');
