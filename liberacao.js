@@ -6,10 +6,8 @@ const KEY_FILTRO = "filtroLiberacao70";
 const KEY_DADOS = "dadosLiberacao70";
 const KEY_CICLO = "cicloLiberacao70";
 
-// ADICIONADO - NÃO ATRAPALHA NADA, SÓ CONSERTA FILTRO
 function normalizar(t){ return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 
-// --- PERSISTENCIA ---
 function salvarPersistencia(){
   try{
     let fMat = document.getElementById('fMat')?.value || "";
@@ -26,7 +24,6 @@ function restaurarPersistencia(){
   try{
     let cicloSalvo = localStorage.getItem(KEY_CICLO);
     if(cicloSalvo && document.getElementById('ciclo')) document.getElementById('ciclo').value = cicloSalvo;
-
     let fRaw = localStorage.getItem(KEY_FILTRO);
     if(fRaw){
       let f = JSON.parse(fRaw);
@@ -34,7 +31,6 @@ function restaurarPersistencia(){
       if(document.getElementById('fNome')) document.getElementById('fNome').value = f.fNome || "";
       if(document.getElementById('fCong')) document.getElementById('fCong').value = f.fCong || "";
     }
-
     let dRaw = localStorage.getItem(KEY_DADOS);
     if(dRaw){
       let dados = JSON.parse(dRaw);
@@ -46,7 +42,6 @@ function restaurarPersistencia(){
         let cicloSel = document.getElementById('ciclo').value;
         let cicloTxt = cicloSel==='TODOS'? 'TODOS' : 'CICLO '+String(cicloSel).padStart(2,'0');
         document.getElementById('msg').innerText = allDados.length+' <70 | '+cicloTxt+' | Restaurado';
-        // reaplica filtro se tinha
         filtrar();
       }
     }
@@ -104,7 +99,7 @@ function mostraTabela(dados){
   idxSelecionado=-1;
   render(allDados);
   finalizarProgresso();
-  salvarPersistencia(); // <-- SALVA
+  salvarPersistencia();
   let cicloSel = document.getElementById('ciclo').value;
   let cicloTxt = cicloSel==='TODOS'? 'TODOS' : 'CICLO '+String(cicloSel).padStart(2,'0');
   document.getElementById('msg').innerText=allDados.length+' <70 | '+cicloTxt+' | LINK H ainda não - só após ENVIAR';
@@ -151,7 +146,7 @@ function filtrar(){
   let m=normalizar(document.getElementById('fMat').value);
   let n=normalizar(document.getElementById('fNome').value);
   let c=normalizar(document.getElementById('fCong').value);
-  salvarPersistencia(); // <-- SALVA FILTRO TODA VEZ QUE DIGITA
+  salvarPersistencia();
   if(!m&&!n&&!c){render(allDados);document.getElementById('msg').innerText=allDados.length+' registros';return;}
   let f=allDados.filter(l=>{
     let mat=normalizar(l[0]);
@@ -163,6 +158,10 @@ function filtrar(){
 }
 
 function limparTudo(){
+  // ADICIONA ESSAS 2 LINHAS
+  let preview = document.getElementById('previewZapImg');
+  if(preview) preview.remove();
+
   localStorage.removeItem(KEY_FILTRO);
   localStorage.removeItem(KEY_DADOS);
   localStorage.removeItem(KEY_CICLO);
@@ -199,7 +198,6 @@ function gerar(){
     }
   }catch(e){}
   let matNorm = String(mat).replace(/\D/g,'').padStart(5,'0');
-
   if(matNorm!== '00425'){
     let msgEl = document.getElementById('msg');
     msgEl.style.display='block';
@@ -218,9 +216,8 @@ function gerar(){
     document.getElementById('pWrap').style.display='none';
     return;
   }
-
   let ciclo=document.getElementById('ciclo').value;
-  salvarPersistencia(); // salva ciclo antes
+  salvarPersistencia();
   document.querySelector('.list-wrap').style.display='none';
   document.getElementById('btn').disabled=true;
   document.getElementById('btnEnviar').style.display='none';
@@ -254,6 +251,7 @@ async function enviarParaLiberacao(){
     document.body.appendChild(s);
   }
 }
+
 function retornoEnvio(res){
   let btn=document.getElementById('btnEnviar');
   btn.disabled=false;
@@ -264,12 +262,109 @@ function retornoEnvio(res){
     document.getElementById('msg').innerText=res.qtd+" enviados para LIBERACAO! "+ (res.msg||'');
     alert("✅ "+res.qtd+" enviados! A2:J limpo e coluna H com LINK.");
     document.getElementById('btnEnviar').style.display='none';
+    // >>> NOVO - GERA IMAGEM PROFISSIONAL
+    gerarImagemZapProfissional();
   }else{
     setProgresso(0,'ERRO');
     alert("ERRO: "+(res.err||res.message||JSON.stringify(res)));
   }
 }
 
-// --- RESTAURA AUTOMATICO QUANDO VOLTA PRA PAGINA ---
 window.addEventListener("DOMContentLoaded", restaurarPersistencia);
 setTimeout(restaurarPersistencia, 600);
+
+// ====== NOVO - NAO TIRA NADA, SO ADICIONA - GERADOR DE IMAGEM PARA ZAP ======
+function gerarImagemZapProfissional(){
+  let cicloSel = document.getElementById('ciclo').value;
+  let cicloTxt = cicloSel==='TODOS'? 'TODOS OS CICLOS' : 'CICLO '+String(cicloSel).padStart(2,'0');
+
+  let mapa = {};
+  dadosVisiveis.forEach(l=>{
+    let ciclo = String(l[4]||'').replace(/\D/g,'').padStart(2,'0');
+    let teste = String(l[5]||'').replace(/\D/g,'').padStart(2,'0');
+    let chave = ciclo+'-'+teste;
+    if(!mapa[chave]) mapa[chave] = {ciclo, teste};
+  });
+  let lista = Object.values(mapa).sort((a,b)=> (a.ciclo+a.teste).localeCompare(b.ciclo+b.teste));
+
+  let canvas = document.createElement('canvas');
+  let alturaBase = 520;
+  let linhaH = 48;
+  canvas.width = 1080;
+  canvas.height = alturaBase + (lista.length * linhaH) + 100;
+  let ctx = canvas.getContext('2d');
+
+  let grad = ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0,'#0f2a4a');
+  grad.addColorStop(1,'#132a4f');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle = '#c9a86a'; ctx.lineWidth = 5;
+  ctx.strokeRect(14,14,canvas.width-28,canvas.height-28);
+
+  let titulo1 = lista.length === 1 ? 'TESTE LIBERADO PARA' : 'TESTES LIBERADOS PARA';
+  
+  ctx.fillStyle = '#e8c36a'; ctx.font = '900 56px Segoe UI, Arial'; ctx.textAlign = 'center';
+  ctx.fillText(titulo1, canvas.width/2, 130);
+  ctx.fillText('RECUPERAÇÃO', canvas.width/2, 200);
+
+  ctx.fillStyle = '#ffffff'; ctx.font = '700 28px Segoe UI, Arial';
+  ctx.fillText('de 00:00:00 até 23:59:59 de hoje', canvas.width/2, 250);
+
+  ctx.strokeStyle = '#c9a86a'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(380,275); ctx.lineTo(700,275); ctx.stroke();
+
+  ctx.fillStyle = '#2ecc71'; ctx.font = '900 40px Segoe UI, Arial';
+  ctx.fillText(cicloTxt, canvas.width/2, 320);
+
+  ctx.textAlign = 'left';
+  let y = 390;
+  lista.forEach((it)=>{
+    ctx.fillStyle = '#c9a86a';
+    ctx.beginPath(); ctx.arc(95, y-9, 9, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.font = '800 28px Segoe UI, Arial';
+    ctx.fillText('CICLO '+it.ciclo+' - TESTE '+it.teste, 125, y);
+    y += linhaH;
+  });
+
+  let hoje = new Date().toLocaleDateString('pt-BR');
+  ctx.textAlign = 'center'; ctx.fillStyle = '#c9a86a'; ctx.font = '600 30px Segoe UI, Arial';
+  ctx.fillText('IEADMI • SistemaTD • '+hoje, canvas.width/2, canvas.height-38);
+
+  // PREVIEW
+  let dataUrl = canvas.toDataURL('image/png');
+  let old = document.getElementById('previewZapImg'); if(old) old.remove();
+  let wrap = document.createElement('div');
+  wrap.id = 'previewZapImg';
+  wrap.style = 'margin-top:18px;background:#fff;padding:14px;border-radius:14px;border:3px solid #25D366;text-align:center';
+  wrap.innerHTML = `
+    <div style="font-weight:900;color:#0f2a4a;margin-bottom:10px">✅ Imagem pronta - igual da foto</div>
+    <img src="${dataUrl}" id="imgGeradaZap" style="width:100%;max-width:460px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.25);border:1px solid #ddd">
+    <div style="display:flex;gap:10px;margin-top:14px;justify-content:center;flex-wrap:wrap">
+      <a href="${dataUrl}" download="LIBERACAO-${cicloTxt.replace(/ /g,'_')}.png" style="background:#0f2a4a;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:900;display:inline-block">⬇ BAIXAR IMAGEM</a>
+      <button id="btnCompartilharZap" style="background:#25D366;color:#fff;padding:12px 20px;border-radius:10px;border:0;font-weight:900;cursor:pointer">📲 ENVIAR IMAGEM NO ZAP</button>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:#666">${lista.length} teste(s) único(s) • ${dadosVisiveis.length} aluno(s)</div>
+  `;
+  document.getElementById('msg').parentNode.appendChild(wrap);
+
+  // CLIQUE ENVIA SÓ A IMAGEM, SEM TEXTO NENHUM
+  wrap.querySelector('#btnCompartilharZap').onclick = async ()=>{
+    canvas.toBlob(async (blob)=>{
+      let file = new File([blob], `LIBERACAO-${cicloTxt}.png`, {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({
+            files: [file]
+          });
+        }catch(e){}
+      } else {
+        let a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `LIBERACAO-${cicloTxt}.png`;
+        a.click();
+      }
+    }, 'image/png');
+  };
+  wrap.scrollIntoView({behavior:'smooth'});
+}
