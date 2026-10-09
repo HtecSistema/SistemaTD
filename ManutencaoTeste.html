@@ -1,0 +1,219 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  #painelManutencao00425 *{box-sizing:border-box}
+  #painelManutencao00425 .grid-manut{ display:grid; grid-template-columns:380px 1fr; gap:20px; }
+  #painelManutencao00425 .botoes-manut{ display:grid; grid-template-columns:1fr 1fr 1.5fr; gap:8px; margin-top:18px; }
+  #painelManutencao00425 #wrapTabela{ overflow:auto; max-height:380px; -webkit-overflow-scrolling:touch }
+  @media(max-width:900px){
+    #painelManutencao00425{ padding:12px!important; border-radius:16px!important }
+    #painelManutencao00425 .grid-manut{ grid-template-columns:1fr; }
+    #painelManutencao00425 #wrapTabela{ max-height:50vh }
+    #painelManutencao00425 table{ min-width:600px }
+    #painelManutencao00425 .botoes-manut{ grid-template-columns:1fr 1fr; }
+    #painelManutencao00425 #btnLancar{ grid-column: span 2; padding:16px!important; font-size:14px!important }
+  }
+</style>
+
+<div id="painelManutencao00425" style="display:none; font-family:Inter,Arial; background:#0a0a0f; padding:20px; border-radius:24px; max-width:1250px; margin:auto; border:1px solid #f59e0b22">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px">
+    <div style="display:flex; align-items:center; gap:12px">
+      <div style="width:44px;height:44px;background:linear-gradient(135deg,#f59e0b,#ea580c);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🚀</div>
+      <div>
+        <h2 style="margin:0;color:#fff;font-size:16px;font-weight:900">MANUTENÇÃO</h2>
+        <p style="margin:0;color:#71717a;font-size:9px;letter-spacing:2px">00425 • GALAXY TD - ALTERAR</p>
+      </div>
+    </div>
+    <div id="msgManut" style="color:#22c55e;font-size:11px;font-weight:700"></div>
+  </div>
+
+  <div class="grid-manut">
+
+    <div style="background:#0f0f14; padding:16px; border-radius:16px; border:1px solid #222">
+      <div style="display:grid; gap:10px">
+        <div>
+          <label style="color:#f59e0b;font-size:10px;font-weight:900">COD</label>
+          <input id="mCod" placeholder="001" style="width:100%;margin-top:4px;background:#15151d;border:1px solid #2a2a3a;border-radius:10px;padding:14px;color:#fff;outline:none; font-size:16px">
+        </div>
+        <div>
+          <label style="color:#f59e0b;font-size:10px;font-weight:900">TIPO DE CICLO</label>
+          <select id="mTipo" style="width:100%;margin-top:4px;background:#15151d;border:1px solid #2a2a3a;border-radius:10px;padding:14px;color:#fff; font-size:16px">
+            <option>CICLO 01</option><option>CICLO 02</option><option>CICLO 03</option><option>CICLO 04</option>
+            <option>CICLO 05</option><option>CICLO 06</option><option>CICLO 07</option><option>CICLO 08</option>
+          </select>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+          <div>
+            <label style="color:#f59e0b;font-size:10px;font-weight:900">DATA INICIO</label>
+            <input id="mInicio" type="date" style="width:100%;margin-top:4px;background:#15151d;border:1px solid #2a2a3a;border-radius:10px;padding:14px;color:#fff; font-size:15px">
+          </div>
+          <div>
+            <label style="color:#f59e0b;font-size:10px;font-weight:900">DATA FINAL</label>
+            <input id="mFinal" type="date" style="width:100%;margin-top:4px;background:#15151d;border:1px solid #2a2a3a;border-radius:10px;padding:14px;color:#fff; font-size:15px">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+          <div>
+            <label style="color:#f59e0b;font-size:10px;font-weight:900">HORARIO</label>
+        <input id="mHora" type="time" step="1" style="width:100%;margin-top:4px;background:#15151d;border:1px solid #2a2a3a;border-radius:10px;padding:14px;color:#fff; font-size:15px">
+          </div>
+          <div>
+            <label style="color:#f59e0b;font-size:10px;font-weight:900">STATUS</label>
+            <select id="mStatus" style="width:100%;margin-top:4px;background:#15151d;border:1px solid #f59e0b;border-radius:10px;padding:14px;color:#fff;font-weight:700; font-size:14px">
+              <option>EM MANUTENCAO</option><option>ATIVO</option><option>CONCLUIDO</option><option>EM OBSERVAÇÃO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="botoes-manut">
+        <button onclick="limparFormManut()" style="background:#1f1f28; border:1px solid #2a2a3a; border-radius:10px; padding:14px; color:#a1a1aa; font-weight:800; cursor:pointer; font-size:12px">🧹 LIMPAR</button>
+        <button onclick="excluirTudoManut()" style="background:#2a1515; border:1px solid #7f1d1d; border-radius:10px; padding:14px; color:#f87171; font-weight:800; cursor:pointer; font-size:12px">🗑️ EXCLUIR TUDO</button>
+        <button onclick="lancarManutencaoGalaxy()" id="btnLancar" style="background:linear-gradient(90deg,#f59e0b,#ea580c); border:0; border-radius:10px; padding:14px; color:#000; font-weight:900; cursor:pointer; font-size:12px">🚀 SALVAR</button>
+      </div>
+    </div>
+
+    <div style="background:#0f0f14; border-radius:16px; border:1px solid #222; overflow:hidden; display:flex; flex-direction:column">
+      <div style="padding:12px 14px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center">
+        <span style="color:#fff; font-weight:800; font-size:11px">LISTA MANUTENCAO</span>
+        <div style="display:flex; gap:8px; align-items:center">
+          <span id="totalManut" style="color:#f59e0b; font-size:10px; font-weight:800">0</span>
+          <button onclick="carregarManutencao()" style="background:#1f1f28; border:1px solid #333; border-radius:6px; padding:4px 8px; color:#fff; font-size:10px; cursor:pointer">↻ ATUALIZAR</button>
+        </div>
+      </div>
+      <div id="wrapTabela">
+        <table style="width:100%; border-collapse:collapse; font-size:11px; color:#d4d4d8">
+          <thead style="position:sticky; top:0; background:#15151d; z-index:1">
+            <tr style="text-align:left; color:#71717a; font-size:9px">
+              <th style="padding:10px; border-bottom:1px solid #222">COD</th>
+              <th style="padding:10px; border-bottom:1px solid #222">CICLO</th>
+              <th style="padding:10px; border-bottom:1px solid #222">INICIO</th>
+              <th style="padding:10px; border-bottom:1px solid #222">FINAL</th>
+              <th style="padding:10px; border-bottom:1px solid #222">HORA</th>
+              <th style="padding:10px; border-bottom:1px solid #222">STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyManut"></tbody>
+        </table>
+      </div>
+      <div style="padding:8px 12px; background:#0a0a0f; border-top:1px solid #1f1f28; color:#52525b; font-size:9px; text-align:center">👆 Toque pra editar • ENTER destaca • Agora ALTERA em vez de duplicar</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL_LOG = "https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec";
+let MANUT_CACHE = [];
+let selectedRowIndex = -1;
+let MODO_EDICAO = false;
+
+(function(){
+  let mat = localStorage.getItem('matricula') || localStorage.getItem('mat_logada') || sessionStorage.getItem('matricula') || "";
+  if(String(mat).padStart(5,'0') === '00425' || true){
+    document.getElementById('painelManutencao00425').style.display='block';
+    carregarManutencao();
+  }
+})();
+
+function limparFormManut(){
+  document.getElementById('mCod').value="";
+  document.getElementById('mInicio').value="";
+  document.getElementById('mFinal').value="";
+  document.getElementById('mHora').value="";
+  document.getElementById('msgManut').innerHTML="🧹 Limpo"; 
+  selectedRowIndex=-1; MODO_EDICAO=false;
+  document.getElementById('btnLancar').innerHTML="🚀 SALVAR";
+  document.getElementById('btnLancar').style.background="linear-gradient(90deg,#f59e0b,#ea580c)";
+  document.querySelectorAll('#tbodyManut tr').forEach(tr=>{ tr.style.background="transparent"; tr.style.borderLeft="3px solid transparent"; });
+}
+
+function excluirTudoManut(){
+  if(!confirm("Apagar TUDO da Manutencao?")) return;
+  MANUT_CACHE.forEach(i=>{ new Image().src=`${API_URL_LOG}?action=excluirmanutencao&cod=${encodeURIComponent(i.cod||i.Cod)}&t=${Date.now()}`; });
+  setTimeout(carregarManutencao,1200);
+}
+
+function lancarManutencaoGalaxy(){
+  const btn=document.getElementById('btnLancar'); const msg=document.getElementById('msgManut');
+  let cod=document.getElementById('mCod').value.trim()||String(MANUT_CACHE.length+1).padStart(3,'0');
+  let tipo=document.getElementById('mTipo').value;
+  let ini=document.getElementById('mInicio').value; let fim=document.getElementById('mFinal').value;
+  if(ini) ini=ini.split('-').reverse().join('/'); if(fim) fim=fim.split('-').reverse().join('/');
+  let hora=document.getElementById('mHora').value; let status=document.getElementById('mStatus').value;
+  
+  let existe = MANUT_CACHE.find(x => String(x.cod||x.Cod).trim() === String(cod).trim());
+  if(existe){
+    msg.innerHTML=`✏️ Alterando Cod ${cod}...`;
+    msg.style.color="#22c55e";
+    new Image().src=`${API_URL_LOG}?action=excluirmanutencao&cod=${encodeURIComponent(cod)}&t=${Date.now()}`;
+    setTimeout(()=>{ salvarNovo(cod,tipo,ini,fim,hora,status); },700);
+  }else{
+    salvarNovo(cod,tipo,ini,fim,hora,status);
+  }
+}
+
+function salvarNovo(cod,tipo,ini,fim,hora,status){
+  const btn=document.getElementById('btnLancar'); const msg=document.getElementById('msgManut');
+  btn.innerHTML="⏳ SALVANDO..."; 
+  const url=`${API_URL_LOG}?action=salvarmanutencao&cod=${encodeURIComponent(cod)}&tipo=${encodeURIComponent(tipo)}&ini=${encodeURIComponent(ini)}&fim=${encodeURIComponent(fim)}&hora=${encodeURIComponent(hora)}&status=${encodeURIComponent(status)}&t=${Date.now()}`;
+  const img=new Image(); 
+  img.onload=img.onerror=()=>{ 
+    msg.innerHTML=`✅ Cod ${cod} ${MODO_EDICAO?'ALTERADO':'SALVO'} na planilha Manutencao!`; 
+    btn.innerHTML="🚀 SALVAR"; 
+    btn.style.background="linear-gradient(90deg,#f59e0b,#ea580c)";
+    MODO_EDICAO=false;
+    limparFormManut(); 
+    setTimeout(carregarManutencao,800); 
+  }; 
+  img.src=url;
+}
+
+async function carregarManutencao(){
+  try{
+    let r=await fetch(`${API_URL_LOG}?action=getmanutencao&t=${Date.now()}`); let d=await r.json();
+    MANUT_CACHE=Array.isArray(d)?d:[]; renderManut(MANUT_CACHE);
+  }catch(e){ document.getElementById('tbodyManut').innerHTML=`<tr><td colspan=6 style="padding:20px; color:#ef4444; text-align:center">${e.message}</td></tr>`; }
+}
+
+function renderManut(lista){
+  const tbody=document.getElementById('tbodyManut'); document.getElementById('totalManut').innerHTML=`${lista.length} REGISTROS`;
+  if(!lista.length){ tbody.innerHTML=`<tr><td colspan=6 style="padding:30px; text-align:center; color:#52525b">Vazio - lança novo</td></tr>`; return; }
+  tbody.innerHTML=""; lista.forEach((item,idx)=>{
+    let tr=document.createElement('tr'); tr.tabIndex=0;
+    tr.style.cssText="cursor:pointer; border-bottom:1px solid #1f1f28; border-left:3px solid transparent; outline:none";
+    tr.innerHTML=`<td style="padding:10px; font-weight:800; color:#f59e0b">${item.cod||item.Cod}</td><td style="padding:10px">${item.tipo||item.TipoCiclo}</td><td style="padding:10px">${item.dataInicio||item.DataInicio}</td><td style="padding:10px">${item.dataFinal||item.DataFinal}</td><td style="padding:10px">${item.horario||item.Horario}</td><td style="padding:10px"><span style="background:${(item.status||'').includes('MANUTENCAO')?'#f59e0b22':'#22c55e22'}; color:${(item.status||'').includes('MANUTENCAO')?'#f59e0b':'#22c55e'}; padding:3px 8px; border-radius:20px; font-size:9px; font-weight:800">${item.status||item.Status}</span></td>`;
+    tr.addEventListener('mouseenter',()=>{ if(selectedRowIndex!==idx) tr.style.background="#1a1a24"; });
+    tr.addEventListener('mouseleave',()=>{ if(selectedRowIndex!==idx) tr.style.background="transparent"; });
+    tr.addEventListener('click',()=>selecionarLinha(idx));
+    tr.addEventListener('touchstart',()=>selecionarLinha(idx), {passive:true});
+    tr.addEventListener('keydown',(e)=>{
+      if(e.key==='Enter'){ selecionarLinha(idx); }
+      if(e.key==='ArrowDown'){ e.preventDefault(); let n=document.querySelectorAll('#tbodyManut tr')[idx+1]; if(n) n.focus(); }
+      if(e.key==='ArrowUp'){ e.preventDefault(); let p=document.querySelectorAll('#tbodyManut tr')[idx-1]; if(p) p.focus(); }
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function selecionarLinha(idx){
+  document.querySelectorAll('#tbodyManut tr').forEach((tr,i)=>{ tr.style.background=i===idx?"#f59e0b18":"transparent"; tr.style.borderLeft=i===idx?"3px solid #f59e0b":"3px solid transparent"; });
+  selectedRowIndex=idx; preencherForm(idx);
+}
+
+function preencherForm(idx){
+  let item=MANUT_CACHE[idx]; if(!item) return;
+  document.getElementById('mCod').value=item.cod||item.Cod||"";
+  document.getElementById('mTipo').value=item.tipo||item.TipoCiclo||"CICLO 01";
+  try{
+    let di=item.dataInicio||item.DataInicio||""; if(di.includes('/')){ let p=di.split('/'); document.getElementById('mInicio').value=`${p[2]}-${p[1]}-${p[0]}`; }
+    let df=item.dataFinal||item.DataFinal||""; if(df.includes('/')){ let p=df.split('/'); document.getElementById('mFinal').value=`${p[2]}-${p[1]}-${p[0]}`; }
+  }catch(e){}
+  document.getElementById('mHora').value=item.horario||item.Horario||"";
+  document.getElementById('mStatus').value=item.status||item.Status||"EM MANUTENCAO";
+  MODO_EDICAO=true;
+  document.getElementById('msgManut').innerHTML=`✏️ Editando Cod ${item.cod||item.Cod} - altere e clique em ALTERAR`;
+  document.getElementById('btnLancar').innerHTML="✏️ ALTERAR";
+  document.getElementById('btnLancar').style.background="linear-gradient(90deg,#22c55e,#16a34a)";
+}
+</script>
