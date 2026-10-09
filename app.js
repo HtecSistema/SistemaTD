@@ -1,4 +1,63 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbxLXw-nu5oXXtjE8HKik_W_bbT9CGjTNJWw-dUm4wWYv-hjcz1dOhMHLxoUTRHGJA3D0A/exec';
+// ===== NOVO - API LOG - PARA MANUTENCAO - 09/10/2026 - NAO APAGA NADA ACIMA =====
+const API_URL_LOG = 'https://script.google.com/macros/s/AKfycbz94-3iCkeVDD7Za2XAYzYL7BtCM3rWWMxGc_9kL-xtpnRoog91IR4KmqgWzLXYHIsb/exec';
+let CACHE_MANUTENCAO = [];
+function semAcentoMANUT(s){return (s||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim().toUpperCase();}
+async function carregarManutencao(){
+  try{
+    const u = API_URL_LOG + '?action=getmanutencao&t='+Date.now();
+    const r = await fetch(u,{cache:'no-store'});
+    const t = await r.text();
+    let lista=[];
+    try{lista=JSON.parse(t)}catch{lista=[]}
+    if(lista.data) lista=lista.data;
+    if(!Array.isArray(lista)) lista=[];
+    CACHE_MANUTENCAO = lista;
+    try{ localStorage.setItem('cache_manutencao', JSON.stringify({t:Date.now(), lista})); }catch{}
+  }catch(e){
+    try{
+      let raw=localStorage.getItem('cache_manutencao');
+      if(raw){ let j=JSON.parse(raw); CACHE_MANUTENCAO=j.lista||[]; }
+    }catch{}
+  }
+}
+function checkCicloEmManutencao(cicloNome){
+  if(!CACHE_MANUTENCAO||!CACHE_MANUTENCAO.length) return null;
+  let cicloNorm = semAcentoMANUT(cicloNome).replace(/\s+/g,"");
+  for(let i=0;i<CACHE_MANUTENCAO.length;i++){
+    let m=CACHE_MANUTENCAO[i];
+    let status = semAcentoMANUT(m.status||m.Status||m.F||"");
+    if(status.indexOf("MANUTEN")===-1) continue;
+    let tipo = semAcentoMANUT(m.tipo||m.Tipo||m.TipoCiclo||m.B||m.b||"").replace(/\s+/g,"");
+    let tipoSoNum = (tipo.match(/\d+/)||[""])[0];
+    let cicloSoNum = (cicloNorm.match(/\d+/)||[""])[0];
+    if(tipo===cicloNorm || tipo.indexOf(cicloNorm)!==-1 || cicloNorm.indexOf(tipo)!==-1 || (tipoSoNum && cicloSoNum && tipoSoNum===cicloSoNum)){
+      return {
+        cod: m.cod||m.Cod||m.A||"",
+        tipo: m.tipo||m.TipoCiclo||m.B||cicloNome,
+        dataInicio: m.dataInicio||m.DataInicio||m.C||"",
+        dataFinal: m.dataFinal||m.DataFinal||m.D||"",
+        horario: m.horario||m.Horario||m.E||"",
+        status: m.status||m.Status||"EM MANUTENCAO"
+      };
+    }
+  }
+  return null;
+}
+function mostrarModalManutencao(info){
+  let old=document.getElementById('modalManutencao'); if(old) old.remove();
+  let cicloNome = info.tipo||info.cod||"CICLO";
+  let dataF = info.dataFinal||"";
+  let horaF = info.horario||"";
+  let div=document.createElement('div');
+  div.id='modalManutencao';
+  div.style='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100001;display:flex;align-items:center;justify-content:center;padding:20px';
+  div.innerHTML=`<div style="background:#fff;border-radius:16px;padding:28px 22px;max-width:380px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);font-family:sans-serif"><div style="font-size:12px;color:#555;margin-bottom:2px"><b>Perdão pelo Transtorno</b></div><div style="font-size:15px;font-weight:900;letter-spacing:1px;color:#111;margin-bottom:16px"><b>EM MANUTENÇÃO</b></div><div style="font-size:18px;font-weight:900;color:#e67e00;margin-bottom:10px">${cicloNome} em OBSERVAÇÃO</div><div style="font-size:13px;color:#222;line-height:1.4">O ${cicloNome} estará <b>instável</b> até às<br><b>${horaF} do dia ${dataF}</b></div><button onclick="document.getElementById('modalManutencao').remove()" style="margin-top:20px;background:#000;color:#fff;border:0;padding:12px 20px;border-radius:10px;font-weight:900;width:100%;font-size:13px">FECHAR</button></div>`;
+  document.body.appendChild(div);
+  div.onclick=(e)=>{ if(e.target.id==='modalManutencao') div.remove(); };
+}
+// ===== FIM NOVO MANUTENCAO =====
+
 async function apiGet(a,p={}){p.t=Date.now();const u=API_URL+'?action='+a+'&'+new URLSearchParams(p);const r=await fetch(u,{cache:'no-store'});const t=await r.text();try{return JSON.parse(t)}catch{return{result:'ok',data:[]}}}
 async function apiPost(pl){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(pl)});const t=await r.text();try{return JSON.parse(t)}catch{return{result:'ok',message:t}}}
 function dataParaBR(v){if(!v)return'';v=String(v).trim();if(v.includes('/'))return v.toUpperCase();if(v.includes('-')){let p=v.split('-');if(p.length==3)return p[2]+'/'+p[1]+'/'+p[0]}return v.toUpperCase()}
@@ -62,7 +121,6 @@ function coletarDados(){
   var dBR=id=>{ try{ var el=document.getElementById(id); return el&&el.value?dataParaBR(el.value):'' }catch(e){return ''} };
   return{Codigo:g('Codigo'),Matricula:g('Matricula'),Congregacao:g('Congregacao'),Fcongregacao:g('Fcongregacao'),Nome:g('Nome'),Nascimento:dBR('Nascimento'),Mae:g('Mae'),CidadeNascimento:g('CidadeNascimento'),Estado:g('Estado'),Sexo:g('Sexo'),RG:g('RG'),CPF:g('CPF'),WhatsApp:g('WhatsApp'),FaixaEtaria:g('FaixaEtaria'),SitConjugal:g('SitConjugal'),DtCasamento:dBR('DataCasamento'),Conjuge:g('Conjuge'),Cteologico:g('Cteologico'),GrauCurso:g('GrauCurso'),Andamento:g('Andamento'),DataTermino:dBR('DataTermino'),BatizadoAgua:g('BatizadoAgua'),BEspSanto:g('EspSanto'),EspSanto:g('EspSanto'),TFunEclesiastica:g('TFunEclesiastica'),QualFuncao:g('QualFuncao'),Departamentoinserido:g('Departamentoinserido'),FuncaoDepartamento:g('FuncaoDepartamento'),OFuncoes:g('OFuncoes'),CEP:g('CEP'),end:g('end'),Numero:g('Numero'),Bairro:g('Bairro'),Complemento:g('Complemento'),Observacao:g('Observacao'),uff:g('UfEndereco'),yCid:g('CidadeEndereco'),Senha:g('Senha')}
 }
-
 function validaCPF(cpf){cpf=String(cpf||'').replace(/\D/g,'');if(cpf.length!==11||/^(\d)\1+$/.test(cpf))return false;let s=0;for(let i=0;i<9;i++)s+=parseInt(cpf[i])*(10-i);let r=(s*10)%11;if(r===10)r=0;if(r!==parseInt(cpf[9]))return false;s=0;for(let i=0;i<10;i++)s+=parseInt(cpf[i])*(11-i);r=(s*10)%11;if(r===10)r=0;return r===parseInt(cpf[10]);}
 async function salvar(){
   let dados=coletarDados();
@@ -193,6 +251,7 @@ function restaurarEstadoCadastro(){
 }
 window.addEventListener('load',async()=>{
   initCombos();organizarLayout();
+  await carregarManutencao();
   try{let lista=[];let tentativas=['congregacoes','listaIgrejas','getListaIgrejas','congregacao'];for(let act of tentativas){try{let res=await apiGet(act);let dados=res.data||res||[];if(Array.isArray(dados)&&dados.length){lista=dados.map(v=>String(v.Nome||v.nome||v.Congregacao||v.congregacao||v||'').trim()).filter(v=>v);if(lista.length)break;}}catch(e){}}lista=lista.map(v=>String(v||'').trim().toUpperCase()).filter(v=>v&&v.length>=3);lista=[...new Set(lista)].sort();if(lista.length>0){LISTAS.Congregacao=lista;}}catch(e){}
   setarMatriculaLogin();
   if(restaurarEstadoCadastro()){
@@ -359,10 +418,9 @@ function tornarMovel(modalId, handleId){
   }
   if(document.readyState==='complete') ativarArrasteLista(); else window.addEventListener('load', ativarArrasteLista);
 })();
-
-// JANELA DE TESTES - COM PROTEÇÃO PARA NÃO QUEBRAR
 async function abrirTeste52(){
   let m = document.getElementById('modalTestes'); if(m){ m.remove(); return; }
+  await carregarManutencao();
   let modal = document.createElement('div'); modal.id = 'modalTestes'; modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99990;display:flex;justify-content:center;align-items:flex-start;padding-top:20px';
   modal.innerHTML = `<div style="background:#f8f9fa;width:96%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)"><div id="handleTestes" style="background:#111;color:white;padding:12px;display:flex;align-items:center;gap:12px"><button onclick="document.getElementById('modalTestes').remove()" style="background:white;color:#111;border:0;padding:8px 14px;border-radius:8px;font-weight:900">✕ FECHAR</button><h3 id="tituloTeste" style="margin:0;font-size:14px;font-weight:900;flex:1;cursor:move">📝 BEM VINDO AOS TESTES</h3></div><div id="listaTestes" style="overflow-y:auto;padding:10px;background:#f8f9fa">Carregando, Aguarde...</div></div>`;
   document.body.appendChild(modal);
@@ -378,7 +436,6 @@ async function abrirTeste52(){
     renderTestes(listaTestes);
   }catch(e){ document.getElementById('listaTestes').innerHTML='ERRO: '+e.message; }
 }
-
 function renderTestes(lista){
   listaTestes = lista;
   let div = document.getElementById('listaTestes'); if(!div) return;
@@ -395,6 +452,7 @@ function renderTestes(lista){
     let ja=!!abertos[cod];
     let cicloNumBotao = (ciclo.match(/\d+/)||[''])[0].replace(/^0+/,'') || '0';
     let testeNumBotao = nf.replace(/^0+/,'') || '0';
+    let manut = checkCicloEmManutencao(ciclo);
     let emReedicao = listaLiberacao.some(it=>{
       let c = String(it.CICLO || it.E || it.e || '').toUpperCase().trim();
       let tt = String(it.TESTE || it.F || it.f || '').toUpperCase().trim();
@@ -405,49 +463,76 @@ function renderTestes(lista){
     });
     let cor = cores[ciclo] || '#111827';
     let card = document.createElement('div');
-    card.style = `background:${emReedicao?'#fef3c7':(ja?'#ecfdf5':'white')};border-left:6px solid ${emReedicao?'#f59e0b':cor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;opacity:${emReedicao?'0.9':''}`;
-    card.innerHTML = `<div style="flex:1"><span style="background:${emReedicao?'#f59e0b':cor};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${emReedicao?'⏸️ REEDIÇÃO':(ja?'✓':'')}</span><div style="font-size:11px">${emReedicao?'Teste aberto a reedição. Por gentileza, aguarde':tema}</div></div>`;
+    let bgCard = manut? '#fff7ed' : (emReedicao?'#fef3c7':(ja?'#ecfdf5':'white'));
+    let borderColor = manut? '#f59e0b' : (emReedicao?'#f59e0b':cor);
+    card.style = `background:${bgCard};border-left:6px solid ${borderColor};border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;opacity:${emReedicao?'0.9':''}`;
+    card.innerHTML = `<div style="flex:1"><span style="background:${manut?'#f59e0b':(emReedicao?'#f59e0b':cor)};color:white;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:900">${ciclo}</span><span style="font-weight:900;font-size:13px"> TESTE ${nf} ${manut?'🚧 Em manutenção':(emReedicao?'⏸️ REEDIÇÃO':(ja?'✅ Feito':''))}</span><div style="font-size:11px">${manut? 'Ciclo em manutenção até '+manut.dataFinal+' às '+manut.horario : (emReedicao?'Teste aberto a reedição. Por gentileza, aguarde':tema)}</div></div>`;
     let btn = document.createElement('button');
-    if(emReedicao){
+    if(manut){
+      btn.innerText = '🚧 Em manutenção';
+      btn.style = `background:#f59e0b;color:white;border:0;padding:10px 14px;border-radius:10px;font-weight:900;cursor:pointer`;
+      btn.onclick = () => { mostrarModalManutencao(manut); };
+    }else if(emReedicao){
       btn.innerText = '⏸️ REEDIÇÃO';
       btn.style = `background:#9ca3af;color:white;border:0;padding:10px 14px;border-radius:10px;font-weight:900;cursor:not-allowed`;
       btn.onclick = () => { alert('Teste aberto a reedição. Por gentileza, aguarde'); toast('Teste aberto a reedição. Por gentileza, aguarde','err'); };
     }else{
-      btn.innerText = ja?'FEITO':'🚀 ABRIR';
-      btn.style = `background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer`;
-      btn.onclick = () => abrirTeste(t.LinkAcesso, cod);
+      if(ja){
+        btn.innerText = '✅ Feito';
+        btn.style = `background:#16a34a;color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer`;
+        btn.onclick = () => abrirTeste(t.LinkAcesso, cod);
+      }else{
+        btn.innerText = '🚀 ABRIR';
+        btn.style = `background:${cor};color:white;border:0;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer`;
+        btn.onclick = () => abrirTeste(t.LinkAcesso, cod);
+      }
     }
     card.appendChild(btn);
     div.appendChild(card);
   });
 }
-
-// AVISO ANTES DE ABRIR FORMULÁRIO
 function mostrarAvisoAntesAbrir(linkFinal){
   let old=document.getElementById('modalAvisoCabecalho'); if(old) old.remove();
   let f=document.createElement('div'); f.id='modalAvisoCabecalho';
-  f.style='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;justify-content:center;align-items:center;padding:20px';
-f.innerHTML=`<div style="background:white;max-width:430px;width:100%;border-radius:16px;padding:24px;text-align:center;font-family:sans-serif"><div style="font-size:40px">📝</div><h3 style="margin:10px 0;font-weight:900;font-size:18px">ATENÇÃO</h3><p style="font-size:14px;line-height:1.6;margin:0 0 20px;text-align:left">Você <b>não precisa mais PREENCHER os seus Dados no Formulário de Teste</b><br><br>Por favor, não ALTERE seus Dados.<br><br>Clique em <b>SEGUINTE ou AVANÇAR</b> para acessar as perguntas.<br><br>Se de repente surgir essa mensagem ao abrir o teste:<br><b>Quer continuar o rascunho atual?</b><br>É so clicar em Continuar<br><br><b>Boa prova!</b></p><button id="btnOkAviso" style="background:#0f766e;color:white;border:0;padding:12px;width:100%;border-radius:10px;font-weight:900;cursor:pointer">OK - ABRIR TESTE</button></div>`;
+  f.style='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;justify-content:center;align-items:center;padding:16px;overflow-y:auto';
+  f.innerHTML=`<div style="background:white;max-width:410px;width:100%;border-radius:18px;padding:26px 20px 18px;text-align:center;font-family:Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,0.3)">
+    <div style="font-size:36px">📄</div>
+    <h3 style="margin:6px 0 16px;font-weight:900;font-size:18px;color:#111">ATENÇÃO</h3>
+    <div style="text-align:justify;font-size:14px;line-height:1.45;color:#111">
+      Você não precisa mais <b>PREENCHER</b> os seus Dados no <b>Formulário de Teste</b>. Já estão sendo transferidos pelo <b>SisemaTD</b>. Por favor, não <b>ALTERE</b> seus Dados no <b>TESTE</b>. Clique em <b>SEGUINTE</b> ou <b>AVANÇAR</b> para acessar as perguntas.
+      <div style="margin:14px 0 8px;text-align:justify">E, se de repente surgir essa mensagem ao abrir o teste:</div>
+      <div style="border-top:1px dashed #999;margin:8px 0 14px"></div>
+      <div style="background:#fff;border:1px solid #dadce0;border-radius:12px;padding:14px 14px 10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);text-align:left">
+        <div style="font-weight:700;font-size:14px;line-height:1.25">Quer continuar o rascunho atual?</div>
+        <div style="font-size:14px;margin-top:8px;color:#202124;line-height:1.35;text-align:left">Tem um rascunho anterior da sua resposta do formulário. Quer utilizá-lo ou continuar com o seu rascunho atual?</div>
+        <div style="display:flex;justify-content:flex-end;gap:18px;margin-top:14px;font-size:14px"><span style="color:#5f6368">Usar rascunho anterior</span><span style="color:#1a73e8;font-weight:700">Continuar</span></div>
+      </div>
+      <div style="font-size:14px;margin-top:14px;text-align:justify;line-height:1.45">Se você "NÃO CONCLUIU O TESTE" por uma ou outra razão, clique em <b>Usar rascunho anterior</b> caso contrario click em <b>Continuar</b></div>
+      <div style="font-weight:900;margin-top:16px;text-align:left;font-size:14px">Boa prova!</div>
+    </div>
+    <button id="btnOkAviso" style="margin-top:20px;background:#0f766e;color:white;border:0;padding:14px;width:100%;border-radius:10px;font-weight:900;cursor:pointer;font-size:15px">ABRIR TESTE</button>
+  </div>`;
   document.body.appendChild(f);
   document.getElementById('btnOkAviso').onclick=()=>{
     f.remove();
     let a=document.createElement('a'); a.href=linkFinal; a.target='_blank'; a.rel='noopener noreferrer';
     document.body.appendChild(a); a.click(); setTimeout(()=>{ try{a.remove()}catch(e){} }, 800);
   };
+  f.onclick=(e)=>{ if(e.target.id==='modalAvisoCabecalho') f.remove(); };
 }
-// Certifique-se que no seu teste os campos: Congregação, Nome, WhatsApp, Matricula, Sexo, Batizado em Águas, Função Eclesiástica, Função na Congregação. Ja estejam preenchidos.<br><br>Clique em <b>SEGUINTE</b> para // acessar as perguntas.</p><button id="btnOkAviso" style="background:#0f766e;color:white;border:0;padding:12px;width:100%;border-radius:10px;font-weight:900;cursor:poin
-
 async function abrirTeste(linkOriginal, codUnico, rowId){
+  try{
+    let cicloTmp = (listaTestes.find(t=>String(t.Cod)===String(codUnico))?.Ciclo||'').toUpperCase();
+    let manutTmp = checkCicloEmManutencao(cicloTmp);
+    if(manutTmp){ mostrarModalManutencao(manutTmp); return; }
+  }catch(e){}
   let agora = Date.now();
   if(_travaTeste.cod === codUnico && (agora - _travaTeste.tempo) < 2500) return;
   _travaTeste = {cod: codUnico, tempo: agora};
-
   const dCheck = coletarDados();
-
-  // CORRIGIDO: MEMBRO É LABEL DE BatizadoAgua E FUNÇÃO É TFunEclesiastica
-const obrigatorios = [
+  const obrigatorios = [
     {chave: ['Matricula'], label: 'MATRÍCULA'},
-    {chave: ['CPF'], label: 'PESQUISE CPF'},
+    {chave: ['CPF'], label: 'CPF'},
     {chave: ['Nome'], label: 'NOME COMPLETO'},
     {chave: ['Sexo'], label: 'SEXO'},
     {chave: ['WhatsApp'], label: 'WHATSAPP'},
@@ -458,13 +543,8 @@ const obrigatorios = [
     {chave: ['TFunEclesiastica'], label: 'FUNÇÃO ECLESIÁSTICA'},
     {chave: ['Fcongregacao'], label: 'FUNÇÃO NA CONGREGAÇÃO'}
   ];
-
-  // SE FUNÇÃO ECLESIÁSTICA FOR SIM, AI SIM PEDE QUAL FUNÇÃO
   let funcaoEcle = String(dCheck.TFunEclesiastica||'').toUpperCase().trim();
-  if(funcaoEcle === 'SIM'){
-    obrigatorios.push({chave: ['QualFuncao'], label: 'QUAL FUNÇÃO'});
-  }
-
+  if(funcaoEcle === 'SIM'){ obrigatorios.push({chave: ['QualFuncao'], label: 'QUAL FUNÇÃO'}); }
   let faltando = [];
   obrigatorios.forEach(item=>{
     let valor = '';
@@ -476,13 +556,11 @@ const obrigatorios = [
     }
     if(!valor) faltando.push(item.label);
   });
-
   if(faltando.length){
     alert('Por gentileza, preencha os campos pendentes:\n\n• ' + faltando.join('\n• '));
     try{ toast('Preencha: '+faltando.join(', '), 'err'); }catch(e){}
     return;
   }
-
   try{
     let item = listaTestes.find(t=>String(t.Cod)===String(codUnico));
     let cicloStr = item? String(item.Ciclo||'').toUpperCase() : '';
@@ -513,7 +591,6 @@ const obrigatorios = [
       }
     }
   }catch(e){}
-
   const d = coletarDados();
   let ciclo='4';
   try{ let item=listaTestes.find(t=>String(t.Cod)==String(codUnico)); if(item && item.Ciclo) ciclo=String(item.Ciclo).replace(/\D/g,''); }catch(e){}
@@ -525,12 +602,14 @@ const obrigatorios = [
     let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
     if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
   }catch(e){ base = linkOriginal; }
-
   apiGet('salvarNaResposta',{dados:JSON.stringify({...d, CodigoTeste: codUnico, Ciclo: ciclo}), cod:codUnico, ciclo:ciclo}).catch(()=>{});
-
+  try{
+    let abertos=JSON.parse(localStorage.getItem('testes_abertos')||'{}');
+    abertos[codUnico]=true;
+    localStorage.setItem('testes_abertos', JSON.stringify(abertos));
+  }catch(e){}
   mostrarAvisoAntesAbrir(base);
 }
-
 (function(){
   function ativarArraste(){
     const container = document.getElementById('listViewContainer'); if(!container) return;
@@ -571,6 +650,9 @@ window.addEventListener('load', function(){
     if(mat||sen){ aplicarRegraTrava(); }
   }, 700);
 });
+
+
+// E NO recuperar() TROCA O map PARA MOSTRAR FEITO:
 async function recuperar(){
   let m = document.getElementById('modalRecuperar'); if(m){ m.remove(); return; }
   let matAtual = getMatriculaLogin();
@@ -592,60 +674,69 @@ async function recuperar(){
       let mat = normaliza5Dig(String(it.MATRICULA||it.Matricula||it.A||it.a||'').trim());
       return mat && mat===matAtual;
     });
-    if(filtrados.length===0 && matAtual==='00425'){
-      filtrados = lista;
-    }
     let div = document.getElementById('listaRecup');
     let tit = document.getElementById('tituloRecup');
     if(filtrados.length===0){
       tit.innerText = `📝 RECUPERAÇÃO - ${matAtual} - 0`;
-      div.innerHTML = `<div style="text-align:center;padding:20px">Nenhuma recuperação liberada para<br><b>${matAtual} - ${nomeAtual}</b><br><br>Só aparece se a matrícula estiver na guia LIBERACAO.</div>`;
+      div.innerHTML = `<div style="text-align:center;padding:20px">Nenhuma recuperação liberada para<br><b>${matAtual} - ${nomeAtual}</b><br><br>Só para alunos com nota inferior a 70.</div>`;
       return;
     }
     tit.innerText = `📝 RECUPERAÇÃO - ${matAtual} - ${filtrados.length}`;
-    div.innerHTML = filtrados.map(it=>{
+    let abertosRecup={}; try{abertosRecup=JSON.parse(localStorage.getItem('recuperacoes_abertas')||'{}')}catch(e){}
+    div.innerHTML = filtrados.map((it)=>{
       let ciclo = String(it.CICLO||it.E||'').toUpperCase();
       let teste = String(it.TESTE||it.F||'').toUpperCase();
       let nome = String(it.NOME||it.B||'').toUpperCase();
       let nota = it.NOTA||it.G||'';
-      let link = it.LINK||it.H||it.h||'';
-      return `<div style="background:${nota<70?'#f59e0b':'white'};border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <div style="flex:1">
-          <div style="font-weight:900;font-size:12px;color:#111">${ciclo} | ${teste} | NOTA ${nota}</div>
-          <div style="font-size:10px;color:#333">${it.MATRICULA||''} - ${nome}</div>
-          <div style="font-size:9px;color:#666">${it.CONGREGACAO||it.D||''}</div>
-        </div>
-        <button onclick="window.open('${link}','_blank')" style="background:#0f766e;color:white;border:0;padding:8px 14px;border-radius:8px;font-weight:900;font-size:11px">ABRIR</button>
-      </div>`;
+      let link = String(it.LINK||it.H||it.h||'').trim();
+      let codRecup = (ciclo+'-'+teste+'-'+(it.MATRICULA||matAtual)).replace(/\s+/g,'');
+      let jaFeito =!!abertosRecup[codRecup];
+      return `<div style="background:${jaFeito?'#ecfdf5':(nota<70?'#f59e0b':'white')};border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div style="flex:1"><div style="font-weight:900;font-size:12px;color:#111">${ciclo} | ${teste} | NOTA ${nota} ${jaFeito?'✅':''}</div><div style="font-size:10px;color:#333">${it.MATRICULA||''} - ${nome}</div><div style="font-size:9px;color:#666">${it.CONGREGACAO||it.D||''}</div></div>
+        <button onclick="abrirLinkRecuperacao('${link.replace(/'/g,"%27")}','${codRecup}')" style="background:${jaFeito?'#16a34a':'#0f766e'};color:white;border:0;padding:8px 14px;border-radius:8px;font-weight:900;font-size:11px">${jaFeito?'✅ FEITO':'ABRIR'}</button></div>`;
     }).join('');
   }catch(e){
     document.getElementById('listaRecup').innerHTML = 'ERRO: '+e.message;
   }
 }
-function abrirLinkRecuperacao(link){
-  if(!link){ toast('Link vazio','err'); return; }
-  window.open(link,'_blank','noopener');
+
+// SUBSTITUI O SEU abrirLinkRecuperacao POR ESSE:
+function abrirLinkRecuperacao(linkOriginal, codUnico){
+  if(!linkOriginal){ toast('Link vazio','err'); return; }
+  const d = coletarDados();
+  let base = linkOriginal;
   try{
-    let d=coletarDados();
-    apiGet('salvarNaResposta',{dados:JSON.stringify({...d, tipo:'RECUPERACAO'}), cod:'RECUP-'+Date.now(), ciclo:'RECUP'}).catch(()=>{});
+    if(linkOriginal.includes('/viewform')){
+      base = linkOriginal.split('/viewform')[0]+'/viewform?usp=pp_url';
+      let entries=[...linkOriginal.matchAll(/entry\.(\d+)/g)].map(x=>x[0]);
+      let bat=String(d.BatizadoAgua||'').toUpperCase(); if(bat!=='SIM'&&bat!=='NAO') bat='SIM';
+      let vals=[d.Congregacao||'',d.Nome||'',d.WhatsApp||'',d.Matricula||'',(d.Sexo||'').toUpperCase(),bat,(d.QualFuncao||'').toUpperCase(),(d.Fcongregacao||'').toUpperCase()];
+      if(entries.length>0) entries.forEach((e,i)=>{ if(vals[i]!==undefined) base+='&'+e+'='+encodeURIComponent(vals[i]); });
+    }
+  }catch(e){ base = linkOriginal; }
+
+  // MARCA COMO FEITO IGUAL O TESTE FAZ
+  try{
+    let abertos=JSON.parse(localStorage.getItem('recuperacoes_abertas')||'{}');
+    abertos[codUnico]=true;
+    localStorage.setItem('recuperacoes_abertas', JSON.stringify(abertos));
+    // atualiza o botão na hora
+    let btn = document.querySelector(`button[onclick*="${codUnico}"]`);
+    if(btn){ btn.innerText='✅ FEITO'; btn.style.background='#16a34a'; }
   }catch(e){}
+
+  apiGet('salvarNaResposta',{dados:JSON.stringify({...d, tipo:'RECUPERACAO', CodigoTeste: codUnico}), cod:codUnico||('RECUP-'+Date.now()), ciclo:'RECUP'}).catch(()=>{});
+  mostrarAvisoAntesAbrir(base);
 }
 
-
-
-// TRAVA CAMPOS - VAZIO E TRAVADO QUANDO NAO
 (function(){
   function norm(v){ return (v||'').toString().trim().toUpperCase(); }
-
   function travarCampos(){
     let curso = norm(document.getElementById('Cteologico')?.value);
     let temFuncao = norm(document.getElementById('TFunEclesiastica')?.value);
-
     let grau = document.getElementById('GrauCurso');
     let andam = document.getElementById('Andamento');
-    let funcaoEcle = document.getElementById('QualFuncao'); // esse é o FUNCAO ECLESIASTICA
-
-    // SE CURSO TEOLOGICO = NAO -> VAZIO E TRAVADO
+    let funcaoEcle = document.getElementById('QualFuncao');
     let ehNaoCurso = (curso === 'NAO' || curso === 'NÃO');
     if(ehNaoCurso){
       if(grau){ grau.value=''; grau.disabled=true; grau.readOnly=true; }
@@ -662,15 +753,9 @@ function abrirLinkRecuperacao(link){
       document.getElementById('wrap_Andamento').style.pointerEvents='';
       document.getElementById('wrap_Andamento').style.opacity='';
     }
-
-    // SE TEM FUNCAO = NAO -> FUNCAO ECLESIASTICA VAZIO E TRAVADO
     let ehNaoFuncao = (temFuncao === 'NAO' || temFuncao === 'NÃO');
     if(ehNaoFuncao){
-      if(funcaoEcle){ 
-        funcaoEcle.value=''; // VAZIO como você pediu
-        funcaoEcle.disabled=true; 
-        funcaoEcle.readOnly=true; 
-      }
+      if(funcaoEcle){ funcaoEcle.value=''; funcaoEcle.disabled=true; funcaoEcle.readOnly=true; }
       document.getElementById('wrap_QualFuncao').style.pointerEvents='none';
       document.getElementById('wrap_QualFuncao').style.opacity='0.4';
     } else {
@@ -679,7 +764,6 @@ function abrirLinkRecuperacao(link){
       document.getElementById('wrap_QualFuncao').style.opacity='';
     }
   }
-
   ['Cteologico','TFunEclesiastica'].forEach(id=>{
     let el=document.getElementById(id);
     if(el){
@@ -687,8 +771,6 @@ function abrirLinkRecuperacao(link){
       el.addEventListener('input', travarCampos);
     }
   });
-
   setInterval(travarCampos, 700);
   window.addEventListener('load', ()=>setTimeout(travarCampos, 1200));
 })();
-
